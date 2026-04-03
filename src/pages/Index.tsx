@@ -1578,7 +1578,7 @@ export default function Index() {
       // Filial 501 – Focomix SP
       if (files.livro_501) {
         const raw = await parseCSVRaw(files.livro_501);
-        newData["501"] = buildProducts(raw, "501", 1, 2, 6, 7, 16, 25);
+        newData["501"] = buildProducts(raw, "501", 1, 2, 6, 7, 16, 19);
       }
 
       // Filial 502 – Focomix MG (preço/venda = livro_502; estoque/custo = livro_10)
