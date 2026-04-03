@@ -15,6 +15,7 @@ const navItems = [
   { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
   { to: "/shelf-life", label: "Análise de Shelf Life", icon: Clock },
+  { to: "/manual", label: "Análise Manual", icon: BarChart3 },
   { to: "/upload", label: "Upload de Dados", icon: Upload },
 ];
 

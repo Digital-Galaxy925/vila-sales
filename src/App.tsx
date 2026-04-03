@@ -28,6 +28,7 @@ const App = () => (
             <Route path="/margem" element={<AnaliseMargem />} />
             <Route path="/estoque" element={<AnaliseEstoque />} />
             <Route path="/shelf-life" element={<AnaliseShelfLife />} />
+            <Route path="/manual" element={<AnaliseManual />} />
             <Route path="/upload" element={<UploadDados />} />
           </Route>
           <Route path="*" element={<NotFound />} />
