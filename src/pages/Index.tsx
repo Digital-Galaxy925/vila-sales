@@ -1560,7 +1560,7 @@ export default function Index() {
       // Filial 11 – Campinas
       if (files.livro_11) {
         const raw = await parseCSVRaw(files.livro_11);
-        newData["11"] = buildProducts(raw, "11", 1, 2, 6, 7, 16, 25);
+        newData["11"] = buildProducts(raw, "11", 1, 2, 6, 7, 16, 19);
       }
 
       // Filial 12 – Osasco
