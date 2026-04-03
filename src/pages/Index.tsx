@@ -1554,37 +1554,37 @@ export default function Index() {
       // Filial 01 – Poços (padrão, sempre primeiro)
       if (files.livro_01) {
         const raw01 = await parseCSVRaw(files.livro_01);
-        newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 25, map10.size > 0 ? map10 : undefined);
+        newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 19, map10.size > 0 ? map10 : undefined);
       }
 
       // Filial 11 – Campinas
       if (files.livro_11) {
         const raw = await parseCSVRaw(files.livro_11);
-        newData["11"] = buildProducts(raw, "11", 1, 2, 6, 7, 16, 25);
+        newData["11"] = buildProducts(raw, "11", 1, 2, 6, 7, 16, 19);
       }
 
       // Filial 12 – Osasco
       if (files.livro_12) {
         const raw = await parseCSVRaw(files.livro_12);
-        newData["12"] = buildProducts(raw, "12", 1, 2, 6, 7, 16, 25);
+        newData["12"] = buildProducts(raw, "12", 1, 2, 6, 7, 16, 19);
       }
 
       // Filial 14 – Betim
       if (files.livro_14) {
         const raw = await parseCSVRaw(files.livro_14);
-        newData["14"] = buildProducts(raw, "14", 1, 2, 6, 7, 16, 25);
+        newData["14"] = buildProducts(raw, "14", 1, 2, 6, 7, 16, 19);
       }
 
       // Filial 501 – Focomix SP
       if (files.livro_501) {
         const raw = await parseCSVRaw(files.livro_501);
-        newData["501"] = buildProducts(raw, "501", 1, 2, 6, 7, 16, 25);
+        newData["501"] = buildProducts(raw, "501", 1, 2, 6, 7, 16, 19);
       }
 
       // Filial 502 – Focomix MG (preço/venda = livro_502; estoque/custo = livro_10)
       if (files.livro_502) {
         const raw = await parseCSVRaw(files.livro_502);
-        newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 25, map10.size > 0 ? map10 : undefined);
+        newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 19, map10.size > 0 ? map10 : undefined);
       }
 
       setData(newData);
