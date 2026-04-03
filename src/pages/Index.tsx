@@ -1554,7 +1554,7 @@ export default function Index() {
       // Filial 01 – Poços (padrão, sempre primeiro)
       if (files.livro_01) {
         const raw01 = await parseCSVRaw(files.livro_01);
-        newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 25, map10.size > 0 ? map10 : undefined);
+        newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 19, map10.size > 0 ? map10 : undefined);
       }
 
       // Filial 11 – Campinas
