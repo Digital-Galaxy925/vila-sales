@@ -119,63 +119,6 @@ async function readFileText(file: File): Promise<string> {
   });
 }
 
-// ── Inflate DEFLATE puro em JS (sem deps externas) ───────────────────────────
-function inflateRaw(src: Uint8Array): Uint8Array {
-  const lenBase  = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
-  const lenExt   = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
-  const dstBase  = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
-  const dstExt   = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
-  let bp = 0;
-  const rb = (n: number) => { let v=0; for(let i=0;i<n;i++){v|=((src[bp>>3]>>(bp&7))&1)<<i;bp++;} return v; };
-  const mkTree = (lens: number[]) => {
-    const max = Math.max(0,...lens), nc = new Array(max+1).fill(0);
-    lens.forEach(l=>l&&nc[l]++);
-    const nx = new Array(max+1).fill(0);
-    for(let i=1;i<=max;i++) nx[i]=(nx[i-1]+nc[i-1])<<1;
-    const t: Record<number,Record<number,number>> = {};
-    lens.forEach((l,s)=>{ if(l){const c=nx[l]++;if(!t[l])t[l]={};t[l][c]=s;} });
-    return {t,max};
-  };
-  const decode = ({t,max}: ReturnType<typeof mkTree>) => {
-    let c=0; for(let l=1;l<=max;l++){c=(c<<1)|rb(1);if(t[l]&&t[l][c]!==undefined)return t[l][c];} return -1;
-  };
-  const out: number[] = [];
-  for(;;){
-    const fin=rb(1), typ=rb(2);
-    if(typ===0){bp=(bp+7)&~7;const l=rb(16);rb(16);for(let i=0;i<l;i++)out.push(rb(8));}
-    else {
-      let ll: number[], dl: number[];
-      if(typ===1){ll=[...new Array(144).fill(8),...new Array(112).fill(9),...new Array(24).fill(7),...new Array(8).fill(8)];dl=new Array(32).fill(5);}
-      else {
-        const hl=rb(5)+257,hd=rb(5)+1,hc=rb(4)+4;
-        const co=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15],cl=new Array(19).fill(0);
-        for(let i=0;i<hc;i++)cl[co[i]]=rb(3);
-        const ct=mkTree(cl); const all: number[]=[];
-        while(all.length<hl+hd){
-          const s=decode(ct);
-          if(s<16)all.push(s);
-          else if(s===16){const r=all[all.length-1]||0;for(let i=rb(2)+3;i--;)all.push(r);}
-          else if(s===17){for(let i=rb(3)+3;i--;)all.push(0);}
-          else{for(let i=rb(7)+11;i--;)all.push(0);}
-        }
-        ll=all.slice(0,hl);dl=all.slice(hl);
-      }
-      const lt=mkTree(ll),dt=mkTree(dl.filter(Boolean).length?dl:new Array(32).fill(5));
-      for(;;){
-        const s=decode(lt);
-        if(s===256)break;
-        if(s<256){out.push(s);}
-        else{
-          const li=s-257,len=lenBase[li]+rb(lenExt[li]);
-          const di=decode(dt),dst=dstBase[di]+rb(dstExt[di]);
-          for(let i=0;i<len;i++)out.push(out[out.length-dst]);
-        }
-      }
-    }
-    if(fin)break;
-  }
-  return new Uint8Array(out);
-}
 
 async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
   if (/\.csv$/i.test(file.name)) {
