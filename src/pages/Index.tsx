@@ -1488,10 +1488,17 @@ export default function Index() {
         colDesc: number,
         colEstoque: number,
         colDDV: number,
-        colCusto: number,
-        colPreco: number,
+        colCustoFallback: number,
+        colPrecoFallback: number,
         overrideEstoque?: Map<string, { estoque: string; custo: string }> // livro_10
       ): Product[] => {
+        const header = rawRows[0] ?? [];
+        // Busca dinâmica pelo nome da coluna no header
+        const colCusto = header.findIndex(h => h.toUpperCase().trim() === "CUSTO LIQ");
+        const colPreco = header.findIndex(h => h.toUpperCase().trim() === "ATUAL");
+        const finalColCusto = colCusto >= 0 ? colCusto : colCustoFallback;
+        const finalColPreco = colPreco >= 0 ? colPreco : colPrecoFallback;
+
         const dataRows = rawRows.slice(1); // pula header
         const result: Product[] = [];
 
@@ -1505,11 +1512,11 @@ export default function Index() {
 
           // Usa override de livro_10 se fornecido (Poços e Focomix MG)
           const estoqueStr = overrideEstoque?.get(cod)?.estoque ?? cols[colEstoque] ?? "0";
-          const custoStr   = overrideEstoque?.get(cod)?.custo   ?? cols[colCusto]   ?? "0";
+          const custoStr   = overrideEstoque?.get(cod)?.custo   ?? cols[finalColCusto]   ?? "0";
 
           const estoque  = num(estoqueStr);
           const custoLiq = num(custoStr);
-          const atual    = num(cols[colPreco] ?? "0");
+          const atual    = num(cols[finalColPreco] ?? "0");
           const ddv      = num(cols[colDDV]   ?? "0");
           const marg     = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
