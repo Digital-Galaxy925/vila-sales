@@ -1493,11 +1493,21 @@ export default function Index() {
         overrideEstoque?: Map<string, { estoque: string; custo: string }> // livro_10
       ): Product[] => {
         const header = rawRows[0] ?? [];
-        // Busca dinâmica pelo nome da coluna no header
-        const colCusto = header.findIndex(h => h.toUpperCase().trim() === "CUSTO LIQ");
-        const colPreco = header.findIndex(h => h.toUpperCase().trim() === "ATUAL");
+        // Busca dinâmica pelo nome da coluna no header (flexível)
+        const colCusto = header.findIndex(h => {
+          const norm = h.toUpperCase().trim().replace(/\s+/g, " ");
+          return norm === "CUSTO LIQ" || norm === "CUSTO LIQ." || norm.includes("CUSTO LIQ");
+        });
+        const colPreco = header.findIndex(h => {
+          const norm = h.toUpperCase().trim();
+          return norm === "ATUAL" || norm.includes("ATUAL");
+        });
         const finalColCusto = colCusto >= 0 ? colCusto : colCustoFallback;
         const finalColPreco = colPreco >= 0 ? colPreco : colPrecoFallback;
+
+        // Debug: log das colunas encontradas (remover depois)
+        console.log(`[buildProducts ${filial}] Header cols: custo=${colCusto}(fallback=${colCustoFallback})->final=${finalColCusto}, preco=${colPreco}(fallback=${colPrecoFallback})->final=${finalColPreco}`);
+        console.log(`[buildProducts ${filial}] Header sample:`, header.slice(0, 25).map((h, i) => `${i}:"${h}"`).join(", "));
 
         const dataRows = rawRows.slice(1); // pula header
         const result: Product[] = [];
