@@ -614,7 +614,6 @@ function UploadPanel({
               <strong style={{ color: "#64748b" }}>💡 Recomendado:</strong> Se o upload do .xlsx falhar, salve a planilha como <strong style={{ color: "#94a3b8" }}>.csv (separado por ponto-e-vírgula)</strong> no Excel (Arquivo → Salvar como → CSV UTF-8) e faça upload do CSV.
             </div>
           </>
-        )
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", background: "#052e16", borderRadius: 10, border: "1px solid #166534" }}>
             <span style={{ fontSize: 28 }}>📋</span>
