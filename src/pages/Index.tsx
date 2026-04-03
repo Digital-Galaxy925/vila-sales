@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import * as XLSX from "xlsx";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Filial = "01" | "11" | "12" | "14" | "501" | "502";
