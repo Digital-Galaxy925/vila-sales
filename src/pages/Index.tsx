@@ -1572,7 +1572,7 @@ export default function Index() {
       // Filial 14 – Betim
       if (files.livro_14) {
         const raw = await parseCSVRaw(files.livro_14);
-        newData["14"] = buildProducts(raw, "14", 1, 2, 6, 7, 16, 25);
+        newData["14"] = buildProducts(raw, "14", 1, 2, 6, 7, 16, 19);
       }
 
       // Filial 501 – Focomix SP
