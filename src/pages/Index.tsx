@@ -105,6 +105,7 @@ function rowToProduct(row: Record<string, string>, filial: Filial): Product {
     sugerido: num(findCol(row, ["SUGERIDO"])),
     ddv: num(findCol(row, ["DDV"])),
     filial,
+    bu: "",
   };
 }
 
