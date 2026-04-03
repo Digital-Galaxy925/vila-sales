@@ -57,21 +57,72 @@ function detectFileKey(filename: string): keyof UploadedFiles | null {
 
 // ─── CSV Parser ───────────────────────────────────────────────────────────────
 function parseCSV(text: string): Record<string, string>[] {
-  const lines = text.split(/\r?\n/).filter(Boolean);
-  if (lines.length < 2) return [];
-  const sep = lines[0].includes(";") ? ";" : ",";
-  const headers = lines[0].split(sep).map((h) => h.trim().replace(/"/g, ""));
-  return lines.slice(1).map((line) => {
-    const vals = line.split(sep).map((v) => v.trim().replace(/"/g, ""));
-    const obj: Record<string, string> = {};
-    headers.forEach((h, i) => (obj[h] = vals[i] ?? ""));
-    return obj;
-  });
+  const firstLine = text.split(/\r?\n/).find((line) => line.trim()) ?? "";
+  if (!firstLine) return [];
+  const sep = firstLine.includes(";") ? ";" : ",";
+  const wb = XLSX.read(text, { type: "string", raw: false, FS: sep });
+  const sheetName = wb.SheetNames[0];
+  if (!sheetName) return [];
+  const sheet = wb.Sheets[sheetName];
+  return XLSX.utils.sheet_to_json<Record<string, string | number>>(sheet, { defval: "", raw: false }).map((row) =>
+    Object.fromEntries(
+      Object.entries(row).map(([key, value]) => [
+        String(key).trim().replace(/"/g, ""),
+        String(value ?? "").trim(),
+      ])
+    )
+  );
 }
 
-function num(v: string | undefined): number {
-  if (!v) return 0;
-  return parseFloat(v.replace(",", ".")) || 0;
+function num(v: string | number | undefined | null): number {
+  if (v == null) return 0;
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+
+  let s = String(v).trim();
+  if (!s) return 0;
+
+  s = s
+    .replace(/\u00a0/g, " ")
+    .replace(/^R\$\s*/i, "")
+    .replace(/%$/g, "")
+    .trim()
+    .replace(/[^\d,.-]/g, "");
+
+  if (!s || s === "-" || s === "." || s === ",") return 0;
+
+  const lastComma = s.lastIndexOf(",");
+  const lastDot = s.lastIndexOf(".");
+
+  if (lastComma >= 0 && lastDot >= 0) {
+    s = lastComma > lastDot ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
+  } else if (lastComma >= 0) {
+    s = s.replace(/\./g, "").replace(",", ".");
+  } else if (lastDot >= 0) {
+    const decimalPlaces = s.length - lastDot - 1;
+    if (decimalPlaces > 2) s = s.replace(/\./g, "");
+  }
+
+  const parsed = Number(s);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizeHeader(value: unknown): string {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[._\-/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function findHeaderIndex(header: string[], candidates: string[], fallback: number): number {
+  const normalizedHeader = header.map(normalizeHeader);
+  const normalizedCandidates = candidates.map(normalizeHeader);
+  const index = normalizedHeader.findIndex((value) =>
+    normalizedCandidates.some((candidate) => value === candidate || value.includes(candidate))
+  );
+  return index >= 0 ? index : fallback;
 }
 
 function findCol(row: Record<string, string>, candidates: string[]): string {
@@ -1465,11 +1516,15 @@ export default function Index() {
       const parseCSVRaw = async (file: File | undefined): Promise<string[][]> => {
         if (!file) return [];
         const text = await readFileText(file);
-        const lines = text.split(/\r?\n/).filter((l) => l.trim());
-        if (lines.length < 2) return [];
-        const sep = lines[0].includes(";") ? ";" : ",";
-        // Inclui a linha de header (índice 0) e dados
-        return lines.map((l) => l.split(sep).map((v) => v.trim().replace(/^"|"$/g, "")));
+        const firstLine = text.split(/\r?\n/).find((line) => line.trim()) ?? "";
+        if (!firstLine) return [];
+        const sep = firstLine.includes(";") ? ";" : ",";
+        const wb = XLSX.read(text, { type: "string", raw: false, FS: sep });
+        const sheetName = wb.SheetNames[0];
+        if (!sheetName) return [];
+        const sheet = wb.Sheets[sheetName];
+        return XLSX.utils.sheet_to_json<(string | number)[]>(sheet, { header: 1, defval: "", raw: false, blankrows: false })
+          .map((row) => row.map((cell) => String(cell ?? "").trim()));
       };
 
       // ── 3. Cruzamento direto por posição ──────────────────────────────────────
@@ -1493,41 +1548,32 @@ export default function Index() {
         overrideEstoque?: Map<string, { estoque: string; custo: string }> // livro_10
       ): Product[] => {
         const header = rawRows[0] ?? [];
-        // Busca dinâmica pelo nome da coluna no header (flexível)
-        const colCusto = header.findIndex(h => {
-          const norm = h.toUpperCase().trim().replace(/\s+/g, " ");
-          return norm === "CUSTO LIQ" || norm === "CUSTO LIQ." || norm.includes("CUSTO LIQ");
-        });
-        const colPreco = header.findIndex(h => {
-          const norm = h.toUpperCase().trim();
-          return norm === "ATUAL" || norm.includes("ATUAL");
-        });
-        const finalColCusto = colCusto >= 0 ? colCusto : colCustoFallback;
-        const finalColPreco = colPreco >= 0 ? colPreco : colPrecoFallback;
-
-        // Debug: log das colunas encontradas (remover depois)
-        console.log(`[buildProducts ${filial}] Header cols: custo=${colCusto}(fallback=${colCustoFallback})->final=${finalColCusto}, preco=${colPreco}(fallback=${colPrecoFallback})->final=${finalColPreco}`);
-        console.log(`[buildProducts ${filial}] Header sample:`, header.slice(0, 25).map((h, i) => `${i}:"${h}"`).join(", "));
+        const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
+        const finalColDesc = findHeaderIndex(header, ["DESCRICAO", "DESCRICAO PRODUTO", "DESC"], colDesc);
+        const finalColEstoque = findHeaderIndex(header, ["ESTOQUE"], colEstoque);
+        const finalColDDV = findHeaderIndex(header, ["DDV"], colDDV);
+        const finalColCusto = findHeaderIndex(header, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], colCustoFallback);
+        const finalColPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV"], colPrecoFallback);
 
         const dataRows = rawRows.slice(1); // pula header
         const result: Product[] = [];
 
         dataRows.forEach((cols) => {
-          const rawCod = cols[colCod] ?? "";
+          const rawCod = cols[finalColCod] ?? "";
           const cod = normCod(rawCod);
           if (!cod || !baseMap.has(cod)) return; // só produtos da base
 
           const baseEntry = baseMap.get(cod)!;
-          const desc = baseEntry.desc || cols[colDesc] || rawCod;
+          const desc = baseEntry.desc || cols[finalColDesc] || rawCod;
 
           // Usa override de livro_10 se fornecido (Poços e Focomix MG)
-          const estoqueStr = overrideEstoque?.get(cod)?.estoque ?? cols[colEstoque] ?? "0";
+          const estoqueStr = overrideEstoque?.get(cod)?.estoque ?? cols[finalColEstoque] ?? "0";
           const custoStr   = overrideEstoque?.get(cod)?.custo   ?? cols[finalColCusto]   ?? "0";
 
           const estoque  = num(estoqueStr);
           const custoLiq = num(custoStr);
           const atual    = num(cols[finalColPreco] ?? "0");
-          const ddv      = num(cols[colDDV]   ?? "0");
+          const ddv      = num(cols[finalColDDV] ?? "0");
           const marg     = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
           result.push({
@@ -1560,9 +1606,13 @@ export default function Index() {
       let map10 = new Map<string, { estoque: string; custo: string }>();
       if (files.livro_10) {
         const raw10 = await parseCSVRaw(files.livro_10);
+        const header10 = raw10[0] ?? [];
+        const codCol10 = findHeaderIndex(header10, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], 1);
+        const estoqueCol10 = findHeaderIndex(header10, ["ESTOQUE"], 6);
+        const custoCol10 = findHeaderIndex(header10, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], 16);
         raw10.slice(1).forEach((cols) => {
-          const cod = normCod(cols[1] ?? "");
-          if (cod) map10.set(cod, { estoque: cols[6] ?? "0", custo: cols[16] ?? "0" });
+          const cod = normCod(cols[codCol10] ?? "");
+          if (cod) map10.set(cod, { estoque: cols[estoqueCol10] ?? "0", custo: cols[custoCol10] ?? "0" });
         });
       }
 
