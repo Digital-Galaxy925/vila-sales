@@ -10,6 +10,7 @@ import AnaliseMargem from "./pages/AnaliseMargem";
 import AnaliseEstoque from "./pages/AnaliseEstoque";
 import AnaliseShelfLife from "./pages/AnaliseShelfLife";
 import UploadDados from "./pages/UploadDados";
+import AnaliseManual from "./pages/AnaliseManual";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/margem" element={<AnaliseMargem />} />
             <Route path="/estoque" element={<AnaliseEstoque />} />
             <Route path="/shelf-life" element={<AnaliseShelfLife />} />
+            <Route path="/manual" element={<AnaliseManual />} />
             <Route path="/upload" element={<UploadDados />} />
           </Route>
           <Route path="*" element={<NotFound />} />
