@@ -178,82 +178,21 @@ function inflateRaw(src: Uint8Array): Uint8Array {
 }
 
 async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
-  // Se for CSV, usa o parser simples — sem precisar de xlsx
   if (/\.csv$/i.test(file.name)) {
     const text = await readFileText(file);
     return parseCSV(text);
   }
 
-  // Para xlsx: tenta ler via inflateRaw (puro JS)
-  const buf  = await file.arrayBuffer();
-  const data = new Uint8Array(buf);
-
-  const extractFile = (name: string): Uint8Array | null => {
-    let i = 0;
-    while (i < data.length - 30) {
-      if (data[i]===0x50&&data[i+1]===0x4b&&data[i+2]===0x03&&data[i+3]===0x04) {
-        const fnLen    = data[i+26]|(data[i+27]<<8);
-        const extraLen = data[i+28]|(data[i+29]<<8);
-        const method   = data[i+8] |(data[i+9] <<8);
-        const compSize = (data[i+18]|(data[i+19]<<8)|(data[i+20]<<16)|(data[i+21]<<24))>>>0;
-        const fn       = new TextDecoder().decode(data.slice(i+30, i+30+fnLen));
-        const start    = i + 30 + fnLen + extraLen;
-        const payload  = data.slice(start, start + compSize);
-        if (fn === name) {
-          if (method === 0) return payload;
-          try { return inflateRaw(payload); } catch { return null; }
-        }
-        i = start + compSize;
-      } else i++;
-    }
-    return null;
-  };
-
-  const toStr  = (b: Uint8Array) => new TextDecoder("utf-8").decode(b);
-  const stripNS = (xml: string) => xml.replace(/ xmlns[^=]*="[^"]*"/g,"").replace(/<\w+:/g,"<").replace(/<\/\w+:/g,"</");
-  const colIdx  = (ref: string) => { const c=ref.replace(/\d/g,""); let n=0; for(const ch of c) n=n*26+(ch.charCodeAt(0)-64); return n-1; };
-
-  // Shared strings
-  const shared: string[] = [];
-  const ssB = extractFile("xl/sharedStrings.xml");
-  if (ssB) {
-    new DOMParser().parseFromString(stripNS(toStr(ssB)),"text/xml")
-      .querySelectorAll("si")
-      .forEach(si => shared.push(Array.from(si.querySelectorAll("t")).map(t=>t.textContent||"").join("")));
-  }
-
-  // Sheet1
-  const shB = extractFile("xl/worksheets/sheet1.xml");
-  if (!shB) throw new Error(
-    "Não foi possível ler o arquivo .xlsx.\n" +
-    "💡 Solução: salve a planilha como CSV (separador ponto-e-vírgula) e faça o upload do .csv no lugar."
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: "array" });
+  const sheetName = wb.SheetNames[0];
+  if (!sheetName) throw new Error("Arquivo Excel sem planilhas.");
+  const sheet = wb.Sheets[sheetName];
+  const rows: Record<string, string>[] = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+  if (rows.length === 0) throw new Error(
+    "Planilha lida mas sem dados.\n💡 Solução: verifique se os dados estão na primeira aba."
   );
-
-  const doc = new DOMParser().parseFromString(stripNS(toStr(shB)),"text/xml");
-  const rawRows: string[][] = [];
-  doc.querySelectorAll("row").forEach(row => {
-    const arr: string[] = [];
-    row.querySelectorAll("c").forEach(c => {
-      const idx = colIdx(c.getAttribute("r")||"A");
-      const t   = c.getAttribute("t")||"";
-      const v   = c.querySelector("v")?.textContent||"";
-      while (arr.length<=idx) arr.push("");
-      arr[idx] = t==="s" ? (shared[+v]??"") : v;
-    });
-    rawRows.push(arr);
-  });
-
-  if (rawRows.length < 2) throw new Error(
-    "Planilha lida mas sem dados.\n" +
-    "💡 Solução: salve como CSV e faça upload do .csv."
-  );
-
-  const headers = rawRows[0];
-  return rawRows.slice(1).map(row => {
-    const obj: Record<string,string> = {};
-    headers.forEach((h,i) => { obj[h||`col_${i}`] = row[i]||""; });
-    return obj;
-  });
+  return rows;
 }
 
 // ─── Filial Config ────────────────────────────────────────────────────────────
