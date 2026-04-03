@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import * as XLSX from "xlsx";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Filial = "01" | "11" | "12" | "14" | "501" | "502";
@@ -118,141 +119,23 @@ async function readFileText(file: File): Promise<string> {
   });
 }
 
-// ── Inflate DEFLATE puro em JS (sem deps externas) ───────────────────────────
-function inflateRaw(src: Uint8Array): Uint8Array {
-  const lenBase  = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
-  const lenExt   = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
-  const dstBase  = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
-  const dstExt   = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
-  let bp = 0;
-  const rb = (n: number) => { let v=0; for(let i=0;i<n;i++){v|=((src[bp>>3]>>(bp&7))&1)<<i;bp++;} return v; };
-  const mkTree = (lens: number[]) => {
-    const max = Math.max(0,...lens), nc = new Array(max+1).fill(0);
-    lens.forEach(l=>l&&nc[l]++);
-    const nx = new Array(max+1).fill(0);
-    for(let i=1;i<=max;i++) nx[i]=(nx[i-1]+nc[i-1])<<1;
-    const t: Record<number,Record<number,number>> = {};
-    lens.forEach((l,s)=>{ if(l){const c=nx[l]++;if(!t[l])t[l]={};t[l][c]=s;} });
-    return {t,max};
-  };
-  const decode = ({t,max}: ReturnType<typeof mkTree>) => {
-    let c=0; for(let l=1;l<=max;l++){c=(c<<1)|rb(1);if(t[l]&&t[l][c]!==undefined)return t[l][c];} return -1;
-  };
-  const out: number[] = [];
-  for(;;){
-    const fin=rb(1), typ=rb(2);
-    if(typ===0){bp=(bp+7)&~7;const l=rb(16);rb(16);for(let i=0;i<l;i++)out.push(rb(8));}
-    else {
-      let ll: number[], dl: number[];
-      if(typ===1){ll=[...new Array(144).fill(8),...new Array(112).fill(9),...new Array(24).fill(7),...new Array(8).fill(8)];dl=new Array(32).fill(5);}
-      else {
-        const hl=rb(5)+257,hd=rb(5)+1,hc=rb(4)+4;
-        const co=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15],cl=new Array(19).fill(0);
-        for(let i=0;i<hc;i++)cl[co[i]]=rb(3);
-        const ct=mkTree(cl); const all: number[]=[];
-        while(all.length<hl+hd){
-          const s=decode(ct);
-          if(s<16)all.push(s);
-          else if(s===16){const r=all[all.length-1]||0;for(let i=rb(2)+3;i--;)all.push(r);}
-          else if(s===17){for(let i=rb(3)+3;i--;)all.push(0);}
-          else{for(let i=rb(7)+11;i--;)all.push(0);}
-        }
-        ll=all.slice(0,hl);dl=all.slice(hl);
-      }
-      const lt=mkTree(ll),dt=mkTree(dl.filter(Boolean).length?dl:new Array(32).fill(5));
-      for(;;){
-        const s=decode(lt);
-        if(s===256)break;
-        if(s<256){out.push(s);}
-        else{
-          const li=s-257,len=lenBase[li]+rb(lenExt[li]);
-          const di=decode(dt),dst=dstBase[di]+rb(dstExt[di]);
-          for(let i=0;i<len;i++)out.push(out[out.length-dst]);
-        }
-      }
-    }
-    if(fin)break;
-  }
-  return new Uint8Array(out);
-}
 
 async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
-  // Se for CSV, usa o parser simples — sem precisar de xlsx
   if (/\.csv$/i.test(file.name)) {
     const text = await readFileText(file);
     return parseCSV(text);
   }
 
-  // Para xlsx: tenta ler via inflateRaw (puro JS)
-  const buf  = await file.arrayBuffer();
-  const data = new Uint8Array(buf);
-
-  const extractFile = (name: string): Uint8Array | null => {
-    let i = 0;
-    while (i < data.length - 30) {
-      if (data[i]===0x50&&data[i+1]===0x4b&&data[i+2]===0x03&&data[i+3]===0x04) {
-        const fnLen    = data[i+26]|(data[i+27]<<8);
-        const extraLen = data[i+28]|(data[i+29]<<8);
-        const method   = data[i+8] |(data[i+9] <<8);
-        const compSize = (data[i+18]|(data[i+19]<<8)|(data[i+20]<<16)|(data[i+21]<<24))>>>0;
-        const fn       = new TextDecoder().decode(data.slice(i+30, i+30+fnLen));
-        const start    = i + 30 + fnLen + extraLen;
-        const payload  = data.slice(start, start + compSize);
-        if (fn === name) {
-          if (method === 0) return payload;
-          try { return inflateRaw(payload); } catch { return null; }
-        }
-        i = start + compSize;
-      } else i++;
-    }
-    return null;
-  };
-
-  const toStr  = (b: Uint8Array) => new TextDecoder("utf-8").decode(b);
-  const stripNS = (xml: string) => xml.replace(/ xmlns[^=]*="[^"]*"/g,"").replace(/<\w+:/g,"<").replace(/<\/\w+:/g,"</");
-  const colIdx  = (ref: string) => { const c=ref.replace(/\d/g,""); let n=0; for(const ch of c) n=n*26+(ch.charCodeAt(0)-64); return n-1; };
-
-  // Shared strings
-  const shared: string[] = [];
-  const ssB = extractFile("xl/sharedStrings.xml");
-  if (ssB) {
-    new DOMParser().parseFromString(stripNS(toStr(ssB)),"text/xml")
-      .querySelectorAll("si")
-      .forEach(si => shared.push(Array.from(si.querySelectorAll("t")).map(t=>t.textContent||"").join("")));
-  }
-
-  // Sheet1
-  const shB = extractFile("xl/worksheets/sheet1.xml");
-  if (!shB) throw new Error(
-    "Não foi possível ler o arquivo .xlsx.\n" +
-    "💡 Solução: salve a planilha como CSV (separador ponto-e-vírgula) e faça o upload do .csv no lugar."
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: "array" });
+  const sheetName = wb.SheetNames[0];
+  if (!sheetName) throw new Error("Arquivo Excel sem planilhas.");
+  const sheet = wb.Sheets[sheetName];
+  const rows: Record<string, string>[] = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+  if (rows.length === 0) throw new Error(
+    "Planilha lida mas sem dados.\n💡 Solução: verifique se os dados estão na primeira aba."
   );
-
-  const doc = new DOMParser().parseFromString(stripNS(toStr(shB)),"text/xml");
-  const rawRows: string[][] = [];
-  doc.querySelectorAll("row").forEach(row => {
-    const arr: string[] = [];
-    row.querySelectorAll("c").forEach(c => {
-      const idx = colIdx(c.getAttribute("r")||"A");
-      const t   = c.getAttribute("t")||"";
-      const v   = c.querySelector("v")?.textContent||"";
-      while (arr.length<=idx) arr.push("");
-      arr[idx] = t==="s" ? (shared[+v]??"") : v;
-    });
-    rawRows.push(arr);
-  });
-
-  if (rawRows.length < 2) throw new Error(
-    "Planilha lida mas sem dados.\n" +
-    "💡 Solução: salve como CSV e faça upload do .csv."
-  );
-
-  const headers = rawRows[0];
-  return rawRows.slice(1).map(row => {
-    const obj: Record<string,string> = {};
-    headers.forEach((h,i) => { obj[h||`col_${i}`] = row[i]||""; });
-    return obj;
-  });
+  return rows;
 }
 
 // ─── Filial Config ────────────────────────────────────────────────────────────
