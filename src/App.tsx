@@ -10,6 +10,7 @@ import AnaliseMargem from "./pages/AnaliseMargem";
 import AnaliseEstoque from "./pages/AnaliseEstoque";
 import AnaliseShelfLife from "./pages/AnaliseShelfLife";
 import UploadDados from "./pages/UploadDados";
+import AnaliseManual from "./pages/AnaliseManual";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
