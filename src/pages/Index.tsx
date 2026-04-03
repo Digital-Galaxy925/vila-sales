@@ -1566,7 +1566,7 @@ export default function Index() {
       // Filial 12 – Osasco
       if (files.livro_12) {
         const raw = await parseCSVRaw(files.livro_12);
-        newData["12"] = buildProducts(raw, "12", 1, 2, 6, 7, 16, 25);
+        newData["12"] = buildProducts(raw, "12", 1, 2, 6, 7, 16, 19);
       }
 
       // Filial 14 – Betim
