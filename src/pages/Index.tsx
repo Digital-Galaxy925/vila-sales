@@ -1487,6 +1487,15 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
   const estoqueBaixo = allProducts.filter((p) => p.estoque > 0 && p.estoque < 5).length;
   const estoqueOk = allProducts.filter((p) => p.estoque >= 5).length;
 
+  const totalValorCusto = allProducts.reduce((s, p) => {
+    const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.custoLiq;
+    return s + (isNaN(v) ? 0 : v);
+  }, 0);
+  const totalValorVenda = allProducts.reduce((s, p) => {
+    const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.atual;
+    return s + (isNaN(v) ? 0 : v);
+  }, 0);
+
   const [filtro, setFiltro] = useState<"todos" | "sem" | "baixo" | "ok">("todos");
 
   const filtered = allProducts.filter((p) => {
@@ -1498,7 +1507,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
         <div onClick={() => setFiltro(filtro === "sem" ? "todos" : "sem")} style={{ cursor: "pointer", outline: filtro === "sem" ? "2px solid #f87171" : "none", borderRadius: 16 }}>
           <KpiCard label="Sem Estoque" value={String(semEstoque)} sub="ruptura total" color="#f87171" icon="📭" />
         </div>
@@ -1507,6 +1516,12 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
         </div>
         <div onClick={() => setFiltro(filtro === "ok" ? "todos" : "ok")} style={{ cursor: "pointer", outline: filtro === "ok" ? "2px solid #4ade80" : "none", borderRadius: 16 }}>
           <KpiCard label="Estoque OK" value={String(estoqueOk)} sub="5 ou mais unid." color="#4ade80" icon="📦" />
+        </div>
+        <div style={{ borderRadius: 16 }}>
+          <KpiCard label="Estoque Valor Pr Custo" value={`R$ ${totalValorCusto.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub="somatória custo" color="#38bdf8" icon="💰" />
+        </div>
+        <div style={{ borderRadius: 16 }}>
+          <KpiCard label="Estoque Valor Pr Venda" value={`R$ ${totalValorVenda.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub="somatória venda" color="#a78bfa" icon="🏷️" />
         </div>
       </div>
       {filtro !== "todos" && (
