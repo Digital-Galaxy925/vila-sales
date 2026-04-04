@@ -756,7 +756,26 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         ))}
       </div>
 
-      {/* KPI strip */}
+      {/* Margem mínima */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>Margem mínima:</span>
+        <div style={{ position: "relative", width: 90 }}>
+          <input
+            type="number"
+            value={minMargin}
+            onChange={(e) => setMinMargin(Number(e.target.value) || 0)}
+            style={{
+              width: "100%", padding: "6px 28px 6px 12px",
+              background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8,
+              color: "#e2e8f0", fontSize: 14, fontWeight: 700, outline: "none",
+              textAlign: "center",
+            }}
+          />
+          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#64748b", fontSize: 13, pointerEvents: "none" }}>%</span>
+        </div>
+        <span style={{ color: "#475569", fontSize: 11 }}>Produtos abaixo desse valor serão considerados críticos</span>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         <KpiCard label="Produtos Analisados" value={String(buBase.length)} sub={selectedBU === "all" ? "todas as categorias" : selectedBU} color="#60a5fa" icon="📦" />
         <KpiCard label="Margem Média" value={`${margMedia.toFixed(1)}%`} color={margMedia >= minMargin ? "#4ade80" : "#f87171"} icon="📊" />
