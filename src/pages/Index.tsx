@@ -1024,6 +1024,43 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       return <span style={{ color: cor }}>{margFutura.toFixed(1)}%</span>;
                     })()}
                   </td>
+
+                  {/* Desconto Promocional */}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="—"
+                      value={promoDiscounts[`${p.filial}-${p.seqProd}`] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.,]/g, "");
+                        setPromoDiscounts((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: val }));
+                      }}
+                      style={{
+                        width: 70, padding: "5px 8px", borderRadius: 6,
+                        background: "#0f172a", border: "1px solid #334155", color: "#c084fc",
+                        fontSize: 13, fontFamily: "monospace", fontWeight: 700, textAlign: "center",
+                        outline: "none",
+                      }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#c084fc")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "#334155")}
+                    />
+                  </td>
+
+                  {/* Preço Futuro Final */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
+                    {(() => {
+                      const rawMarg = desiredMargins[`${p.filial}-${p.seqProd}`];
+                      const rawDesc = promoDiscounts[`${p.filial}-${p.seqProd}`];
+                      if (!rawMarg || !rawDesc) return <span style={{ color: "#334155" }}>—</span>;
+                      const margDes = parseFloat(rawMarg.replace(",", "."));
+                      const descPerc = parseFloat(rawDesc.replace(",", "."));
+                      if (isNaN(margDes) || margDes >= 100 || isNaN(descPerc)) return <span style={{ color: "#f87171" }}>—</span>;
+                      const futuro = p.custoLiq / (1 - margDes / 100);
+                      const final_ = futuro - (futuro * descPerc / 100);
+                      return <span style={{ color: "#c084fc" }}>R$ {final_.toFixed(2)}</span>;
+                    })()}
+                  </td>
                 </tr>
               );
             })}
