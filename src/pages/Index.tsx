@@ -882,8 +882,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           </thead>
           <tbody>
             {filtered.slice(0, 500).map((p, i) => {
-              const ok = p.marg >= 17;
-              const rowBg = p.marg < 10 ? "#0d0505" : p.marg < 17 ? "#0a0808" : i % 2 === 0 ? "#080f1a" : "#060c14";
+              const ok = p.marg >= minMargin;
+              const rowBg = p.marg < 10 ? "#0d0505" : p.marg < minMargin ? "#0a0808" : i % 2 === 0 ? "#080f1a" : "#060c14";
               return (
                 <tr
                   key={`${p.filial}-${p.seqProd}-${i}`}
@@ -952,7 +952,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{
                         fontFamily: "monospace", fontWeight: 800, fontSize: 13,
-                        color: p.marg < 10 ? "#f43f5e" : p.marg < 17 ? "#f87171" : p.marg < 25 ? "#fbbf24" : "#4ade80",
+                        color: p.marg < 10 ? "#f43f5e" : p.marg < minMargin ? "#f87171" : p.marg < 25 ? "#fbbf24" : "#4ade80",
                       }}>
                         {p.marg.toFixed(1)}%
                       </span>
@@ -960,7 +960,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                         <div style={{
                           height: 5, borderRadius: 99,
                           width: `${Math.min((p.marg / 40) * 100, 100)}%`,
-                          background: p.marg < 10 ? "#f43f5e" : p.marg < 17 ? "#f87171" : p.marg < 25 ? "#fbbf24" : "#4ade80",
+                          background: p.marg < 10 ? "#f43f5e" : p.marg < minMargin ? "#f87171" : p.marg < 25 ? "#fbbf24" : "#4ade80",
                         }} />
                       </div>
                     </div>
@@ -1043,7 +1043,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       const precoDesejado = parseFloat(raw.replace(",", "."));
                       if (isNaN(precoDesejado) || precoDesejado <= 0) return <span style={{ color: "#f87171" }}>—</span>;
                       const margFutura = ((precoDesejado - p.custoLiq) / precoDesejado) * 100;
-                      const cor = margFutura < 10 ? "#f43f5e" : margFutura < 17 ? "#f87171" : margFutura < 25 ? "#fbbf24" : "#4ade80";
+                      const cor = margFutura < 10 ? "#f43f5e" : margFutura < minMargin ? "#f87171" : margFutura < 25 ? "#fbbf24" : "#4ade80";
                       return <span style={{ color: cor }}>{margFutura.toFixed(1)}%</span>;
                     })()}
                   </td>
