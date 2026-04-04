@@ -658,7 +658,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export XLSX
   const exportXLSX = () => {
-    const header = ["BU","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
+    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
     const rows = filtered.map((p) => {
       const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
       const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
@@ -672,6 +672,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       const precoFuturoFinal = !isNaN(basePreco) && !isNaN(descPerc) ? (basePreco - (basePreco * descPerc / 100)).toFixed(2) : "";
       return [
         p.bu,
+        p.familia,
         FILIAL_INFO[p.filial]?.nome || p.filial,
         p.seqProd,
         p.descricao,
@@ -954,6 +955,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <th style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
                 BU
               </th>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+                Cód. Família
+              </th>
               <ThBtn col="seqProd">Código</ThBtn>
               <ThBtn col="descricao">Descrição</ThBtn>
               <th style={{ padding: "11px 16px", textAlign: "center", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
@@ -1017,6 +1021,13 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       border: `1px solid ${p.bu === "FOODS" ? "#166534" : "#4c1d95"}`,
                     }}>
                       {p.bu || "–"}
+                    </span>
+                  </td>
+
+                  {/* Cód. Família */}
+                  <td style={{ padding: "10px 16px", textAlign: "center", whiteSpace: "nowrap" }}>
+                    <span style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 600, color: "#94a3b8" }}>
+                      {p.familia || "–"}
                     </span>
                   </td>
 
