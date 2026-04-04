@@ -1850,6 +1850,7 @@ export default function Index() {
         const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
         const finalColDesc = findHeaderIndex(header, ["DESCRICAO", "DESCRICAO PRODUTO", "DESC"], colDesc);
         const finalColEmbCmp = findHeaderIndex(header, ["EMB CMP", "EMB.CMP", "EMBCMP"], -1);
+        const finalColFamilia = findHeaderIndex(header, ["FAMILIA", "FAMÍLIA"], -1);
         const finalColEstoque = findHeaderIndex(header, ["ESTOQUE"], colEstoque);
         const finalColDDV = findHeaderIndex(header, ["DDV"], colDDV);
         const finalColCusto = findHeaderIndex(header, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], colCustoFallback);
@@ -1877,7 +1878,7 @@ export default function Index() {
           const marg     = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
           result.push({
-            familia: "",
+            familia: finalColFamilia >= 0 ? (cols[finalColFamilia] ?? "") : "",
             seqProd: baseEntry.cod,
             descricao: desc,
             embCmp: finalColEmbCmp >= 0 ? (cols[finalColEmbCmp] ?? "") : "",
