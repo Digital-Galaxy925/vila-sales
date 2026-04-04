@@ -1510,7 +1510,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
   const filtered = buBase.filter((p) => {
     if (filtro === "sem") return p.estoque === 0;
     if (filtro === "baixo") return p.estoque > 0 && p.ddv < 7;
-    if (filtro === "ok") return p.estoque > 0 && p.ddv >= 7 && p.ddv <= 40;
+    if (filtro === "ok") return p.estoque > 0 && p.ddv > 7 && p.ddv < 40;
     return true;
   });
 
