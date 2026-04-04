@@ -955,6 +955,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               </th>
               <ThBtn col="seqProd">Código</ThBtn>
               <ThBtn col="descricao">Descrição</ThBtn>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+                Unid/CX
+              </th>
               <ThBtn col="estoque">Estoque</ThBtn>
               <ThBtn col="custoLiq">Custo Liq</ThBtn>
               <ThBtn col="atual">Preço Venda</ThBtn>
