@@ -675,6 +675,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         FILIAL_INFO[p.filial]?.nome || p.filial,
         p.seqProd,
         p.descricao,
+        p.embCmp || "",
         p.estoque,
         p.custoLiq.toFixed(2),
         p.atual.toFixed(2),
