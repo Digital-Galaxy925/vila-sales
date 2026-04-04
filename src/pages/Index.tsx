@@ -672,6 +672,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       const precoFuturoFinal = !isNaN(basePreco) && !isNaN(descPerc) ? (basePreco - (basePreco * descPerc / 100)).toFixed(2) : "";
       return [
         p.bu,
+        p.familia,
         FILIAL_INFO[p.filial]?.nome || p.filial,
         p.seqProd,
         p.descricao,
