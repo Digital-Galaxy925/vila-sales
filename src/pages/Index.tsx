@@ -823,7 +823,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         <div style={{ width: 1, height: 24, background: "#1e293b", margin: "0 6px" }} />
 
         <span style={{ color: "#a78bfa", fontSize: 13, fontWeight: 600 }}>🏷️ Desconto promocional geral:</span>
-        <div style={{ position: "relative", width: 80 }}>
+        <div style={{ position: "relative", width: 120 }}>
           <input
             type="number"
             value={bulkDiscount}
