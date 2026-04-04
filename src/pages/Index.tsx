@@ -592,6 +592,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [sortCol, setSortCol] = useState<"seqProd" | "descricao" | "estoque" | "custoLiq" | "atual" | "marg">("marg");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [filterMarg, setFilterMarg] = useState<"all" | "critico" | "ok">("all");
+  const [minMargin, setMinMargin] = useState(17);
   const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
   const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
@@ -603,7 +604,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
     .filter((p) => {
       const q = search.toLowerCase();
       const matchSearch = !q || p.seqProd.toLowerCase().includes(q) || p.descricao.toLowerCase().includes(q);
-      const matchMarg = filterMarg === "all" || (filterMarg === "critico" ? p.marg < 17 : p.marg >= 17);
+      const matchMarg = filterMarg === "all" || (filterMarg === "critico" ? p.marg < minMargin : p.marg >= minMargin);
       const matchBU = selectedBU === "all" || p.bu === selectedBU;
       return matchSearch && matchMarg && matchBU;
     })
@@ -617,7 +618,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // KPIs respeitam filtro de BU
   const buBase = selectedBU === "all" ? base : base.filter((p) => p.bu === selectedBU);
-  const criticos = buBase.filter((p) => p.marg < 17).length;
+  const criticos = buBase.filter((p) => p.marg < minMargin).length;
   const margMedia = buBase.length ? buBase.reduce((s, p) => s + p.marg, 0) / buBase.length : 0;
   const totalEstoque = buBase.reduce((s, p) => s + p.estoque, 0);
 
@@ -674,7 +675,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.custoLiq.toFixed(2),
         p.atual.toFixed(2),
         p.marg.toFixed(2),
-        p.marg >= 17 ? "Saudável" : "Crítico",
+        p.marg >= minMargin ? "Saudável" : "Crítico",
         raw || "",
         !isNaN(futuro) ? futuro.toFixed(2) : "",
         rawPreco || "",
@@ -755,12 +756,31 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         ))}
       </div>
 
-      {/* KPI strip */}
+      {/* Margem mínima */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>Margem mínima:</span>
+        <div style={{ position: "relative", width: 90 }}>
+          <input
+            type="number"
+            value={minMargin}
+            onChange={(e) => setMinMargin(Number(e.target.value) || 0)}
+            style={{
+              width: "100%", padding: "6px 28px 6px 12px",
+              background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8,
+              color: "#e2e8f0", fontSize: 14, fontWeight: 700, outline: "none",
+              textAlign: "center",
+            }}
+          />
+          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#64748b", fontSize: 13, pointerEvents: "none" }}>%</span>
+        </div>
+        <span style={{ color: "#475569", fontSize: 11 }}>Produtos abaixo desse valor serão considerados críticos</span>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         <KpiCard label="Produtos Analisados" value={String(buBase.length)} sub={selectedBU === "all" ? "todas as categorias" : selectedBU} color="#60a5fa" icon="📦" />
-        <KpiCard label="Margem Média" value={`${margMedia.toFixed(1)}%`} color={margMedia >= 17 ? "#4ade80" : "#f87171"} icon="📊" />
+        <KpiCard label="Margem Média" value={`${margMedia.toFixed(1)}%`} color={margMedia >= minMargin ? "#4ade80" : "#f87171"} icon="📊" />
         <div onClick={() => setFilterMarg(filterMarg === "critico" ? "all" : "critico")} className="cursor-pointer">
-          <KpiCard label="Críticos (< 17%)" value={String(criticos)} sub={`${buBase.length ? ((criticos/buBase.length)*100).toFixed(0) : 0}% do mix${filterMarg === "critico" ? " • filtro ativo" : ""}`} color="#f87171" icon="🚨" />
+          <KpiCard label={`Críticos (< ${minMargin}%)`} value={String(criticos)} sub={`${buBase.length ? ((criticos/buBase.length)*100).toFixed(0) : 0}% do mix${filterMarg === "critico" ? " • filtro ativo" : ""}`} color="#f87171" icon="🚨" />
         </div>
         <KpiCard label="Estoque Total" value={totalEstoque.toLocaleString("pt-BR")} sub="caixas" color="#a78bfa" icon="🏭" />
       </div>
@@ -862,8 +882,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           </thead>
           <tbody>
             {filtered.slice(0, 500).map((p, i) => {
-              const ok = p.marg >= 17;
-              const rowBg = p.marg < 10 ? "#0d0505" : p.marg < 17 ? "#0a0808" : i % 2 === 0 ? "#080f1a" : "#060c14";
+              const ok = p.marg >= minMargin;
+              const rowBg = p.marg < 10 ? "#0d0505" : p.marg < minMargin ? "#0a0808" : i % 2 === 0 ? "#080f1a" : "#060c14";
               return (
                 <tr
                   key={`${p.filial}-${p.seqProd}-${i}`}
@@ -932,7 +952,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{
                         fontFamily: "monospace", fontWeight: 800, fontSize: 13,
-                        color: p.marg < 10 ? "#f43f5e" : p.marg < 17 ? "#f87171" : p.marg < 25 ? "#fbbf24" : "#4ade80",
+                        color: p.marg < 10 ? "#f43f5e" : p.marg < minMargin ? "#f87171" : p.marg < 25 ? "#fbbf24" : "#4ade80",
                       }}>
                         {p.marg.toFixed(1)}%
                       </span>
@@ -940,7 +960,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                         <div style={{
                           height: 5, borderRadius: 99,
                           width: `${Math.min((p.marg / 40) * 100, 100)}%`,
-                          background: p.marg < 10 ? "#f43f5e" : p.marg < 17 ? "#f87171" : p.marg < 25 ? "#fbbf24" : "#4ade80",
+                          background: p.marg < 10 ? "#f43f5e" : p.marg < minMargin ? "#f87171" : p.marg < 25 ? "#fbbf24" : "#4ade80",
                         }} />
                       </div>
                     </div>
@@ -1023,7 +1043,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       const precoDesejado = parseFloat(raw.replace(",", "."));
                       if (isNaN(precoDesejado) || precoDesejado <= 0) return <span style={{ color: "#f87171" }}>—</span>;
                       const margFutura = ((precoDesejado - p.custoLiq) / precoDesejado) * 100;
-                      const cor = margFutura < 10 ? "#f43f5e" : margFutura < 17 ? "#f87171" : margFutura < 25 ? "#fbbf24" : "#4ade80";
+                      const cor = margFutura < 10 ? "#f43f5e" : margFutura < minMargin ? "#f87171" : margFutura < 25 ? "#fbbf24" : "#4ade80";
                       return <span style={{ color: cor }}>{margFutura.toFixed(1)}%</span>;
                     })()}
                   </td>
