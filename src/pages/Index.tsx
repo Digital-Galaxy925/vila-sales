@@ -961,6 +961,28 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     />
                   </td>
 
+                  {/* Preço Desejado */}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="—"
+                      value={desiredPrices[`${p.filial}-${p.seqProd}`] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.,]/g, "");
+                        setDesiredPrices((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: val }));
+                      }}
+                      style={{
+                        width: 80, padding: "5px 8px", borderRadius: 6,
+                        background: "#0f172a", border: "1px solid #334155", color: "#38bdf8",
+                        fontSize: 13, fontFamily: "monospace", fontWeight: 700, textAlign: "center",
+                        outline: "none",
+                      }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#38bdf8")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "#334155")}
+                    />
+                  </td>
+
                   {/* Preço Futuro */}
                   <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
                     {(() => {
@@ -970,6 +992,19 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       if (isNaN(margDes) || margDes >= 100) return <span style={{ color: "#f87171" }}>—</span>;
                       const futuro = p.custoLiq / (1 - margDes / 100);
                       return <span style={{ color: "#fbbf24" }}>R$ {futuro.toFixed(2)}</span>;
+                    })()}
+                  </td>
+
+                  {/* Margem Futura */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
+                    {(() => {
+                      const raw = desiredPrices[`${p.filial}-${p.seqProd}`];
+                      if (!raw) return <span style={{ color: "#334155" }}>—</span>;
+                      const precoDesejado = parseFloat(raw.replace(",", "."));
+                      if (isNaN(precoDesejado) || precoDesejado <= 0) return <span style={{ color: "#f87171" }}>—</span>;
+                      const margFutura = ((precoDesejado - p.custoLiq) / precoDesejado) * 100;
+                      const cor = margFutura < 10 ? "#f43f5e" : margFutura < 17 ? "#f87171" : margFutura < 25 ? "#fbbf24" : "#4ade80";
+                      return <span style={{ color: cor }}>{margFutura.toFixed(1)}%</span>;
                     })()}
                   </td>
                 </tr>
