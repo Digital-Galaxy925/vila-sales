@@ -1268,7 +1268,7 @@ function PrecoAnalysis({ data }: { data: FilialData }) {
               transition: "all .2s",
             }}
           >
-            {f === "all" ? "Todas" : FILIAL_INFO[f as Filial].nome.split(" ")[0]}
+            {f === "all" ? "Todas" : FILIAL_INFO[f as Filial].nome}
           </button>
         ))}
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
