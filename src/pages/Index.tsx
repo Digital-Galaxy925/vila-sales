@@ -895,7 +895,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               borderWidth: 1, borderStyle: "solid",
               borderColor: selectedFilial === f ? (f === "all" ? "#3B82F6" : FILIAL_INFO[f as Filial].cor) : "#1e293b",
             }}>
-              {f === "all" ? "Todas" : FILIAL_INFO[f as Filial].nome.split(" ")[0]}
+              {f === "all" ? "Todas" : FILIAL_INFO[f as Filial].nome}
             </button>
           ))}
         </div>
@@ -1268,7 +1268,7 @@ function PrecoAnalysis({ data }: { data: FilialData }) {
               transition: "all .2s",
             }}
           >
-            {f === "all" ? "Todas" : FILIAL_INFO[f as Filial].nome.split(" ")[0]}
+            {f === "all" ? "Todas" : FILIAL_INFO[f as Filial].nome}
           </button>
         ))}
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
