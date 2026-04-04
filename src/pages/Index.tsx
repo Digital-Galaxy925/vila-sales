@@ -594,6 +594,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [filterMarg, setFilterMarg] = useState<"all" | "critico" | "ok">("all");
   const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
   const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
+  const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
 
   const allProducts = Object.values(data).flat();
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
