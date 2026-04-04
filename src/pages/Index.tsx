@@ -663,7 +663,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       const margFutura = !isNaN(precoDesejado) && precoDesejado > 0 ? (((precoDesejado - p.custoLiq) / precoDesejado) * 100).toFixed(2) : "";
       const rawDesc = promoDiscounts[`${p.filial}-${p.seqProd}`];
       const descPerc = rawDesc ? parseFloat(rawDesc.replace(",", ".")) : NaN;
-      const precoFuturoFinal = !isNaN(futuro) && !isNaN(descPerc) ? (futuro - (futuro * descPerc / 100)).toFixed(2) : "";
+      const basePreco = !isNaN(precoDesejado) && precoDesejado > 0 ? precoDesejado : futuro;
+      const precoFuturoFinal = !isNaN(basePreco) && !isNaN(descPerc) ? (basePreco - (basePreco * descPerc / 100)).toFixed(2) : "";
       return [
         p.bu,
         FILIAL_INFO[p.filial]?.nome || p.filial,
