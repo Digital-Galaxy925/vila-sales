@@ -1904,8 +1904,10 @@ export default function Index() {
           <button
             onClick={() => {
               setShowUpload(true);
-              setProcessedData(null);
-              setUploadedFiles({ csvs: {}, livro10: null });
+              setData({});
+              setFiles({});
+              setBaseFile(null);
+              setUnrecognizedFiles([]);
             }}
             style={{
               padding: "10px 24px",
