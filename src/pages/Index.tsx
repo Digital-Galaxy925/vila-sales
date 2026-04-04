@@ -652,8 +652,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
     </th>
   );
 
-  // Export CSV
-  const exportCSV = () => {
+  // Export XLSX
+  const exportXLSX = () => {
     const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
     const rows = filtered.map((p) => {
       const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
@@ -670,7 +670,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.bu,
         FILIAL_INFO[p.filial]?.nome || p.filial,
         p.seqProd,
-        `"${p.descricao}"`,
+        p.descricao,
         p.estoque,
         p.custoLiq.toFixed(2),
         p.atual.toFixed(2),
@@ -684,10 +684,15 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         precoFuturoFinal,
       ];
     });
-    const csv = [header, ...rows].map((r) => r.join(";")).join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "analise_cruzada.csv"; a.click();
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+    // Auto-ajustar largura das colunas
+    ws["!cols"] = header.map((h, i) => {
+      const maxLen = Math.max(h.length, ...rows.map(r => String(r[i] ?? "").length));
+      return { wch: Math.min(maxLen + 2, 40) };
+    });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Análise de Custos");
+    XLSX.writeFile(wb, "analise_custos.xlsx");
   };
 
   return (
@@ -704,14 +709,14 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           </p>
         </div>
         <button
-          onClick={exportCSV}
+          onClick={exportXLSX}
           style={{
             padding: "8px 18px", borderRadius: 8, border: "1px solid #166534",
             background: "#052e16", color: "#4ade80", cursor: "pointer",
             fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
           }}
         >
-          ⬇️ Exportar CSV
+          ⬇️ Exportar Excel
         </button>
       </div>
 
