@@ -1611,7 +1611,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
-              {["Filial", "Cód.", "Descrição", "Unid/CX", "Estoque", "Estoque Valor Pr Custo", "Estoque Valor Pr Venda", "DDV", "Mes Ant", "Mes Atu", "Status"].map((h) => (
+              {["Filial", "Cód.", "Descrição", "Unid/CX", "Estoque", "Preço de Custo", "Preço de Venda", "Estoque Valor Pr Custo", "Estoque Valor Pr Venda", "DDV", "Mes Ant", "Mes Atu", "Status"].map((h) => (
                 <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", whiteSpace: "nowrap" }}>
                   {h}
                 </th>
