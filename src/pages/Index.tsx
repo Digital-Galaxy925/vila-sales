@@ -1603,7 +1603,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
       </div>
       {filtro !== "todos" && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#94a3b8" }}>
-          <span>Filtrando: <strong style={{ color: "#e2e8f0" }}>{filtro === "sem" ? "Sem Estoque" : filtro === "baixo" ? "Estoque Baixo" : "Estoque OK"}</strong></span>
+          <span>Filtrando: <strong style={{ color: "#e2e8f0" }}>{filtro === "sem" ? "Sem Estoque" : filtro === "baixo" ? "Estoque Baixo" : filtro === "ok" ? "Estoque OK" : "Estoque Alto"}</strong></span>
           <span onClick={() => setFiltro("todos")} style={{ cursor: "pointer", color: "#f87171", textDecoration: "underline" }}>Limpar filtro</span>
         </div>
       )}
