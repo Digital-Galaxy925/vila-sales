@@ -1524,6 +1524,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
                     <td style={{ padding: "8px 14px", color: "#e2e8f0", maxWidth: 200 }}>
                       <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.descricao}</div>
                     </td>
+                    <td style={{ padding: "8px 14px", color: "#94a3b8", fontFamily: "monospace", textAlign: "center" }}>{p.embCmp || "–"}</td>
                     <td style={{ padding: "8px 14px", color: "#e2e8f0", fontWeight: 700, fontFamily: "monospace" }}>{p.estoque}</td>
                     <td style={{ padding: "8px 14px", color: "#64748b" }}>{p.ddv || "–"}</td>
                     <td style={{ padding: "8px 14px", color: "#94a3b8", fontFamily: "monospace" }}>{p.mesAnt}</td>
