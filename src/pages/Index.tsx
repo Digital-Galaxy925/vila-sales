@@ -9,6 +9,7 @@ interface Product {
   familia: string;
   seqProd: string;
   descricao: string;
+  embCmp: string;
   embVir: string;
   estoque: number;
   sellout: number;
@@ -143,6 +144,7 @@ function rowToProduct(row: Record<string, string>, filial: Filial): Product {
     familia: findCol(row, ["FAMILIA"]),
     seqProd: findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD"]),
     descricao: findCol(row, ["DESCRICAO", "DESCRIÇÃO", "DESC"]),
+    embCmp: findCol(row, ["EMB.CMP", "EMBCMP", "EMB_CMP"]),
     embVir: findCol(row, ["EMB.VIR", "EMBVIR", "EMB_VIR"]),
     estoque: num(findCol(row, ["ESTOQUE"])),
     sellout: num(findCol(row, ["SELLOUT"])),
@@ -656,7 +658,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export XLSX
   const exportXLSX = () => {
-    const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
+    const header = ["BU","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
     const rows = filtered.map((p) => {
       const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
       const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
@@ -673,6 +675,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         FILIAL_INFO[p.filial]?.nome || p.filial,
         p.seqProd,
         p.descricao,
+        p.embCmp || "",
         p.estoque,
         p.custoLiq.toFixed(2),
         p.atual.toFixed(2),
@@ -953,6 +956,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               </th>
               <ThBtn col="seqProd">Código</ThBtn>
               <ThBtn col="descricao">Descrição</ThBtn>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+                Unid/CX
+              </th>
               <ThBtn col="estoque">Estoque</ThBtn>
               <ThBtn col="custoLiq">Custo Liq</ThBtn>
               <ThBtn col="atual">Preço Venda</ThBtn>
@@ -1024,6 +1030,13 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     <div style={{ color: "#e2e8f0", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.descricao}>
                       {p.descricao}
                     </div>
+                  </td>
+
+                  {/* Unid/CX */}
+                  <td style={{ padding: "10px 16px", textAlign: "center", whiteSpace: "nowrap" }}>
+                    <span style={{ fontFamily: "monospace", fontSize: 12, color: "#94a3b8", fontWeight: 600 }}>
+                      {p.embCmp || "–"}
+                    </span>
                   </td>
 
                   {/* Estoque */}
@@ -1825,6 +1838,7 @@ export default function Index() {
         const header = rawRows[0] ?? [];
         const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
         const finalColDesc = findHeaderIndex(header, ["DESCRICAO", "DESCRICAO PRODUTO", "DESC"], colDesc);
+        const finalColEmbCmp = findHeaderIndex(header, ["EMB CMP", "EMB.CMP", "EMBCMP"], -1);
         const finalColEstoque = findHeaderIndex(header, ["ESTOQUE"], colEstoque);
         const finalColDDV = findHeaderIndex(header, ["DDV"], colDDV);
         const finalColCusto = findHeaderIndex(header, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], colCustoFallback);
@@ -1855,6 +1869,7 @@ export default function Index() {
             familia: "",
             seqProd: baseEntry.cod,
             descricao: desc,
+            embCmp: finalColEmbCmp >= 0 ? (cols[finalColEmbCmp] ?? "") : "",
             embVir: "",
             estoque,
             sellout: 0,
