@@ -652,11 +652,14 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export CSV
   const exportCSV = () => {
-    const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)"];
+    const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Desejado (R$)","Preço Futuro (R$)","Margem Futura (%)"];
     const rows = filtered.map((p) => {
       const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
       const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
       const futuro = !isNaN(margDes) && margDes < 100 ? (p.custoLiq / (1 - margDes / 100)).toFixed(2) : "";
+      const rawPreco = desiredPrices[`${p.filial}-${p.seqProd}`];
+      const precoDesejado = rawPreco ? parseFloat(rawPreco.replace(",", ".")) : NaN;
+      const margFutura = !isNaN(precoDesejado) && precoDesejado > 0 ? (((precoDesejado - p.custoLiq) / precoDesejado) * 100).toFixed(2) : "";
       return [
         p.bu,
         FILIAL_INFO[p.filial]?.nome || p.filial,
@@ -668,7 +671,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.marg.toFixed(2),
         p.marg >= 17 ? "Saudável" : "Crítico",
         raw || "",
+        rawPreco || "",
         futuro,
+        margFutura,
       ];
     });
     const csv = [header, ...rows].map((r) => r.join(";")).join("\n");
