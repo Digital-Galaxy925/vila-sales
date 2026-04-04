@@ -794,11 +794,11 @@ function CrossAnalysis({ data }: { data: FilialData }) {
             style={{
               width: "100%", padding: "6px 28px 6px 12px",
               background: "#1a1206", border: "1px solid #854d0e", borderRadius: 8,
-              color: "#fbbf24", fontSize: 14, fontWeight: 700, outline: "none",
+              color: "#fff", fontSize: 14, fontWeight: 700, outline: "none",
               textAlign: "center",
             }}
           />
-          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#854d0e", fontSize: 13, pointerEvents: "none" }}>%</span>
+          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#fbbf24", fontSize: 13, pointerEvents: "none" }}>%</span>
         </div>
         <button
           onClick={() => {
