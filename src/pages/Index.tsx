@@ -709,14 +709,14 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           </p>
         </div>
         <button
-          onClick={exportCSV}
+          onClick={exportXLSX}
           style={{
             padding: "8px 18px", borderRadius: 8, border: "1px solid #166534",
             background: "#052e16", color: "#4ade80", cursor: "pointer",
             fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
           }}
         >
-          ⬇️ Exportar CSV
+          ⬇️ Exportar Excel
         </button>
       </div>
 
