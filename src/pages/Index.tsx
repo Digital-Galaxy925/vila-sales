@@ -594,6 +594,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [filterMarg, setFilterMarg] = useState<"all" | "critico" | "ok">("all");
   const [minMargin, setMinMargin] = useState(17);
   const [bulkMargin, setBulkMargin] = useState("");
+  const [bulkDiscount, setBulkDiscount] = useState("");
   const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
   const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
@@ -813,6 +814,43 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           style={{
             padding: "6px 16px", borderRadius: 8, border: "1px solid #854d0e",
             background: "#451a03", color: "#fbbf24", cursor: "pointer",
+            fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+          }}
+        >
+          Aplicar
+        </button>
+
+        <div style={{ width: 1, height: 24, background: "#1e293b", margin: "0 6px" }} />
+
+        <span style={{ color: "#a78bfa", fontSize: 13, fontWeight: 600 }}>🏷️ Desconto promocional geral:</span>
+        <div style={{ position: "relative", width: 80 }}>
+          <input
+            type="number"
+            value={bulkDiscount}
+            onChange={(e) => setBulkDiscount(e.target.value)}
+            placeholder="ex: 10"
+            style={{
+              width: "100%", padding: "6px 28px 6px 12px",
+              background: "#1a0a2e", border: "1px solid #6d28d9", borderRadius: 8,
+              color: "#c4b5fd", fontSize: 14, fontWeight: 700, outline: "none",
+              textAlign: "center",
+            }}
+          />
+          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#6d28d9", fontSize: 13, pointerEvents: "none" }}>%</span>
+        </div>
+        <button
+          onClick={() => {
+            const val = bulkDiscount.replace(",", ".");
+            if (!val || isNaN(Number(val))) return;
+            const newDiscounts = { ...promoDiscounts };
+            buBase.forEach((p) => {
+              newDiscounts[`${p.filial}-${p.seqProd}`] = val;
+            });
+            setPromoDiscounts(newDiscounts);
+          }}
+          style={{
+            padding: "6px 16px", borderRadius: 8, border: "1px solid #6d28d9",
+            background: "#2e1065", color: "#c4b5fd", cursor: "pointer",
             fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
           }}
         >
