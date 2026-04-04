@@ -761,7 +761,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         <KpiCard label="Produtos Analisados" value={String(buBase.length)} sub={selectedBU === "all" ? "todas as categorias" : selectedBU} color="#60a5fa" icon="📦" />
         <KpiCard label="Margem Média" value={`${margMedia.toFixed(1)}%`} color={margMedia >= minMargin ? "#4ade80" : "#f87171"} icon="📊" />
         <div onClick={() => setFilterMarg(filterMarg === "critico" ? "all" : "critico")} className="cursor-pointer">
-          <KpiCard label="Críticos (< ${minMargin}%)" value={String(criticos)} sub={`${buBase.length ? ((criticos/buBase.length)*100).toFixed(0) : 0}% do mix${filterMarg === "critico" ? " • filtro ativo" : ""}`} color="#f87171" icon="🚨" />
+          <KpiCard label={`Críticos (< ${minMargin}%)`} value={String(criticos)} sub={`${buBase.length ? ((criticos/buBase.length)*100).toFixed(0) : 0}% do mix${filterMarg === "critico" ? " • filtro ativo" : ""}`} color="#f87171" icon="🚨" /> value={String(criticos)} sub={`${buBase.length ? ((criticos/buBase.length)*100).toFixed(0) : 0}% do mix${filterMarg === "critico" ? " • filtro ativo" : ""}`} color="#f87171" icon="🚨" />
         </div>
         <KpiCard label="Estoque Total" value={totalEstoque.toLocaleString("pt-BR")} sub="caixas" color="#a78bfa" icon="🏭" />
       </div>
