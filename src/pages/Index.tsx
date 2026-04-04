@@ -785,7 +785,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         <div style={{ width: 1, height: 24, background: "#1e293b", margin: "0 6px" }} />
 
         <span style={{ color: "#f59e0b", fontSize: 13, fontWeight: 600 }}>⚡ Aplicar margem nos críticos:</span>
-        <div style={{ position: "relative", width: 80 }}>
+        <div style={{ position: "relative", width: 120 }}>
           <input
             type="number"
             value={bulkMargin}
