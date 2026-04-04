@@ -1493,7 +1493,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
 
   const semEstoque = buBase.filter((p) => p.estoque === 0).length;
   const estoqueBaixo = buBase.filter((p) => p.estoque > 0 && p.ddv < 7).length;
-  const estoqueOk = buBase.filter((p) => p.estoque > 0 && p.ddv >= 7 && p.ddv <= 40).length;
+  const estoqueOk = buBase.filter((p) => p.estoque > 0 && p.ddv > 7 && p.ddv < 40).length;
 
   const totalValorCusto = buBase.reduce((s, p) => {
     const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.custoLiq;
@@ -1510,7 +1510,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
   const filtered = buBase.filter((p) => {
     if (filtro === "sem") return p.estoque === 0;
     if (filtro === "baixo") return p.estoque > 0 && p.ddv < 7;
-    if (filtro === "ok") return p.estoque > 0 && p.ddv >= 7 && p.ddv <= 40;
+    if (filtro === "ok") return p.estoque > 0 && p.ddv > 7 && p.ddv < 40;
     return true;
   });
 
