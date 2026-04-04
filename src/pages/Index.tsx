@@ -9,6 +9,7 @@ interface Product {
   familia: string;
   seqProd: string;
   descricao: string;
+  embCmp: string;
   embVir: string;
   estoque: number;
   sellout: number;
