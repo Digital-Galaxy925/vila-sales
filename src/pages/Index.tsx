@@ -1878,7 +1878,7 @@ export default function Index() {
           const marg     = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
           result.push({
-            familia: "",
+            familia: finalColFamilia >= 0 ? (cols[finalColFamilia] ?? "") : "",
             seqProd: baseEntry.cod,
             descricao: desc,
             embCmp: finalColEmbCmp >= 0 ? (cols[finalColEmbCmp] ?? "") : "",
