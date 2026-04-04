@@ -592,6 +592,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [sortCol, setSortCol] = useState<"seqProd" | "descricao" | "estoque" | "custoLiq" | "atual" | "marg">("marg");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [filterMarg, setFilterMarg] = useState<"all" | "critico" | "ok">("all");
+  const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
 
   const allProducts = Object.values(data).flat();
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
@@ -650,18 +651,25 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export CSV
   const exportCSV = () => {
-    const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem"];
-    const rows = filtered.map((p) => [
-      p.bu,
-      FILIAL_INFO[p.filial]?.nome || p.filial,
-      p.seqProd,
-      `"${p.descricao}"`,
-      p.estoque,
-      p.custoLiq.toFixed(2),
-      p.atual.toFixed(2),
-      p.marg.toFixed(2),
-      p.marg >= 17 ? "Saudável" : "Crítico",
-    ]);
+    const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)"];
+    const rows = filtered.map((p) => {
+      const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
+      const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
+      const futuro = !isNaN(margDes) && margDes < 100 ? (p.custoLiq / (1 - margDes / 100)).toFixed(2) : "";
+      return [
+        p.bu,
+        FILIAL_INFO[p.filial]?.nome || p.filial,
+        p.seqProd,
+        `"${p.descricao}"`,
+        p.estoque,
+        p.custoLiq.toFixed(2),
+        p.atual.toFixed(2),
+        p.marg.toFixed(2),
+        p.marg >= 17 ? "Saudável" : "Crítico",
+        raw || "",
+        futuro,
+      ];
+    });
     const csv = [header, ...rows].map((r) => r.join(";")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -817,6 +825,12 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <th style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b" }}>
                 Status
               </th>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#fbbf24", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+                Margem Desejada
+              </th>
+              <th style={{ padding: "11px 16px", textAlign: "right", color: "#fbbf24", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+                Preço Futuro
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -916,6 +930,40 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     }}>
                       {ok ? "✓ Saudável" : "✗ Crítico"}
                     </span>
+                  </td>
+
+                  {/* Margem Desejada */}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="—"
+                      value={desiredMargins[`${p.filial}-${p.seqProd}`] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.,]/g, "");
+                        setDesiredMargins((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: val }));
+                      }}
+                      style={{
+                        width: 70, padding: "5px 8px", borderRadius: 6,
+                        background: "#0f172a", border: "1px solid #334155", color: "#fbbf24",
+                        fontSize: 13, fontFamily: "monospace", fontWeight: 700, textAlign: "center",
+                        outline: "none",
+                      }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#fbbf24")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "#334155")}
+                    />
+                  </td>
+
+                  {/* Preço Futuro */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
+                    {(() => {
+                      const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
+                      if (!raw) return <span style={{ color: "#334155" }}>—</span>;
+                      const margDes = parseFloat(raw.replace(",", "."));
+                      if (isNaN(margDes) || margDes >= 100) return <span style={{ color: "#f87171" }}>—</span>;
+                      const futuro = p.custoLiq / (1 - margDes / 100);
+                      return <span style={{ color: "#fbbf24" }}>R$ {futuro.toFixed(2)}</span>;
+                    })()}
                   </td>
                 </tr>
               );
