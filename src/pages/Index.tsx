@@ -1024,6 +1024,13 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     </span>
                   </td>
 
+                  {/* Cód. Família */}
+                  <td style={{ padding: "10px 16px", textAlign: "center", whiteSpace: "nowrap" }}>
+                    <span style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 600, color: "#94a3b8" }}>
+                      {p.familia || "–"}
+                    </span>
+                  </td>
+
                   {/* Código */}
                   <td style={{ padding: "10px 16px", fontFamily: "monospace", fontSize: 12, color: "#60a5fa", whiteSpace: "nowrap" }}>
                     {p.seqProd}
