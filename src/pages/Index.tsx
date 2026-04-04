@@ -1900,6 +1900,30 @@ export default function Index() {
               <>🔄 Gerar Análise</>
             )}
           </button>
+
+          <button
+            onClick={() => {
+              setShowUpload(true);
+              setProcessedData(null);
+              setUploadedFiles({ csvs: {}, livro10: null });
+            }}
+            style={{
+              padding: "10px 24px",
+              borderRadius: 12,
+              border: "1px solid #1e293b",
+              background: "#0f172a",
+              color: "#94a3b8",
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              transition: "all .2s",
+            }}
+          >
+            📤 Novo Upload
+          </button>
         </div>
 
         <div style={{ padding: 32 }}>
