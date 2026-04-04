@@ -766,7 +766,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       {/* Margem mínima */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>Margem mínima:</span>
-        <div style={{ position: "relative", width: 90 }}>
+        <div style={{ position: "relative", width: 120 }}>
           <input
             type="number"
             value={minMargin}
