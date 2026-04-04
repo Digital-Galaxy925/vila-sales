@@ -1676,7 +1676,7 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
                   <tr key={i} style={{ borderBottom: "1px solid #1e293b", background: i % 2 === 0 ? "#080f1a" : "#0a1221" }}>
                     <td style={{ padding: "8px 14px" }}>
                       <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: FILIAL_INFO[p.filial]?.cor || "#64748b", marginRight: 6 }} />
-                      <span style={{ color: "#94a3b8", fontSize: 11 }}>{FILIAL_INFO[p.filial]?.nome?.split(" ")[0] || p.filial}</span>
+                      <span style={{ color: "#94a3b8", fontSize: 11 }}>{FILIAL_INFO[p.filial]?.nome || p.filial}</span>
                     </td>
                     <td style={{ padding: "8px 14px", color: "#475569", fontFamily: "monospace" }}>{p.seqProd}</td>
                     <td style={{ padding: "8px 14px", color: "#e2e8f0" }}>{p.descricao}</td>
