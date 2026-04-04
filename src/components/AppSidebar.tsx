@@ -31,10 +31,10 @@ const AppSidebar = () => {
           </div>
           <div>
             <h1 className="font-heading text-sm font-bold text-white tracking-tight">
-              Vila Nova
+              Vila Sales
             </h1>
             <p className="text-xs text-sidebar-fg opacity-60">
-              Gestão Unilever
+              Gestão Comercial
             </p>
           </div>
         </div>
