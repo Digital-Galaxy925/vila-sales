@@ -663,7 +663,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       const margFutura = !isNaN(precoDesejado) && precoDesejado > 0 ? (((precoDesejado - p.custoLiq) / precoDesejado) * 100).toFixed(2) : "";
       const rawDesc = promoDiscounts[`${p.filial}-${p.seqProd}`];
       const descPerc = rawDesc ? parseFloat(rawDesc.replace(",", ".")) : NaN;
-      const precoFuturoFinal = !isNaN(futuro) && !isNaN(descPerc) ? (futuro - (futuro * descPerc / 100)).toFixed(2) : "";
+      const basePreco = !isNaN(precoDesejado) && precoDesejado > 0 ? precoDesejado : futuro;
+      const precoFuturoFinal = !isNaN(basePreco) && !isNaN(descPerc) ? (basePreco - (basePreco * descPerc / 100)).toFixed(2) : "";
       return [
         p.bu,
         FILIAL_INFO[p.filial]?.nome || p.filial,
@@ -1050,14 +1051,22 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                   {/* Preço Futuro Final */}
                   <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
                     {(() => {
-                      const rawMarg = desiredMargins[`${p.filial}-${p.seqProd}`];
                       const rawDesc = promoDiscounts[`${p.filial}-${p.seqProd}`];
-                      if (!rawMarg || !rawDesc) return <span style={{ color: "#334155" }}>—</span>;
-                      const margDes = parseFloat(rawMarg.replace(",", "."));
+                      if (!rawDesc) return <span style={{ color: "#334155" }}>—</span>;
                       const descPerc = parseFloat(rawDesc.replace(",", "."));
-                      if (isNaN(margDes) || margDes >= 100 || isNaN(descPerc)) return <span style={{ color: "#f87171" }}>—</span>;
-                      const futuro = p.custoLiq / (1 - margDes / 100);
-                      const final_ = futuro - (futuro * descPerc / 100);
+                      if (isNaN(descPerc)) return <span style={{ color: "#f87171" }}>—</span>;
+
+                      const rawPreco = desiredPrices[`${p.filial}-${p.seqProd}`];
+                      const precoDesejado = rawPreco ? parseFloat(rawPreco.replace(",", ".")) : NaN;
+
+                      const rawMarg = desiredMargins[`${p.filial}-${p.seqProd}`];
+                      const margDes = rawMarg ? parseFloat(rawMarg.replace(",", ".")) : NaN;
+                      const futuro = !isNaN(margDes) && margDes < 100 ? p.custoLiq / (1 - margDes / 100) : NaN;
+
+                      const base = !isNaN(precoDesejado) && precoDesejado > 0 ? precoDesejado : futuro;
+                      if (isNaN(base)) return <span style={{ color: "#334155" }}>—</span>;
+
+                      const final_ = base - (base * descPerc / 100);
                       return <span style={{ color: "#c084fc" }}>R$ {final_.toFixed(2)}</span>;
                     })()}
                   </td>
