@@ -1031,6 +1031,13 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     </div>
                   </td>
 
+                  {/* Unid/CX */}
+                  <td style={{ padding: "10px 16px", textAlign: "center", whiteSpace: "nowrap" }}>
+                    <span style={{ fontFamily: "monospace", fontSize: 12, color: "#94a3b8", fontWeight: 600 }}>
+                      {p.embCmp || "–"}
+                    </span>
+                  </td>
+
                   {/* Estoque */}
                   <td style={{ padding: "10px 16px", textAlign: "right", whiteSpace: "nowrap" }}>
                     <span style={{
