@@ -592,6 +592,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [sortCol, setSortCol] = useState<"seqProd" | "descricao" | "estoque" | "custoLiq" | "atual" | "marg">("marg");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [filterMarg, setFilterMarg] = useState<"all" | "critico" | "ok">("all");
+  const [minMargin, setMinMargin] = useState(17);
   const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
   const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
