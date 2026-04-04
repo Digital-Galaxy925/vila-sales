@@ -1998,7 +1998,7 @@ export default function Index() {
               🏬
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 14, color: "#e2e8f0" }}>Vila Nova</div>
+              <div style={{ fontWeight: 800, fontSize: 14, color: "#e2e8f0" }}>Vila Sales</div>
               <div style={{ fontSize: 10, color: "#475569" }}>Gestão Comercial</div>
             </div>
           </div>
