@@ -710,16 +710,34 @@ function CrossAnalysis({ data }: { data: FilialData }) {
             Produtos da sua base cruzados com os dados das filiais
           </p>
         </div>
-        <button
-          onClick={exportXLSX}
-          style={{
-            padding: "8px 18px", borderRadius: 8, border: "1px solid #166534",
-            background: "#052e16", color: "#4ade80", cursor: "pointer",
-            fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
-          }}
-        >
-          ⬇️ Exportar Excel
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => {
+              setDesiredMargins({});
+              setDesiredPrices({});
+              setPromoDiscounts({});
+              setBulkMargin("");
+              setBulkDiscount("");
+            }}
+            style={{
+              padding: "8px 18px", borderRadius: 8, border: "1px solid #991b1b",
+              background: "#450a0a", color: "#f87171", cursor: "pointer",
+              fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            🗑️ Limpar Tudo
+          </button>
+          <button
+            onClick={exportXLSX}
+            style={{
+              padding: "8px 18px", borderRadius: 8, border: "1px solid #166534",
+              background: "#052e16", color: "#4ade80", cursor: "pointer",
+              fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            ⬇️ Exportar Excel
+          </button>
+        </div>
       </div>
 
       {/* BU filter — destaque visual no topo */}
