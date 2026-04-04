@@ -1498,7 +1498,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
-              {["Filial", "Cód.", "Descrição", "Estoque", "DDV", "Mes Ant", "Mes Atu", "Status"].map((h) => (
+              {["Filial", "Cód.", "Descrição", "Unid/CX", "Estoque", "DDV", "Mes Ant", "Mes Atu", "Status"].map((h) => (
                 <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", whiteSpace: "nowrap" }}>
                   {h}
                 </th>
@@ -1524,6 +1524,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
                     <td style={{ padding: "8px 14px", color: "#e2e8f0", maxWidth: 200 }}>
                       <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.descricao}</div>
                     </td>
+                    <td style={{ padding: "8px 14px", color: "#94a3b8", fontFamily: "monospace", textAlign: "center" }}>{p.embCmp || "–"}</td>
                     <td style={{ padding: "8px 14px", color: "#e2e8f0", fontWeight: 700, fontFamily: "monospace" }}>{p.estoque}</td>
                     <td style={{ padding: "8px 14px", color: "#64748b" }}>{p.ddv || "–"}</td>
                     <td style={{ padding: "8px 14px", color: "#94a3b8", fontFamily: "monospace" }}>{p.mesAnt}</td>
