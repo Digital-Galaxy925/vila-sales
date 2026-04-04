@@ -1483,22 +1483,31 @@ function PrecoAnalysis({ data }: { data: FilialData }) {
 
 function EstoqueAnalysis({ data }: { data: FilialData }) {
   const allProducts = Object.values(data).flat();
-  const semEstoque = allProducts.filter((p) => p.estoque === 0).length;
-  const estoqueBaixo = allProducts.filter((p) => p.estoque > 0 && p.estoque < 5).length;
-  const estoqueOk = allProducts.filter((p) => p.estoque >= 5).length;
 
-  const totalValorCusto = allProducts.reduce((s, p) => {
+  const [selectedFilial, setSelectedFilial] = useState<Filial | "all">("all");
+  const [selectedBU, setSelectedBU] = useState<"all" | "FOODS" | "HC">("all");
+  const [filtro, setFiltro] = useState<"todos" | "sem" | "baixo" | "ok">("todos");
+
+  const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
+  const buBase = selectedBU === "all" ? base : base.filter((p) => p.bu === selectedBU);
+
+  const semEstoque = buBase.filter((p) => p.estoque === 0).length;
+  const estoqueBaixo = buBase.filter((p) => p.estoque > 0 && p.estoque < 5).length;
+  const estoqueOk = buBase.filter((p) => p.estoque >= 5).length;
+
+  const totalValorCusto = buBase.reduce((s, p) => {
     const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.custoLiq;
     return s + (isNaN(v) ? 0 : v);
   }, 0);
-  const totalValorVenda = allProducts.reduce((s, p) => {
+  const totalValorVenda = buBase.reduce((s, p) => {
     const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.atual;
     return s + (isNaN(v) ? 0 : v);
   }, 0);
 
-  const [filtro, setFiltro] = useState<"todos" | "sem" | "baixo" | "ok">("todos");
+  const countFoods = base.filter((p) => p.bu === "FOODS").length;
+  const countHC = base.filter((p) => p.bu === "HC").length;
 
-  const filtered = allProducts.filter((p) => {
+  const filtered = buBase.filter((p) => {
     if (filtro === "sem") return p.estoque === 0;
     if (filtro === "baixo") return p.estoque > 0 && p.estoque < 5;
     if (filtro === "ok") return p.estoque >= 5;
@@ -1507,7 +1516,68 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+
+      {/* BU filter */}
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600 }}>Categoria:</span>
+        {([
+          { key: "all",   label: "Todas",  icon: "🏢", count: base.length },
+          { key: "FOODS", label: "Foods",  icon: "🍽️", count: countFoods },
+          { key: "HC",    label: "HC",     icon: "🧴", count: countHC },
+        ] as const).map(({ key, label, icon, count }) => (
+          <button
+            key={key}
+            onClick={() => setSelectedBU(key)}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "8px 18px", borderRadius: 10, border: "2px solid", cursor: "pointer",
+              fontSize: 13, fontWeight: 700, transition: "all .2s",
+              background: selectedBU === key
+                ? (key === "FOODS" ? "#052e16" : key === "HC" ? "#0f172a" : "#1e3a5f")
+                : "#080f1a",
+              color: selectedBU === key
+                ? (key === "FOODS" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
+                : "#475569",
+              borderColor: selectedBU === key
+                ? (key === "FOODS" ? "#166534" : key === "HC" ? "#6d28d9" : "#1d4ed8")
+                : "#1e293b",
+            }}
+          >
+            <span>{icon}</span>
+            {label}
+            <span style={{
+              padding: "1px 8px", borderRadius: 99, fontSize: 11, fontWeight: 800,
+              background: selectedBU === key ? "rgba(255,255,255,0.1)" : "#1e293b",
+              color: selectedBU === key
+                ? (key === "FOODS" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
+                : "#64748b",
+            }}>
+              {count}
+            </span>
+          </button>
+        ))}
+
+        <div style={{ width: 1, height: 28, background: "#1e293b", margin: "0 6px" }} />
+
+        {/* Filial filter */}
+        <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600 }}>Filial:</span>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {(["all", ...FILIAIS] as (Filial | "all")[]).map((f) => (
+            <button key={f} onClick={() => setSelectedFilial(f)} style={{
+              padding: "6px 12px", borderRadius: 99, border: "none", cursor: "pointer",
+              fontSize: 11, fontWeight: 700,
+              background: selectedFilial === f ? (f === "all" ? "#1e3a5f" : FILIAL_INFO[f as Filial].cor + "33") : "#0f172a",
+              color: selectedFilial === f ? (f === "all" ? "#60a5fa" : FILIAL_INFO[f as Filial].cor) : "#475569",
+              borderWidth: 1, borderStyle: "solid",
+              borderColor: selectedFilial === f ? (f === "all" ? "#3B82F6" : FILIAL_INFO[f as Filial].cor) : "#1e293b",
+            }}>
+              {f === "all" ? "Todas" : FILIAL_INFO[f as Filial].nome}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
         <div onClick={() => setFiltro(filtro === "sem" ? "todos" : "sem")} style={{ cursor: "pointer", outline: filtro === "sem" ? "2px solid #f87171" : "none", borderRadius: 16 }}>
           <KpiCard label="Sem Estoque" value={String(semEstoque)} sub="ruptura total" color="#f87171" icon="📭" />
         </div>
@@ -1517,6 +1587,8 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
         <div onClick={() => setFiltro(filtro === "ok" ? "todos" : "ok")} style={{ cursor: "pointer", outline: filtro === "ok" ? "2px solid #4ade80" : "none", borderRadius: 16 }}>
           <KpiCard label="Estoque OK" value={String(estoqueOk)} sub="5 ou mais unid." color="#4ade80" icon="📦" />
         </div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
         <div style={{ borderRadius: 16 }}>
           <KpiCard label="Estoque Valor Pr Custo" value={`R$ ${totalValorCusto.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub="somatória custo" color="#38bdf8" icon="💰" />
         </div>
