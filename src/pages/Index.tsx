@@ -592,6 +592,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [sortCol, setSortCol] = useState<"seqProd" | "descricao" | "estoque" | "custoLiq" | "atual" | "marg">("marg");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [filterMarg, setFilterMarg] = useState<"all" | "critico" | "ok">("all");
+  const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
 
   const allProducts = Object.values(data).flat();
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
