@@ -144,6 +144,7 @@ function rowToProduct(row: Record<string, string>, filial: Filial): Product {
     familia: findCol(row, ["FAMILIA"]),
     seqProd: findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD"]),
     descricao: findCol(row, ["DESCRICAO", "DESCRIÇÃO", "DESC"]),
+    embCmp: findCol(row, ["EMB.CMP", "EMBCMP", "EMB_CMP"]),
     embVir: findCol(row, ["EMB.VIR", "EMBVIR", "EMB_VIR"]),
     estoque: num(findCol(row, ["ESTOQUE"])),
     sellout: num(findCol(row, ["SELLOUT"])),
