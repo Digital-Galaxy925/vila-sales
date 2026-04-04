@@ -1847,7 +1847,7 @@ export default function Index() {
   const canGenerate = csvLoaded > 0 && !!baseFile;
 
   const modules: { id: Module; label: string; icon: string }[] = [
-    { id: "cruzamento", label: "Resultado do Cruzamento", icon: "🔗" },
+    { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
     { id: "preco", label: "Análise de Preço", icon: "💰" },
     { id: "margem", label: "Análise de Margem", icon: "📊" },
     { id: "estoque", label: "Análise de Estoque", icon: "📦" },
