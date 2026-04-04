@@ -834,11 +834,11 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <th style={{ padding: "11px 16px", textAlign: "center", color: "#fbbf24", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
                 Margem Desejada
               </th>
-              <th style={{ padding: "11px 16px", textAlign: "center", color: "#38bdf8", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
-                Preço Desejado
-              </th>
               <th style={{ padding: "11px 16px", textAlign: "right", color: "#fbbf24", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
                 Preço Futuro
+              </th>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#38bdf8", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+                Preço Desejado
               </th>
               <th style={{ padding: "11px 16px", textAlign: "right", color: "#38bdf8", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
                 Margem Futura
@@ -966,6 +966,18 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     />
                   </td>
 
+                  {/* Preço Futuro */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
+                    {(() => {
+                      const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
+                      if (!raw) return <span style={{ color: "#334155" }}>—</span>;
+                      const margDes = parseFloat(raw.replace(",", "."));
+                      if (isNaN(margDes) || margDes >= 100) return <span style={{ color: "#f87171" }}>—</span>;
+                      const futuro = p.custoLiq / (1 - margDes / 100);
+                      return <span style={{ color: "#fbbf24" }}>R$ {futuro.toFixed(2)}</span>;
+                    })()}
+                  </td>
+
                   {/* Preço Desejado */}
                   <td style={{ padding: "10px 8px", textAlign: "center" }}>
                     <input
@@ -986,18 +998,6 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       onFocus={(e) => (e.currentTarget.style.borderColor = "#38bdf8")}
                       onBlur={(e) => (e.currentTarget.style.borderColor = "#334155")}
                     />
-                  </td>
-
-                  {/* Preço Futuro */}
-                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
-                    {(() => {
-                      const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
-                      if (!raw) return <span style={{ color: "#334155" }}>—</span>;
-                      const margDes = parseFloat(raw.replace(",", "."));
-                      if (isNaN(margDes) || margDes >= 100) return <span style={{ color: "#f87171" }}>—</span>;
-                      const futuro = p.custoLiq / (1 - margDes / 100);
-                      return <span style={{ color: "#fbbf24" }}>R$ {futuro.toFixed(2)}</span>;
-                    })()}
                   </td>
 
                   {/* Margem Futura */}
