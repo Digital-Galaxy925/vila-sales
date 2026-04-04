@@ -1486,7 +1486,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
 
   const [selectedFilial, setSelectedFilial] = useState<Filial | "all">("all");
   const [selectedBU, setSelectedBU] = useState<"all" | "FOODS" | "HC">("all");
-  const [filtro, setFiltro] = useState<"todos" | "sem" | "baixo" | "ok">("todos");
+  const [filtro, setFiltro] = useState<"todos" | "sem" | "baixo" | "ok" | "alto">("todos");
 
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
   const buBase = selectedBU === "all" ? base : base.filter((p) => p.bu === selectedBU);
