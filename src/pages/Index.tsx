@@ -593,6 +593,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [filterMarg, setFilterMarg] = useState<"all" | "critico" | "ok">("all");
   const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
+  const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
 
   const allProducts = Object.values(data).flat();
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
@@ -651,11 +652,14 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export CSV
   const exportCSV = () => {
-    const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)"];
+    const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Desejado (R$)","Preço Futuro (R$)","Margem Futura (%)"];
     const rows = filtered.map((p) => {
       const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
       const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
       const futuro = !isNaN(margDes) && margDes < 100 ? (p.custoLiq / (1 - margDes / 100)).toFixed(2) : "";
+      const rawPreco = desiredPrices[`${p.filial}-${p.seqProd}`];
+      const precoDesejado = rawPreco ? parseFloat(rawPreco.replace(",", ".")) : NaN;
+      const margFutura = !isNaN(precoDesejado) && precoDesejado > 0 ? (((precoDesejado - p.custoLiq) / precoDesejado) * 100).toFixed(2) : "";
       return [
         p.bu,
         FILIAL_INFO[p.filial]?.nome || p.filial,
@@ -667,7 +671,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.marg.toFixed(2),
         p.marg >= 17 ? "Saudável" : "Crítico",
         raw || "",
+        rawPreco || "",
         futuro,
+        margFutura,
       ];
     });
     const csv = [header, ...rows].map((r) => r.join(";")).join("\n");
@@ -828,8 +834,14 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <th style={{ padding: "11px 16px", textAlign: "center", color: "#fbbf24", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
                 Margem Desejada
               </th>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#38bdf8", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+                Preço Desejado
+              </th>
               <th style={{ padding: "11px 16px", textAlign: "right", color: "#fbbf24", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
                 Preço Futuro
+              </th>
+              <th style={{ padding: "11px 16px", textAlign: "right", color: "#38bdf8", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+                Margem Futura
               </th>
             </tr>
           </thead>
@@ -954,6 +966,28 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     />
                   </td>
 
+                  {/* Preço Desejado */}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="—"
+                      value={desiredPrices[`${p.filial}-${p.seqProd}`] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.,]/g, "");
+                        setDesiredPrices((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: val }));
+                      }}
+                      style={{
+                        width: 80, padding: "5px 8px", borderRadius: 6,
+                        background: "#0f172a", border: "1px solid #334155", color: "#38bdf8",
+                        fontSize: 13, fontFamily: "monospace", fontWeight: 700, textAlign: "center",
+                        outline: "none",
+                      }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#38bdf8")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "#334155")}
+                    />
+                  </td>
+
                   {/* Preço Futuro */}
                   <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
                     {(() => {
@@ -963,6 +997,19 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       if (isNaN(margDes) || margDes >= 100) return <span style={{ color: "#f87171" }}>—</span>;
                       const futuro = p.custoLiq / (1 - margDes / 100);
                       return <span style={{ color: "#fbbf24" }}>R$ {futuro.toFixed(2)}</span>;
+                    })()}
+                  </td>
+
+                  {/* Margem Futura */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
+                    {(() => {
+                      const raw = desiredPrices[`${p.filial}-${p.seqProd}`];
+                      if (!raw) return <span style={{ color: "#334155" }}>—</span>;
+                      const precoDesejado = parseFloat(raw.replace(",", "."));
+                      if (isNaN(precoDesejado) || precoDesejado <= 0) return <span style={{ color: "#f87171" }}>—</span>;
+                      const margFutura = ((precoDesejado - p.custoLiq) / precoDesejado) * 100;
+                      const cor = margFutura < 10 ? "#f43f5e" : margFutura < 17 ? "#f87171" : margFutura < 25 ? "#fbbf24" : "#4ade80";
+                      return <span style={{ color: cor }}>{margFutura.toFixed(1)}%</span>;
                     })()}
                   </td>
                 </tr>
