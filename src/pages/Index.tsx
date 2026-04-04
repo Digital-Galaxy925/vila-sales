@@ -1357,7 +1357,7 @@ function PrecoAnalysis({ data }: { data: FilialData }) {
                     }}
                   />
                   <span style={{ color: "#94a3b8", fontSize: 11 }}>
-                    {FILIAL_INFO[p.filial]?.nome?.split(" ")[0] || p.filial}
+                    {FILIAL_INFO[p.filial]?.nome || p.filial}
                   </span>
                 </td>
                 <td style={{ padding: "8px 14px", color: "#475569", fontFamily: "monospace" }}>
