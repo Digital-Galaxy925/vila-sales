@@ -697,7 +697,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#e2e8f0" }}>
-            📋 Resultado do Cruzamento
+            📋 Análise de Custos
           </h2>
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "#475569" }}>
             Produtos da sua base cruzados com os dados das filiais
@@ -1847,7 +1847,7 @@ export default function Index() {
   const canGenerate = csvLoaded > 0 && !!baseFile;
 
   const modules: { id: Module; label: string; icon: string }[] = [
-    { id: "cruzamento", label: "Resultado do Cruzamento", icon: "🔗" },
+    { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
     { id: "preco", label: "Análise de Preço", icon: "💰" },
     { id: "margem", label: "Análise de Margem", icon: "📊" },
     { id: "estoque", label: "Análise de Estoque", icon: "📦" },
