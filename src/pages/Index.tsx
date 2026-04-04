@@ -1579,15 +1579,18 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
         <div onClick={() => setFiltro(filtro === "sem" ? "todos" : "sem")} style={{ cursor: "pointer", outline: filtro === "sem" ? "2px solid #f87171" : "none", borderRadius: 16 }}>
           <KpiCard label="Sem Estoque" value={String(semEstoque)} sub="ruptura total" color="#f87171" icon="📭" />
         </div>
         <div onClick={() => setFiltro(filtro === "baixo" ? "todos" : "baixo")} style={{ cursor: "pointer", outline: filtro === "baixo" ? "2px solid #fb923c" : "none", borderRadius: 16 }}>
-          <KpiCard label="Estoque Baixo" value={String(estoqueBaixo)} sub="menos de 5 unid." color="#fb923c" icon="⚠️" />
+          <KpiCard label="Estoque Baixo" value={String(estoqueBaixo)} sub="DDV < 7 dias" color="#fb923c" icon="⚠️" />
         </div>
         <div onClick={() => setFiltro(filtro === "ok" ? "todos" : "ok")} style={{ cursor: "pointer", outline: filtro === "ok" ? "2px solid #4ade80" : "none", borderRadius: 16 }}>
-          <KpiCard label="Estoque OK" value={String(estoqueOk)} sub="5 ou mais unid." color="#4ade80" icon="📦" />
+          <KpiCard label="Estoque OK" value={String(estoqueOk)} sub="DDV 7-40 dias" color="#4ade80" icon="📦" />
+        </div>
+        <div onClick={() => setFiltro(filtro === "alto" ? "todos" : "alto")} style={{ cursor: "pointer", outline: filtro === "alto" ? "2px solid #60a5fa" : "none", borderRadius: 16 }}>
+          <KpiCard label="Estoque Alto" value={String(estoqueAlto)} sub="DDV > 40 dias" color="#60a5fa" icon="📈" />
         </div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
