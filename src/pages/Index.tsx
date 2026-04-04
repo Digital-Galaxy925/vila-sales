@@ -978,7 +978,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                       <div style={{ width: 8, height: 8, borderRadius: "50%", background: FILIAL_INFO[p.filial]?.cor || "#64748b", flexShrink: 0 }} />
                       <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>
-                        {FILIAL_INFO[p.filial]?.nome?.split(" ")[0] || p.filial}
+                        {FILIAL_INFO[p.filial]?.nome || p.filial}
                       </span>
                     </div>
                   </td>
