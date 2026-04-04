@@ -651,18 +651,25 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export CSV
   const exportCSV = () => {
-    const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem"];
-    const rows = filtered.map((p) => [
-      p.bu,
-      FILIAL_INFO[p.filial]?.nome || p.filial,
-      p.seqProd,
-      `"${p.descricao}"`,
-      p.estoque,
-      p.custoLiq.toFixed(2),
-      p.atual.toFixed(2),
-      p.marg.toFixed(2),
-      p.marg >= 17 ? "Saudável" : "Crítico",
-    ]);
+    const header = ["BU","Filial","Código","Descrição","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)"];
+    const rows = filtered.map((p) => {
+      const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
+      const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
+      const futuro = !isNaN(margDes) && margDes < 100 ? (p.custoLiq / (1 - margDes / 100)).toFixed(2) : "";
+      return [
+        p.bu,
+        FILIAL_INFO[p.filial]?.nome || p.filial,
+        p.seqProd,
+        `"${p.descricao}"`,
+        p.estoque,
+        p.custoLiq.toFixed(2),
+        p.atual.toFixed(2),
+        p.marg.toFixed(2),
+        p.marg >= 17 ? "Saudável" : "Crítico",
+        raw || "",
+        futuro,
+      ];
+    });
     const csv = [header, ...rows].map((r) => r.join(";")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
