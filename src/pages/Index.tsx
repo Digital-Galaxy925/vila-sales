@@ -1487,13 +1487,34 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
   const estoqueBaixo = allProducts.filter((p) => p.estoque > 0 && p.estoque < 5).length;
   const estoqueOk = allProducts.filter((p) => p.estoque >= 5).length;
 
+  const [filtro, setFiltro] = useState<"todos" | "sem" | "baixo" | "ok">("todos");
+
+  const filtered = allProducts.filter((p) => {
+    if (filtro === "sem") return p.estoque === 0;
+    if (filtro === "baixo") return p.estoque > 0 && p.estoque < 5;
+    if (filtro === "ok") return p.estoque >= 5;
+    return true;
+  });
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-        <KpiCard label="Sem Estoque" value={String(semEstoque)} sub="ruptura total" color="#f87171" icon="📭" />
-        <KpiCard label="Estoque Baixo" value={String(estoqueBaixo)} sub="menos de 5 unid." color="#fb923c" icon="⚠️" />
-        <KpiCard label="Estoque OK" value={String(estoqueOk)} sub="5 ou mais unid." color="#4ade80" icon="📦" />
+        <div onClick={() => setFiltro(filtro === "sem" ? "todos" : "sem")} style={{ cursor: "pointer", outline: filtro === "sem" ? "2px solid #f87171" : "none", borderRadius: 16 }}>
+          <KpiCard label="Sem Estoque" value={String(semEstoque)} sub="ruptura total" color="#f87171" icon="📭" />
+        </div>
+        <div onClick={() => setFiltro(filtro === "baixo" ? "todos" : "baixo")} style={{ cursor: "pointer", outline: filtro === "baixo" ? "2px solid #fb923c" : "none", borderRadius: 16 }}>
+          <KpiCard label="Estoque Baixo" value={String(estoqueBaixo)} sub="menos de 5 unid." color="#fb923c" icon="⚠️" />
+        </div>
+        <div onClick={() => setFiltro(filtro === "ok" ? "todos" : "ok")} style={{ cursor: "pointer", outline: filtro === "ok" ? "2px solid #4ade80" : "none", borderRadius: 16 }}>
+          <KpiCard label="Estoque OK" value={String(estoqueOk)} sub="5 ou mais unid." color="#4ade80" icon="📦" />
+        </div>
       </div>
+      {filtro !== "todos" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#94a3b8" }}>
+          <span>Filtrando: <strong style={{ color: "#e2e8f0" }}>{filtro === "sem" ? "Sem Estoque" : filtro === "baixo" ? "Estoque Baixo" : "Estoque OK"}</strong></span>
+          <span onClick={() => setFiltro("todos")} style={{ cursor: "pointer", color: "#f87171", textDecoration: "underline" }}>Limpar filtro</span>
+        </div>
+      )}
       <div style={{ overflow: "auto", borderRadius: 12, border: "1px solid #1e293b" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
@@ -1506,7 +1527,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
             </tr>
           </thead>
           <tbody>
-            {allProducts
+            {filtered
               .sort((a, b) => a.estoque - b.estoque)
               .slice(0, 200)
               .map((p, i) => {
