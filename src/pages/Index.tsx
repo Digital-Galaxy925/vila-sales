@@ -1858,6 +1858,7 @@ export default function Index() {
             familia: "",
             seqProd: baseEntry.cod,
             descricao: desc,
+            embCmp: finalColEmbCmp >= 0 ? (cols[finalColEmbCmp] ?? "") : "",
             embVir: "",
             estoque,
             sellout: 0,
