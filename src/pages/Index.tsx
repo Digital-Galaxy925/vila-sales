@@ -604,7 +604,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
     .filter((p) => {
       const q = search.toLowerCase();
       const matchSearch = !q || p.seqProd.toLowerCase().includes(q) || p.descricao.toLowerCase().includes(q);
-      const matchMarg = filterMarg === "all" || (filterMarg === "critico" ? p.marg < 17 : p.marg >= 17);
+      const matchMarg = filterMarg === "all" || (filterMarg === "critico" ? p.marg < minMargin : p.marg >= minMargin);
       const matchBU = selectedBU === "all" || p.bu === selectedBU;
       return matchSearch && matchMarg && matchBU;
     })
@@ -618,7 +618,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // KPIs respeitam filtro de BU
   const buBase = selectedBU === "all" ? base : base.filter((p) => p.bu === selectedBU);
-  const criticos = buBase.filter((p) => p.marg < 17).length;
+  const criticos = buBase.filter((p) => p.marg < minMargin).length;
   const margMedia = buBase.length ? buBase.reduce((s, p) => s + p.marg, 0) / buBase.length : 0;
   const totalEstoque = buBase.reduce((s, p) => s + p.estoque, 0);
 
@@ -675,7 +675,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.custoLiq.toFixed(2),
         p.atual.toFixed(2),
         p.marg.toFixed(2),
-        p.marg >= 17 ? "Saudável" : "Crítico",
+        p.marg >= minMargin ? "Saudável" : "Crítico",
         raw || "",
         !isNaN(futuro) ? futuro.toFixed(2) : "",
         rawPreco || "",
@@ -759,9 +759,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       {/* KPI strip */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
         <KpiCard label="Produtos Analisados" value={String(buBase.length)} sub={selectedBU === "all" ? "todas as categorias" : selectedBU} color="#60a5fa" icon="📦" />
-        <KpiCard label="Margem Média" value={`${margMedia.toFixed(1)}%`} color={margMedia >= 17 ? "#4ade80" : "#f87171"} icon="📊" />
+        <KpiCard label="Margem Média" value={`${margMedia.toFixed(1)}%`} color={margMedia >= minMargin ? "#4ade80" : "#f87171"} icon="📊" />
         <div onClick={() => setFilterMarg(filterMarg === "critico" ? "all" : "critico")} className="cursor-pointer">
-          <KpiCard label="Críticos (< 17%)" value={String(criticos)} sub={`${buBase.length ? ((criticos/buBase.length)*100).toFixed(0) : 0}% do mix${filterMarg === "critico" ? " • filtro ativo" : ""}`} color="#f87171" icon="🚨" />
+          <KpiCard label="Críticos (< ${minMargin}%)" value={String(criticos)} sub={`${buBase.length ? ((criticos/buBase.length)*100).toFixed(0) : 0}% do mix${filterMarg === "critico" ? " • filtro ativo" : ""}`} color="#f87171" icon="🚨" />
         </div>
         <KpiCard label="Estoque Total" value={totalEstoque.toLocaleString("pt-BR")} sub="caixas" color="#a78bfa" icon="🏭" />
       </div>
