@@ -924,6 +924,40 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       {ok ? "✓ Saudável" : "✗ Crítico"}
                     </span>
                   </td>
+
+                  {/* Margem Desejada */}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="—"
+                      value={desiredMargins[`${p.filial}-${p.seqProd}`] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.,]/g, "");
+                        setDesiredMargins((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: val }));
+                      }}
+                      style={{
+                        width: 70, padding: "5px 8px", borderRadius: 6,
+                        background: "#0f172a", border: "1px solid #334155", color: "#fbbf24",
+                        fontSize: 13, fontFamily: "monospace", fontWeight: 700, textAlign: "center",
+                        outline: "none",
+                      }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#fbbf24")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "#334155")}
+                    />
+                  </td>
+
+                  {/* Preço Futuro */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
+                    {(() => {
+                      const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
+                      if (!raw) return <span style={{ color: "#334155" }}>—</span>;
+                      const margDes = parseFloat(raw.replace(",", "."));
+                      if (isNaN(margDes) || margDes >= 100) return <span style={{ color: "#f87171" }}>—</span>;
+                      const futuro = p.custoLiq / (1 - margDes / 100);
+                      return <span style={{ color: "#fbbf24" }}>R$ {futuro.toFixed(2)}</span>;
+                    })()}
+                  </td>
                 </tr>
               );
             })}
