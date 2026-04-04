@@ -760,7 +760,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         <KpiCard label="Produtos Analisados" value={String(buBase.length)} sub={selectedBU === "all" ? "todas as categorias" : selectedBU} color="#60a5fa" icon="📦" />
         <KpiCard label="Margem Média" value={`${margMedia.toFixed(1)}%`} color={margMedia >= 17 ? "#4ade80" : "#f87171"} icon="📊" />
         <KpiCard label="Críticos (< 17%)" value={String(criticos)} sub={`${buBase.length ? ((criticos/buBase.length)*100).toFixed(0) : 0}% do mix`} color="#f87171" icon="🚨" />
-        <KpiCard label="Estoque Total" value={totalEstoque.toLocaleString("pt-BR")} sub="unidades" color="#a78bfa" icon="🏭" />
+        <KpiCard label="Estoque Total" value={totalEstoque.toLocaleString("pt-BR")} sub="caixas" color="#a78bfa" icon="🏭" />
       </div>
 
       {/* Filters row */}
