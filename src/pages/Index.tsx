@@ -1494,6 +1494,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
   const semEstoque = buBase.filter((p) => p.estoque === 0).length;
   const estoqueBaixo = buBase.filter((p) => p.estoque > 0 && p.ddv < 7).length;
   const estoqueOk = buBase.filter((p) => p.estoque > 0 && p.ddv > 7 && p.ddv < 40).length;
+  const estoqueAlto = buBase.filter((p) => p.estoque > 0 && p.ddv > 40).length;
 
   const totalValorCusto = buBase.reduce((s, p) => {
     const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.custoLiq;
