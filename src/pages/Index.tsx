@@ -1532,6 +1532,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
                     <td style={{ padding: "8px 14px", color: "#a78bfa", fontFamily: "monospace", textAlign: "right" }}>
                       {(() => { const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.atual; return isNaN(v) ? "–" : `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; })()}
                     </td>
+                    <td style={{ padding: "8px 14px", color: "#64748b" }}>{p.ddv || "–"}</td>
                     <td style={{ padding: "8px 14px", color: "#94a3b8", fontFamily: "monospace" }}>{p.mesAnt}</td>
                     <td style={{ padding: "8px 14px", color: "#94a3b8", fontFamily: "monospace" }}>{p.mesAtu}</td>
                     <td style={{ padding: "8px 14px" }}>
