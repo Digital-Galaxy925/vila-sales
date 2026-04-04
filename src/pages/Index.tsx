@@ -593,6 +593,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [filterMarg, setFilterMarg] = useState<"all" | "critico" | "ok">("all");
   const [minMargin, setMinMargin] = useState(17);
+  const [bulkMargin, setBulkMargin] = useState("");
   const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
   const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
@@ -779,6 +780,44 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#64748b", fontSize: 13, pointerEvents: "none" }}>%</span>
         </div>
         <span style={{ color: "#475569", fontSize: 11 }}>Produtos abaixo desse valor serão considerados críticos</span>
+
+        <div style={{ width: 1, height: 24, background: "#1e293b", margin: "0 6px" }} />
+
+        <span style={{ color: "#f59e0b", fontSize: 13, fontWeight: 600 }}>⚡ Aplicar margem nos críticos:</span>
+        <div style={{ position: "relative", width: 80 }}>
+          <input
+            type="number"
+            value={bulkMargin}
+            onChange={(e) => setBulkMargin(e.target.value)}
+            placeholder="ex: 20"
+            style={{
+              width: "100%", padding: "6px 28px 6px 12px",
+              background: "#1a1206", border: "1px solid #854d0e", borderRadius: 8,
+              color: "#fbbf24", fontSize: 14, fontWeight: 700, outline: "none",
+              textAlign: "center",
+            }}
+          />
+          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#854d0e", fontSize: 13, pointerEvents: "none" }}>%</span>
+        </div>
+        <button
+          onClick={() => {
+            const val = bulkMargin.replace(",", ".");
+            if (!val || isNaN(Number(val))) return;
+            const criticosItems = buBase.filter((p) => p.marg < minMargin);
+            const newMargins = { ...desiredMargins };
+            criticosItems.forEach((p) => {
+              newMargins[`${p.filial}-${p.seqProd}`] = val;
+            });
+            setDesiredMargins(newMargins);
+          }}
+          style={{
+            padding: "6px 16px", borderRadius: 8, border: "1px solid #854d0e",
+            background: "#451a03", color: "#fbbf24", cursor: "pointer",
+            fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
+          }}
+        >
+          Aplicar
+        </button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
