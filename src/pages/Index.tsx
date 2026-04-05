@@ -1624,9 +1624,10 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
               .slice(0, 200)
               .map((p, i) => {
                 const status =
-                  p.estoque === 0 ? { label: "Ruptura", color: "#f87171", bg: "#450a0a" } :
-                  p.estoque < 5 ? { label: "Baixo", color: "#fb923c", bg: "#431407" } :
-                  { label: "OK", color: "#4ade80", bg: "#052e16" };
+                  p.ddv === 0 || p.estoque === 0 ? { label: "Sem Estoque", color: "#f87171", bg: "#450a0a" } :
+                  p.ddv < 7 ? { label: "Estoque Baixo", color: "#fb923c", bg: "#431407" } :
+                  p.ddv > 40 ? { label: "Estoque Alto", color: "#60a5fa", bg: "#172554" } :
+                  { label: "Estoque OK", color: "#4ade80", bg: "#052e16" };
                 return (
                   <tr key={i} style={{ borderBottom: "1px solid #1e293b", background: i % 2 === 0 ? "#080f1a" : "#0a1221" }}>
                     <td style={{ padding: "8px 14px" }}>
