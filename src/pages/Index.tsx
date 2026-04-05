@@ -1642,11 +1642,11 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
                     <td style={{ padding: "8px 14px", color: "#38bdf8", fontFamily: "monospace", textAlign: "right" }}>
                       {isNaN(p.custoLiq) ? "–" : `R$ ${p.custoLiq.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </td>
-                    <td style={{ padding: "8px 14px", color: "#a78bfa", fontFamily: "monospace", textAlign: "right" }}>
-                      {isNaN(p.atual) ? "–" : `R$ ${p.atual.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                    </td>
                     <td style={{ padding: "8px 14px", color: "#38bdf8", fontFamily: "monospace", textAlign: "right" }}>
                       {(() => { const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.custoLiq; return isNaN(v) ? "–" : `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; })()}
+                    </td>
+                    <td style={{ padding: "8px 14px", color: "#a78bfa", fontFamily: "monospace", textAlign: "right" }}>
+                      {isNaN(p.atual) ? "–" : `R$ ${p.atual.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </td>
                     <td style={{ padding: "8px 14px", color: "#a78bfa", fontFamily: "monospace", textAlign: "right" }}>
                       {(() => { const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.atual; return isNaN(v) ? "–" : `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; })()}
