@@ -1776,6 +1776,9 @@ function GeralAnalysis({ data }: { data: FilialData }) {
           const avg = prods.length ? prods.reduce((s, p) => s + p.marg, 0) / prods.length : 0;
           const crit = prods.filter((p) => p.marg < 17).length;
           const rupt = prods.filter((p) => p.estoque === 0).length;
+          const ddvMedio = prods.length ? prods.reduce((s, p) => s + (p.ddv || 0), 0) / prods.length : 0;
+          const valorEstoqueCusto = prods.reduce((s, p) => s + (p.estoque || 0) * (Number(p.embCmp) || 1) * (p.custoLiq || 0), 0);
+          const fmtValor = (v: number) => v >= 1e6 ? `R$ ${(v / 1e6).toFixed(2)}M` : v >= 1e3 ? `R$ ${(v / 1e3).toFixed(1)}K` : `R$ ${v.toFixed(2)}`;
           return (
             <div key={f} style={{ background: "#0f172a", border: `1px solid ${FILIAL_INFO[f].cor}44`, borderRadius: 16, padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
@@ -1790,6 +1793,14 @@ function GeralAnalysis({ data }: { data: FilialData }) {
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
                   <span style={{ color: "#64748b" }}>Margem Média</span>
                   <span style={{ color: avg >= 17 ? "#4ade80" : "#f87171", fontWeight: 700 }}>{avg.toFixed(1)}%</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                  <span style={{ color: "#64748b" }}>DDV Médio</span>
+                  <span style={{ color: ddvMedio >= 7 ? "#60a5fa" : "#fb923c", fontWeight: 700 }}>{ddvMedio.toFixed(0)} dias</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                  <span style={{ color: "#64748b" }}>Valor Estoque (Custo)</span>
+                  <span style={{ color: "#a78bfa", fontWeight: 700 }}>{fmtValor(valorEstoqueCusto)}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
                   <span style={{ color: "#64748b" }}>Críticos</span>
