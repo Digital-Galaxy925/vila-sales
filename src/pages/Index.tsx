@@ -1611,7 +1611,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
-              {["Filial", "Cód.", "Descrição", "Unid/CX", "Estoque", "Preço de Custo", "Preço de Venda", "Estoque Valor Pr Custo", "Estoque Valor Pr Venda", "DDV", "Mes Ant", "Mes Atu", "Status"].map((h) => (
+              {["Filial", "Cód.", "Descrição", "Unid/CX", "Estoque", "Preço de Custo", "Estoque Valor Pr Custo", "Preço de Venda", "Estoque Valor Pr Venda", "DDV", "Mes Ant", "Mes Atu", "Status"].map((h) => (
                 <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", whiteSpace: "nowrap" }}>
                   {h}
                 </th>
@@ -1642,11 +1642,11 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
                     <td style={{ padding: "8px 14px", color: "#38bdf8", fontFamily: "monospace", textAlign: "right" }}>
                       {isNaN(p.custoLiq) ? "–" : `R$ ${p.custoLiq.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </td>
-                    <td style={{ padding: "8px 14px", color: "#a78bfa", fontFamily: "monospace", textAlign: "right" }}>
-                      {isNaN(p.atual) ? "–" : `R$ ${p.atual.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                    </td>
                     <td style={{ padding: "8px 14px", color: "#38bdf8", fontFamily: "monospace", textAlign: "right" }}>
                       {(() => { const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.custoLiq; return isNaN(v) ? "–" : `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; })()}
+                    </td>
+                    <td style={{ padding: "8px 14px", color: "#a78bfa", fontFamily: "monospace", textAlign: "right" }}>
+                      {isNaN(p.atual) ? "–" : `R$ ${p.atual.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </td>
                     <td style={{ padding: "8px 14px", color: "#a78bfa", fontFamily: "monospace", textAlign: "right" }}>
                       {(() => { const v = p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.atual; return isNaN(v) ? "–" : `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; })()}
