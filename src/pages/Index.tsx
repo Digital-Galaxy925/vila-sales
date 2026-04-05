@@ -1777,7 +1777,7 @@ function GeralAnalysis({ data }: { data: FilialData }) {
           const crit = prods.filter((p) => p.marg < 17).length;
           const rupt = prods.filter((p) => p.estoque === 0).length;
           const ddvMedio = prods.length ? prods.reduce((s, p) => s + (p.ddv || 0), 0) / prods.length : 0;
-          const valorEstoqueCusto = prods.reduce((s, p) => s + (p.estoque || 0) * (p.unidCx || 1) * (p.custoLiq || 0), 0);
+          const valorEstoqueCusto = prods.reduce((s, p) => s + (p.estoque || 0) * (Number(p.embCmp) || 1) * (p.custoLiq || 0), 0);
           const fmtValor = (v: number) => v >= 1e6 ? `R$ ${(v / 1e6).toFixed(2)}M` : v >= 1e3 ? `R$ ${(v / 1e3).toFixed(1)}K` : `R$ ${v.toFixed(2)}`;
           return (
             <div key={f} style={{ background: "#0f172a", border: `1px solid ${FILIAL_INFO[f].cor}44`, borderRadius: 16, padding: 16 }}>
