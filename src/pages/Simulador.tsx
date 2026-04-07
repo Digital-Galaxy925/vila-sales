@@ -182,6 +182,7 @@ export default function Simulador() {
           {/* 4-8 - Remaining modules */}
           {sidebarModules.filter(m => m.id !== "cruzamento").map((m) => (
             <button
+              className="sidebar-nav-btn"
               key={m.id}
               onClick={() => navigate("/")}
               style={{
