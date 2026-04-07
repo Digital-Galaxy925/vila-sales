@@ -119,12 +119,14 @@ const AnaliseGerencial = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
       >
         <KpiCard title="Custo Médio" value={kpis.custoMedio} icon={DollarSign} />
         <KpiCard title="Venda Média" value={kpis.vendaMedia} icon={TrendingUp} />
         <KpiCard title="Estoque Total" value={kpis.estoqueTotal} icon={Package} />
         <KpiCard title="Filiais c/ Produto" value={kpis.filiaisPresentes} icon={BarChart3} />
+        <KpiCard title="Valor Total Venda" value={kpis.valorEstoqueVenda} icon={ShoppingCart} />
+        <KpiCard title="Volume Total (cx)" value={kpis.estoqueCaixas} icon={BoxesIcon} />
       </motion.div>
 
       {/* Product search */}
