@@ -145,8 +145,8 @@ const AnaliseGerencial = () => {
   };
 
   const exportBulkToExcel = () => {
-    const headerRow1 = ["PRODUTO"];
-    const headerRow2 = [""];
+    const headerRow1 = ["CÓDIGO", "PRODUTO"];
+    const headerRow2 = ["", ""];
     const availableFiliais = FILIAL_ORDER.filter((f) =>
       bulkResults.some((r) => r.filiais[f])
     );
@@ -157,7 +157,7 @@ const AnaliseGerencial = () => {
     });
 
     const rows = bulkResults.map((r) => {
-      const row: (string | number)[] = [r.descricao || r.code];
+      const row: (string | number)[] = [r.code, r.descricao || r.code];
       availableFiliais.forEach((f) => {
         const d = r.filiais[f];
         row.push(d ? d.estoque : 0, d ? d.custoLiq : 0, d ? d.atual : 0);
@@ -168,13 +168,13 @@ const AnaliseGerencial = () => {
     const ws = XLSX.utils.aoa_to_sheet([headerRow1, headerRow2, ...rows]);
     // Merge filial header cells
     const merges: XLSX.Range[] = [];
-    let col = 1;
+    let col = 2;
     availableFiliais.forEach(() => {
       merges.push({ s: { r: 0, c: col }, e: { r: 0, c: col + 2 } });
       col += 3;
     });
     ws["!merges"] = merges;
-    ws["!cols"] = [{ wch: 30 }, ...availableFiliais.flatMap(() => [{ wch: 12 }, { wch: 14 }, { wch: 14 }])];
+    ws["!cols"] = [{ wch: 12 }, { wch: 30 }, ...availableFiliais.flatMap(() => [{ wch: 12 }, { wch: 14 }, { wch: 14 }])];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Visão Consolidada");
@@ -336,7 +336,8 @@ const AnaliseGerencial = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
-                      <th rowSpan={2} className={`${tableHeaderStyle} border-r border-border sticky left-0 bg-muted/30 z-10`}>Produto</th>
+                      <th rowSpan={2} className={`${tableHeaderStyle} border-r border-border sticky left-0 bg-muted/30 z-10 min-w-[90px]`}>Código</th>
+                      <th rowSpan={2} className={`${tableHeaderStyle} border-r border-border sticky left-[90px] bg-muted/30 z-10`}>Produto</th>
                       {bulkAvailableFiliais.map((f) => (
                         <th
                           key={f}
@@ -360,9 +361,12 @@ const AnaliseGerencial = () => {
                   <tbody>
                     {bulkResults.map((r, i) => (
                       <tr key={i} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                        <td className={`${tableCellStyle} font-medium text-card-foreground border-r border-border sticky left-0 bg-card z-10 max-w-[200px] truncate`}>
+                        <td className={`${tableCellStyle} font-mono text-card-foreground border-r border-border sticky left-0 bg-card z-10 min-w-[90px]`}>
+                          {r.code}
+                        </td>
+                        <td className={`${tableCellStyle} font-medium text-card-foreground border-r border-border sticky left-[90px] bg-card z-10 max-w-[200px] truncate`}>
                           {r.descricao !== "Não encontrado" ? r.descricao : (
-                            <span className="text-muted-foreground italic">{r.code} — não encontrado</span>
+                            <span className="text-muted-foreground italic">não encontrado</span>
                           )}
                         </td>
                         {bulkAvailableFiliais.map((f) => {
