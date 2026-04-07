@@ -327,6 +327,7 @@ export default function SimuladorPropostas() {
           </button>
           {/* 2 - Simulador de Ofertas */}
           <button
+            className="sidebar-nav-btn"
             onClick={() => navigate("/simulador")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
