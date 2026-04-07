@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Upload,
   SlidersHorizontal,
+  FileText,
 } from "lucide-react";
 
 const navItems = [
