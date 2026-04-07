@@ -41,6 +41,14 @@ const fmtInput = (raw: string): string => {
   return num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
+interface ProdutoItem {
+  id: number;
+  codigo: string;
+  filial: string;
+  precoVenda: string;
+  volumeCaixas: string;
+}
+
 interface PedidoRow {
   label: string;
   valor: string;
@@ -61,25 +69,40 @@ export default function SimuladorPropostas() {
 
   const hasData = Object.keys(data).length > 0;
 
-  const [codigo, setCodigo] = useState("");
-  const [filial, setFilial] = useState("01");
-  const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
-  const [volumeCaixas, setVolumeCaixas] = useState("");
+  const [produtos, setProdutos] = useState<ProdutoItem[]>([
+    { id: 1, codigo: "", filial: "01", precoVenda: "", volumeCaixas: "" },
+  ]);
 
-  const produto = useMemo(() => {
-    if (!codigo.trim() || !data[filial]) return null;
-    const cod = codigo.trim();
-    return data[filial].find(
-      (p) => p.seqProd === cod || p.seqProd === cod.padStart(6, "0")
-    ) ?? null;
-  }, [codigo, filial, data]);
+  const updateProduto = (id: number, field: keyof Omit<ProdutoItem, "id">, val: string) => {
+    setProdutos((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: val } : p)));
+  };
 
-  const custoUnit = produto?.custoLiq ?? 0;
-  const qtdCaixa = produto ? parseFloat(produto.embCmp) || 1 : 1;
-  const precoVD = parseBR(precoVendaDesejado);
-  const volCx = parseBR(volumeCaixas);
-  const margemSimulada = precoVD > 0 ? (precoVD - custoUnit) / precoVD : 0;
-  const valorTotalSimulado = volCx * qtdCaixa * precoVD;
+  const addProduto = () => {
+    setProdutos((prev) => [
+      ...prev,
+      { id: Date.now(), codigo: "", filial: "01", precoVenda: "", volumeCaixas: "" },
+    ]);
+  };
+
+  const removeProduto = (id: number) => {
+    setProdutos((prev) => (prev.length > 1 ? prev.filter((p) => p.id !== id) : prev));
+  };
+
+  const produtosCalc = produtos.map((item) => {
+    const found = item.codigo.trim() && data[item.filial]
+      ? data[item.filial].find(
+          (p) => p.seqProd === item.codigo.trim() || p.seqProd === item.codigo.trim().padStart(6, "0")
+        ) ?? null
+      : null;
+    const custoUnit = found?.custoLiq ?? 0;
+    const qtdCaixa = found ? parseFloat(found.embCmp) || 1 : 1;
+    const precoVD = parseBR(item.precoVenda);
+    const volCx = parseBR(item.volumeCaixas);
+    const margem = precoVD > 0 ? (precoVD - custoUnit) / precoVD : 0;
+    const valorTotal = volCx * qtdCaixa * precoVD;
+    const totalUnidades = volCx * qtdCaixa;
+    return { ...item, found, custoUnit, qtdCaixa, precoVD, volCx, margem, valorTotal, totalUnidades };
+  });
 
   const [pedidos, setPedidos] = useState<PedidoRow[]>([
     { label: "Pedido Promocional", valor: "", margem: "" },
@@ -101,9 +124,7 @@ export default function SimuladorPropostas() {
   const totalValor = calcRows.reduce((s, r) => s + r.valorNum, 0);
   const totalMargemRS = calcRows.reduce((s, r) => s + r.margemRS, 0);
   const margemPonderada = totalValor > 0 ? totalMargemRS / totalValor : 0;
-
   const participacoes = calcRows.map((r) => (totalValor > 0 ? r.valorNum / totalValor : 0));
-
   const maiorPedidoIdx = calcRows.reduce((best, r, i) => (r.valorNum > (calcRows[best]?.valorNum ?? 0) ? i : best), 0);
 
   // Sidebar
@@ -212,7 +233,7 @@ export default function SimuladorPropostas() {
           📝 Simulador de Propostas
         </h1>
         <p style={{ color: "#64748b", fontSize: 13, marginBottom: 32 }}>
-          Simule a margem combinada de pedidos para um produto específico.
+          Simule a margem combinada de pedidos para um ou mais produtos.
         </p>
 
         {!hasData ? (
@@ -232,93 +253,118 @@ export default function SimuladorPropostas() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-            {/* Product Lookup */}
-            <div style={cardStyle}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
-                🔍 Identificação do Produto
-              </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                <div>
-                  <label style={labelStyle}>Código do Produto</label>
-                  <input
-                    style={inputStyle}
-                    placeholder="Ex: 123456"
-                    value={codigo}
-                    onChange={(e) => setCodigo(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>Filial</label>
-                  <select
-                    style={inputStyle}
-                    value={filial}
-                    onChange={(e) => setFilial(e.target.value)}
-                  >
-                    {FILIAIS.map((f) => (
-                      <option key={f.id} value={f.id}>{f.id} – {f.nome}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
 
-              {produto && (
-                <div
-                  style={{
-                    marginTop: 16, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12,
-                  }}
-                >
-                  <InfoCard label="Descrição" value={produto.descricao} span={2} />
-                  <InfoCard label="Preço de Custo" value={fmt(produto.custoLiq)} />
-                  <InfoCard label="Preço de Venda Atual" value={fmt(produto.atual)} />
-                  <InfoCard label="Estoque (un)" value={produto.estoque.toLocaleString("pt-BR")} />
-                  <InfoCard label="Unid/CX" value={produto.embCmp} />
+            {/* Products */}
+            {produtosCalc.map((pc, idx) => (
+              <div key={pc.id} style={cardStyle}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>
+                    🔍 Produto {idx + 1}
+                  </h2>
+                  {produtos.length > 1 && (
+                    <button
+                      onClick={() => removeProduto(pc.id)}
+                      style={{
+                        padding: "4px 12px", borderRadius: 6, border: "1px solid #ef4444",
+                        background: "transparent", color: "#ef4444", fontSize: 11, fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ✕ Remover
+                    </button>
+                  )}
                 </div>
-              )}
 
-              {codigo.trim() && !produto && (
-                <p style={{ marginTop: 12, color: "#f87171", fontSize: 13 }}>
-                  Produto não encontrado na filial selecionada.
-                </p>
-              )}
-            </div>
-
-            {/* Simulação de Venda */}
-            {produto && (
-              <div style={cardStyle}>
-                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
-                  💲 Simulação de Venda
-                </h2>
+                {/* Inputs: código, filial */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                   <div>
-                    <label style={labelStyle}>Preço de Venda Desejado (R$)</label>
+                    <label style={labelStyle}>Código do Produto</label>
                     <input
                       style={inputStyle}
-                      placeholder="0,00"
-                      value={precoVendaDesejado}
-                      onChange={(e) => setPrecoVendaDesejado(e.target.value)}
+                      placeholder="Ex: 123456"
+                      value={pc.codigo}
+                      onChange={(e) => updateProduto(pc.id, "codigo", e.target.value)}
                     />
                   </div>
                   <div>
-                    <label style={labelStyle}>Volume em Caixas</label>
-                    <input
+                    <label style={labelStyle}>Filial</label>
+                    <select
                       style={inputStyle}
-                      placeholder="0"
-                      value={volumeCaixas}
-                      onChange={(e) => setVolumeCaixas(e.target.value)}
-                    />
+                      value={pc.filial}
+                      onChange={(e) => updateProduto(pc.id, "filial", e.target.value)}
+                    >
+                      {FILIAIS.map((f) => (
+                        <option key={f.id} value={f.id}>{f.id} – {f.nome}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-                <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-                  <InfoCard
-                    label="Margem Simulada"
-                    value={fmtPct(margemSimulada)}
-                    color={margemSimulada >= 0.15 ? "#34d399" : "#f87171"}
-                  />
-                  <InfoCard label="Valor Total Simulado" value={fmt(valorTotalSimulado)} />
-                  <InfoCard label="Total de Unidades" value={(volCx * qtdCaixa).toLocaleString("pt-BR")} />
-                </div>
+
+                {/* Product info */}
+                {pc.found && (
+                  <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+                    <InfoCard label="Descrição" value={pc.found.descricao} span={2} />
+                    <InfoCard label="Preço de Custo" value={fmt(pc.found.custoLiq)} />
+                    <InfoCard label="Preço de Venda Atual" value={fmt(pc.found.atual)} />
+                    <InfoCard label="Estoque (un)" value={pc.found.estoque.toLocaleString("pt-BR")} />
+                    <InfoCard label="Unid/CX" value={pc.found.embCmp} />
+                  </div>
+                )}
+
+                {pc.codigo.trim() && !pc.found && (
+                  <p style={{ marginTop: 12, color: "#f87171", fontSize: 13 }}>
+                    Produto não encontrado na filial selecionada.
+                  </p>
+                )}
+
+                {/* Simulation inputs */}
+                {pc.found && (
+                  <>
+                    <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                      <div>
+                        <label style={labelStyle}>Preço de Venda Desejado (R$)</label>
+                        <input
+                          style={inputStyle}
+                          placeholder="0,00"
+                          value={pc.precoVenda}
+                          onChange={(e) => updateProduto(pc.id, "precoVenda", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Volume em Caixas</label>
+                        <input
+                          style={inputStyle}
+                          placeholder="0"
+                          value={pc.volumeCaixas}
+                          onChange={(e) => updateProduto(pc.id, "volumeCaixas", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                      <InfoCard
+                        label="Margem Simulada"
+                        value={fmtPct(pc.margem)}
+                        color={pc.margem >= 0.15 ? "#34d399" : "#f87171"}
+                      />
+                      <InfoCard label="Valor Total" value={fmt(pc.valorTotal)} />
+                      <InfoCard label="Total Unidades" value={pc.totalUnidades.toLocaleString("pt-BR")} />
+                    </div>
+                  </>
+                )}
               </div>
-            )}
+            ))}
+
+            {/* Add product button */}
+            <button
+              onClick={addProduto}
+              style={{
+                padding: "12px 24px", borderRadius: 10, border: "2px dashed #334155",
+                background: "transparent", color: "#60a5fa", fontSize: 14, fontWeight: 700,
+                cursor: "pointer", transition: "all .2s",
+              }}
+            >
+              + Adicionar Produto à Proposta
+            </button>
 
             {/* Orders Table */}
             <div style={cardStyle}>
@@ -375,7 +421,6 @@ export default function SimuladorPropostas() {
                         </td>
                       </tr>
                     ))}
-                    {/* Total row */}
                     <tr style={{ borderTop: "2px solid #334155", background: "#0f172a" }}>
                       <td style={{ padding: "12px", fontWeight: 800, color: "#60a5fa" }}>
                         TOTAL CONSOLIDADO
