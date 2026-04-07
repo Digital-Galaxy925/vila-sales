@@ -448,7 +448,7 @@ export default function SimuladorPropostas() {
   );
 }
 
-function InfoCard({ label, value, span }: { label: string; value: string; span?: number }) {
+function InfoCard({ label, value, span, color }: { label: string; value: string; span?: number; color?: string }) {
   return (
     <div
       style={{
@@ -460,7 +460,7 @@ function InfoCard({ label, value, span }: { label: string; value: string; span?:
       <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginBottom: 4, textTransform: "uppercase" }}>
         {label}
       </div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>{value}</div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: color || "#e2e8f0" }}>{value}</div>
     </div>
   );
 }
