@@ -2222,6 +2222,31 @@ export default function Index() {
               {m.label}
             </button>
           ))}
+          {/* Simulador link */}
+          <button
+            onClick={() => navigate("/simulador")}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 12px",
+              borderRadius: 10,
+              border: "none",
+              cursor: "pointer",
+              marginBottom: 4,
+              marginTop: 4,
+              background: "transparent",
+              color: "#475569",
+              fontWeight: 400,
+              fontSize: 13,
+              textAlign: "left" as const,
+              transition: "all .2s",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🎛️</span>
+            Simulador
+          </button>
         </nav>
 
         {/* Upload button */}
