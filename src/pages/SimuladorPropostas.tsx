@@ -687,6 +687,19 @@ export default function SimuladorPropostas() {
                 </p>
               )}
             </div>
+
+            {/* Export PDF */}
+            <button
+              onClick={exportPDF}
+              style={{
+                width: "100%", padding: "14px 24px", borderRadius: 10, border: "none",
+                background: "linear-gradient(135deg, #2563eb, #7c3aed)", color: "#fff",
+                fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all .2s",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              }}
+            >
+              📄 Exportar Proposta em PDF
+            </button>
           </div>
         )}
       </div>
