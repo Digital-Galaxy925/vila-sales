@@ -61,6 +61,7 @@ export default function Simulador() {
   const [filial, setFilial] = useState("01");
   const [volumeCaixas, setVolumeCaixas] = useState("");
   const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
+  const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
 
   // ─── Find product ─────────────────────────────────────────────────────────
   const produto = useMemo(() => {
