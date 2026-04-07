@@ -258,6 +258,32 @@ export default function SimuladorPropostas() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
+            {/* Gerente e Data */}
+            <div style={cardStyle}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                👤 Informações da Proposta
+              </h2>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <label style={labelStyle}>Nome do Gerente</label>
+                  <input
+                    style={inputStyle}
+                    placeholder="Ex: João Silva"
+                    value={nomeGerente}
+                    onChange={(e) => setNomeGerente(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Data da Análise</label>
+                  <input
+                    type="date"
+                    style={inputStyle}
+                    value={dataAnalise}
+                    onChange={(e) => setDataAnalise(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
             {/* Products */}
             {produtosCalc.map((pc, idx) => (
               <div key={pc.id} style={cardStyle}>
