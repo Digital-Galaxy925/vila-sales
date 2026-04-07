@@ -249,6 +249,57 @@ const AnaliseGerencial = () => {
                     </table>
                   </div>
                 </div>
+
+                {/* Table 4: Visão Consolidada */}
+                <div className="bg-card rounded-2xl shadow-[var(--shadow-card)] overflow-hidden">
+                  <div className="px-5 py-4 border-b border-border">
+                    <h4 className="font-heading text-sm font-semibold text-card-foreground flex items-center gap-2">
+                      <LayoutGrid className="w-4 h-4 text-primary" />
+                      Visão Consolidada por Filial
+                    </h4>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border bg-muted/30">
+                          <th rowSpan={2} className={`${tableHeaderStyle} border-r border-border`}>Produto</th>
+                          {results.map((r) => (
+                            <th
+                              key={r.filial}
+                              colSpan={3}
+                              className={`${tableHeaderStyle} text-center border-r border-border last:border-r-0`}
+                            >
+                              {FILIAL_NAMES[r.filial]?.split(" - ")[1] || r.filial} | {r.filial}
+                            </th>
+                          ))}
+                        </tr>
+                        <tr className="border-b border-border bg-muted/20">
+                          {results.map((r) => (
+                            <React.Fragment key={r.filial}>
+                              <th className={`${tableHeaderStyle} text-right`}>Estoque</th>
+                              <th className={`${tableHeaderStyle} text-right`}>Custo</th>
+                              <th className={`${tableHeaderStyle} text-right border-r border-border last:border-r-0`}>Venda</th>
+                            </React.Fragment>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="hover:bg-muted/20 transition-colors">
+                          <td className={`${tableCellStyle} font-medium text-card-foreground border-r border-border`}>
+                            {productName || activeCode}
+                          </td>
+                          {results.map((r) => (
+                            <React.Fragment key={r.filial}>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmtNum(r.estoque)}</td>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.custoLiq)}</td>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border last:border-r-0`}>{fmt(r.atual)}</td>
+                            </React.Fragment>
+                          ))}
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </>
             )}
           </motion.div>
