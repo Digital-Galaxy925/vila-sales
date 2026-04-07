@@ -1,11 +1,12 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChart3, TrendingUp, DollarSign, Package, Search, LayoutGrid, FileSpreadsheet, FileText, ShoppingCart, BoxesIcon } from "lucide-react";
+import { BarChart3, TrendingUp, DollarSign, Package, Search, LayoutGrid, FileSpreadsheet, FileText, ShoppingCart, BoxesIcon, Upload, X } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { exportToExcel, exportToPDF } from "@/utils/exportGerencial";
+import * as XLSX from "xlsx";
 
 interface Product {
   seqProd: string;
