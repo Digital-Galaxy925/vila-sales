@@ -9,10 +9,12 @@ import {
   Upload,
   SlidersHorizontal,
   FileText,
+  BriefcaseBusiness,
 } from "lucide-react";
 
 const navItems = [
   { to: "/manual", label: "Análise de Custos", icon: BarChart3 },
+  { to: "/gerencial", label: "Análise Gerencial", icon: BriefcaseBusiness },
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
