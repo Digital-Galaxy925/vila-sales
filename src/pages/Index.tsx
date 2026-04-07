@@ -1663,39 +1663,28 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
                 status: p.ddv === 0 || p.estoque === 0 ? 0 : p.ddv < 7 ? 1 : p.ddv > 40 ? 3 : 2,
               }))
               .sort((a, b) => {
-                const getSortValue = (item: typeof a) => {
-                  switch (estSortCol) {
-                    case "estoque":
-                    case "custoLiq":
-                    case "valorCusto":
-                    case "atual":
-                    case "valorVenda":
-                    case "ddv":
-                    case "mesAnt":
-                    case "mesAtu":
-                    case "status":
-                      return Number(item[estSortCol as keyof typeof item] ?? 0);
-                    case "embCmp":
-                      return parseFloat(String(item.embCmp).replace(",", ".")) || 0;
-                    case "filial":
-                      return FILIAL_INFO[item.filial]?.nome?.toLowerCase() || item.filial.toLowerCase();
-                    default:
-                      return String(item[estSortCol as keyof typeof item] ?? "").toLowerCase();
-                  }
+                const numVal = (item: typeof a, col: string): number => {
+                  const raw = item[col as keyof typeof item];
+                  if (raw == null) return 0;
+                  if (typeof raw === "number") return raw;
+                  // Handle pt-BR formatted strings like "18.616,2"
+                  const s = String(raw).replace(/\./g, "").replace(",", ".");
+                  return parseFloat(s) || 0;
                 };
 
-                const va = getSortValue(a);
-                const vb = getSortValue(b);
+                const numCols = ["estoque", "custoLiq", "valorCusto", "atual", "valorVenda", "ddv", "mesAnt", "mesAtu", "status", "embCmp"];
 
-                if (va === vb) return 0;
-
-                if (typeof va === "number" && typeof vb === "number") {
+                if (numCols.includes(estSortCol)) {
+                  const va = numVal(a, estSortCol);
+                  const vb = numVal(b, estSortCol);
                   return estSortDir === "asc" ? va - vb : vb - va;
                 }
 
+                const va = String(a[estSortCol as keyof typeof a] ?? "").toLowerCase();
+                const vb = String(b[estSortCol as keyof typeof b] ?? "").toLowerCase();
                 return estSortDir === "asc"
-                  ? String(va).localeCompare(String(vb), "pt-BR", { numeric: true })
-                  : String(vb).localeCompare(String(va), "pt-BR", { numeric: true });
+                  ? va.localeCompare(vb, "pt-BR", { numeric: true })
+                  : vb.localeCompare(va, "pt-BR", { numeric: true });
               })
               .slice(0, 200)
               .map((p, i) => {
@@ -1952,12 +1941,24 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
                 status: p.ddv <= 30 ? 0 : p.ddv <= 90 ? 1 : 2,
               }))
               .sort((a, b) => {
-                const key = slSortCol as keyof typeof a;
-                let va: any = a[key];
-                let vb: any = b[key];
-                if (typeof va === "string") va = va.toLowerCase();
-                if (typeof vb === "string") vb = vb.toLowerCase();
-                return slSortDir === "asc" ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+                const numVal = (item: typeof a, col: string): number => {
+                  const raw = item[col as keyof typeof item];
+                  if (raw == null) return 0;
+                  if (typeof raw === "number") return raw;
+                  const s = String(raw).replace(/\./g, "").replace(",", ".");
+                  return parseFloat(s) || 0;
+                };
+                const numCols = ["estoque", "ddv", "status"];
+                if (numCols.includes(slSortCol)) {
+                  const va = numVal(a, slSortCol);
+                  const vb = numVal(b, slSortCol);
+                  return slSortDir === "asc" ? va - vb : vb - va;
+                }
+                const va = String(a[slSortCol as keyof typeof a] ?? "").toLowerCase();
+                const vb = String(b[slSortCol as keyof typeof b] ?? "").toLowerCase();
+                return slSortDir === "asc"
+                  ? va.localeCompare(vb, "pt-BR", { numeric: true })
+                  : vb.localeCompare(va, "pt-BR", { numeric: true });
               })
               .slice(0, 200)
               .map((p, i) => {
