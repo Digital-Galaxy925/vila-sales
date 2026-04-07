@@ -383,6 +383,43 @@ export default function Simulador() {
                       subtitle={`${volume} cx × ${qtdPorCaixa} un/cx × ${fmt(precoVenda)}`}
                     />
                   </div>
+
+                  {/* Investimento necessário */}
+                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: 16 }}>
+                    <h3 style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>
+                      Investimento Necessário
+                    </h3>
+                    {margemReal >= margemMinima ? (
+                      <div
+                        style={{
+                          background: "#0f2a1f", borderRadius: 10, padding: 16,
+                          border: "1px solid #166534", fontSize: 13, color: "#4ade80",
+                          fontWeight: 600,
+                        }}
+                      >
+                        ✅ A margem atual ({fmtPct(margemReal)}) já atende a margem mínima de {fmtPct(margemMinima)}. Nenhum investimento necessário.
+                      </div>
+                    ) : (
+                      <>
+                        <ResultCard
+                          label="Investimento por Unidade"
+                          value={fmt(investimentoPorUnidade)}
+                          color="#f87171"
+                          subtitle={`Custo (${fmt(custoUnitario)}) - Custo máximo permitido (${fmt(precoVenda * (1 - margemMinima))})`}
+                        />
+                        <div style={{ marginTop: 12 }}>
+                          <ResultCard
+                            label="Investimento Total Necessário"
+                            value={fmt(investimentoTotal)}
+                            color="#f87171"
+                            large
+                            subtitle={`${fmt(investimentoPorUnidade)} × ${totalUnidades.toLocaleString("pt-BR")} unidades`}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  </div>
                 </div>
               </div>
             )}
