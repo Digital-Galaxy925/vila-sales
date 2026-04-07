@@ -1688,7 +1688,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
                       <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.descricao}</div>
                     </td>
                     <td style={{ padding: "8px 14px", color: "#94a3b8", fontFamily: "monospace", textAlign: "center" }}>{p.embCmp || "–"}</td>
-                    <td style={{ padding: "8px 14px", color: "#e2e8f0", fontWeight: 700, fontFamily: "monospace" }}>{p.estoque}</td>
+                    <td style={{ padding: "8px 14px", color: "#e2e8f0", fontWeight: 700, fontFamily: "monospace" }}>{p.estoque.toLocaleString("pt-BR")}</td>
                     <td style={{ padding: "8px 14px", color: "#38bdf8", fontFamily: "monospace", textAlign: "right" }}>
                       {isNaN(p.custoLiq) ? "–" : `R$ ${p.custoLiq.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     </td>
