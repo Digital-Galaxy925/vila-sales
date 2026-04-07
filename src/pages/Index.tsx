@@ -2063,10 +2063,10 @@ export default function Index() {
 
       const newData: FilialData = {};
 
-      // Filial 01 – Poços (padrão, sempre primeiro)
+      // Filial 01 – Poços (estoque = livro_01; preço custo/venda = livro_10)
       if (files.livro_01) {
         const raw01 = await parseCSVRaw(files.livro_01);
-        newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 19, map10.size > 0 ? map10 : undefined);
+        newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 19, undefined, map10.size > 0 ? map10 : undefined);
       }
 
       // Filial 11 – Campinas
