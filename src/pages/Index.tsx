@@ -39,6 +39,7 @@ interface UploadedFiles {
   livro_14?: File;
   livro_501?: File;
   livro_502?: File;
+  livro_510?: File;
   base?: File;
 }
 
@@ -51,6 +52,7 @@ function detectFileKey(filename: string): keyof UploadedFiles | null {
   if (name.includes("livro_12") || name === "livro12" || name.endsWith("_12")) return "livro_12";
   if (name.includes("livro_14") || name === "livro14" || name.endsWith("_14")) return "livro_14";
   if (name.includes("livro_501") || name === "livro501" || name.endsWith("_501")) return "livro_501";
+  if (name.includes("livro_510") || name === "livro510" || name.endsWith("_510")) return "livro_510";
   if (name.includes("livro_502") || name === "livro502" || name.endsWith("_502")) return "livro_502";
   if (name.includes("base") || name.includes("produto")) return "base";
   return null;
@@ -318,12 +320,13 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
 // ─── Upload Wizard (2 steps) ──────────────────────────────────────────────────
 const LIVRO_META: { key: keyof UploadedFiles; label: string; desc: string }[] = [
   { key: "livro_01",  label: "livro_01",  desc: "Filial 01 – Poços (preço/venda)"        },
-  { key: "livro_10",  label: "livro_10",  desc: "Poços + Focomix MG (estoque/custo)"     },
+  { key: "livro_10",  label: "livro_10",  desc: "Poços (estoque/custo)"                  },
   { key: "livro_11",  label: "livro_11",  desc: "Filial 11 – Campinas"                   },
   { key: "livro_12",  label: "livro_12",  desc: "Filial 12 – Osasco"                     },
   { key: "livro_14",  label: "livro_14",  desc: "Filial 14 – Betim"                      },
   { key: "livro_501", label: "livro_501", desc: "Filial 501 – Focomix SP"                },
-  { key: "livro_502", label: "livro_502", desc: "Filial 502 – Focomix MG (preço/venda)"  },
+  { key: "livro_502", label: "livro_502", desc: "Filial 502 – Focomix MG (estoque)"      },
+  { key: "livro_510", label: "livro_510", desc: "Focomix MG (preço custo/venda)"         },
 ];
 
 // Step indicator
@@ -474,7 +477,7 @@ function UploadPanel({
           multiple
           accept=".csv"
           label="Arraste ou clique para selecionar todos os CSVs"
-          sublabel="livro_01, livro_10, livro_11, livro_12, livro_14, livro_501, livro_502"
+          sublabel="livro_01, livro_10, livro_11, livro_12, livro_14, livro_501, livro_502, livro_510"
           icon="🗂️"
           draggingColor="#3B82F6"
         />
@@ -1982,7 +1985,8 @@ export default function Index() {
         colDDV: number,
         colCustoFallback: number,
         colPrecoFallback: number,
-        overrideEstoque?: Map<string, { estoque: string; custo: string }> // livro_10
+        overrideEstoque?: Map<string, { estoque: string; custo: string }>, // livro_10
+        overridePrecos?: Map<string, { custo: string; preco: string }> // livro_510
       ): Product[] => {
         const header = rawRows[0] ?? [];
         const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
@@ -2005,13 +2009,13 @@ export default function Index() {
           const baseEntry = baseMap.get(cod)!;
           const desc = baseEntry.desc || cols[finalColDesc] || rawCod;
 
-          // Usa override de livro_10 se fornecido (Poços e Focomix MG)
+          // Usa override de livro_10 se fornecido (Poços)
           const estoqueStr = overrideEstoque?.get(cod)?.estoque ?? cols[finalColEstoque] ?? "0";
-          const custoStr   = overrideEstoque?.get(cod)?.custo   ?? cols[finalColCusto]   ?? "0";
+          const custoStr   = overridePrecos?.get(cod)?.custo ?? overrideEstoque?.get(cod)?.custo ?? cols[finalColCusto] ?? "0";
 
           const estoque  = num(estoqueStr);
           const custoLiq = num(custoStr);
-          const atual    = num(cols[finalColPreco] ?? "0");
+          const atual    = num(overridePrecos?.get(cod)?.preco ?? cols[finalColPreco] ?? "0");
           const ddv      = num(cols[finalColDDV] ?? "0");
           const marg     = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
@@ -2088,10 +2092,23 @@ export default function Index() {
         newData["501"] = buildProducts(raw, "501", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 502 – Focomix MG (preço/venda = livro_502; estoque/custo = livro_10)
+      // Filial 502 – Focomix MG (estoque = livro_502; preço custo/venda = livro_510)
+      let map510 = new Map<string, { custo: string; preco: string }>();
+      if (files.livro_510) {
+        const raw510 = await parseCSVRaw(files.livro_510);
+        const header510 = raw510[0] ?? [];
+        const codCol510 = findHeaderIndex(header510, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], 1);
+        const custoCol510 = findHeaderIndex(header510, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], 16);
+        const precoCol510 = findHeaderIndex(header510, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV"], 19);
+        raw510.slice(1).forEach((cols) => {
+          const cod = normCod(cols[codCol510] ?? "");
+          if (cod) map510.set(cod, { custo: cols[custoCol510] ?? "0", preco: cols[precoCol510] ?? "0" });
+        });
+      }
+
       if (files.livro_502) {
         const raw = await parseCSVRaw(files.livro_502);
-        newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 19, map10.size > 0 ? map10 : undefined);
+        newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 19, undefined, map510.size > 0 ? map510 : undefined);
       }
 
       setData(newData);
