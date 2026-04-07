@@ -54,7 +54,7 @@ const AppSidebar = () => {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 isActive
                   ? "bg-primary/15 text-sidebar-active"
-                  : "text-sidebar-fg hover:bg-sidebar-hover hover:text-white"
+                  : "text-sidebar-fg hover:bg-sidebar-hover hover:text-white hover:translate-x-1"
               }`}
             >
               <item.icon className={`w-4.5 h-4.5 ${isActive ? "text-sidebar-active" : ""}`} />
