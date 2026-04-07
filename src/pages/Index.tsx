@@ -1496,7 +1496,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
 
   const toggleEstSort = (col: string) => {
     if (estSortCol === col) setEstSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setEstSortCol(col); setEstSortDir("asc"); }
+    else { setEstSortCol(col); setEstSortDir("desc"); }
   };
 
   const EstSortIcon = ({ col }: { col: string }) =>
