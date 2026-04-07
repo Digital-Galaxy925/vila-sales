@@ -29,7 +29,17 @@ const fmt = (v: number) =>
 
 const fmtPct = (v: number) => (v * 100).toFixed(2) + "%";
 
-const parseBR = (s: string) => parseFloat(s.replace(/\./g, "").replace(",", ".")) || 0;
+const parseBR = (s: string) => {
+  const clean = s.replace(/[R$\s]/g, "").replace(/\./g, "").replace(",", ".");
+  return parseFloat(clean) || 0;
+};
+
+const fmtInput = (raw: string): string => {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return "";
+  const num = parseInt(digits, 10) / 100;
+  return num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 interface PedidoRow {
   label: string;
