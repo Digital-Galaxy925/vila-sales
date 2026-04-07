@@ -63,6 +63,8 @@ export default function SimuladorPropostas() {
 
   const [codigo, setCodigo] = useState("");
   const [filial, setFilial] = useState("01");
+  const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
+  const [volumeCaixas, setVolumeCaixas] = useState("");
 
   const produto = useMemo(() => {
     if (!codigo.trim() || !data[filial]) return null;
