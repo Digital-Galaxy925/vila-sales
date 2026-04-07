@@ -1874,6 +1874,21 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
   const atencao = allProducts.filter((p) => p.ddv > 30 && p.ddv <= 90);
   const ok = allProducts.filter((p) => p.ddv > 90);
 
+  const [slSortCol, setSlSortCol] = useState<string>("ddv");
+  const [slSortDir, setSlSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleSlSort = (col: string) => {
+    if (slSortCol === col) setSlSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSlSortCol(col); setSlSortDir("asc"); }
+  };
+
+  const SlSortIcon = ({ col }: { col: string }) =>
+    slSortCol === col ? (
+      <span style={{ color: "#60a5fa", marginLeft: 4 }}>{slSortDir === "asc" ? "↑" : "↓"}</span>
+    ) : (
+      <span style={{ color: "#334155", marginLeft: 4 }}>↕</span>
+    );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
@@ -1885,9 +1900,22 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
-              {["Filial", "Cód.", "Descrição", "DDV (dias)", "Estoque", "Status"].map((h) => (
-                <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase" }}>
-                  {h}
+              {([
+                { key: "filial", label: "Filial" },
+                { key: "seqProd", label: "Cód." },
+                { key: "descricao", label: "Descrição" },
+                { key: "ddv", label: "DDV (dias)" },
+                { key: "estoque", label: "Estoque" },
+                { key: "status", label: "Status" },
+              ] as { key: string; label: string }[]).map((h) => (
+                <th
+                  key={h.key}
+                  onClick={() => toggleSlSort(h.key)}
+                  style={{ padding: "10px 14px", textAlign: "left", color: slSortCol === h.key ? "#60a5fa" : "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer", userSelect: "none", borderBottom: `2px solid ${slSortCol === h.key ? "#1e3a5f" : "#1e293b"}` }}
+                >
+                  {h.label}<SlSortIcon col={h.key} />
+                </th>
+              ))}
                 </th>
               ))}
             </tr>
