@@ -154,6 +154,7 @@ export default function Simulador() {
           </button>
           {/* 2 - Simulador de Ofertas (active) */}
           <button
+            className="sidebar-nav-btn"
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
               padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
