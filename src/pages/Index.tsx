@@ -1491,6 +1491,20 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
   const [selectedFilial, setSelectedFilial] = useState<Filial | "all">("all");
   const [selectedBU, setSelectedBU] = useState<"all" | "FOODS" | "HC">("all");
   const [filtro, setFiltro] = useState<"todos" | "sem" | "baixo" | "ok" | "alto">("todos");
+  const [estSortCol, setEstSortCol] = useState<string>("estoque");
+  const [estSortDir, setEstSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleEstSort = (col: string) => {
+    if (estSortCol === col) setEstSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setEstSortCol(col); setEstSortDir("asc"); }
+  };
+
+  const EstSortIcon = ({ col }: { col: string }) =>
+    estSortCol === col ? (
+      <span style={{ color: "#60a5fa", marginLeft: 4 }}>{estSortDir === "asc" ? "↑" : "↓"}</span>
+    ) : (
+      <span style={{ color: "#334155", marginLeft: 4 }}>↕</span>
+    );
 
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
   const buBase = selectedBU === "all" ? base : base.filter((p) => p.bu === selectedBU);
@@ -1615,16 +1629,47 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
-              {["Filial", "Cód.", "Descrição", "Unid/CX", "Estoque", "Preço de Custo", "Estoque Valor Pr Custo", "Preço de Venda", "Estoque Valor Pr Venda", "DDV", "Mes Ant", "Mes Atu", "Status"].map((h) => (
-                <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                  {h}
+              {([
+                { key: "filial", label: "Filial" },
+                { key: "seqProd", label: "Cód." },
+                { key: "descricao", label: "Descrição" },
+                { key: "embCmp", label: "Unid/CX" },
+                { key: "estoque", label: "Estoque" },
+                { key: "custoLiq", label: "Preço de Custo" },
+                { key: "valorCusto", label: "Estoque Valor Pr Custo" },
+                { key: "atual", label: "Preço de Venda" },
+                { key: "valorVenda", label: "Estoque Valor Pr Venda" },
+                { key: "ddv", label: "DDV" },
+                { key: "mesAnt", label: "Mes Ant" },
+                { key: "mesAtu", label: "Mes Atu" },
+                { key: "status", label: "Status" },
+              ] as { key: string; label: string }[]).map((h) => (
+                <th
+                  key={h.key}
+                  onClick={() => toggleEstSort(h.key)}
+                  style={{ padding: "10px 14px", textAlign: "left", color: estSortCol === h.key ? "#60a5fa" : "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", whiteSpace: "nowrap", cursor: "pointer", userSelect: "none", borderBottom: `2px solid ${estSortCol === h.key ? "#1e3a5f" : "#1e293b"}` }}
+                >
+                  {h.label}<EstSortIcon col={h.key} />
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered
-              .sort((a, b) => a.estoque - b.estoque)
+              .map((p) => ({
+                ...p,
+                valorCusto: p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.custoLiq,
+                valorVenda: p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.atual,
+                status: p.ddv === 0 || p.estoque === 0 ? 0 : p.ddv < 7 ? 1 : p.ddv > 40 ? 3 : 2,
+              }))
+              .sort((a, b) => {
+                const key = estSortCol as keyof typeof a;
+                let va: any = a[key];
+                let vb: any = b[key];
+                if (typeof va === "string") va = va.toLowerCase();
+                if (typeof vb === "string") vb = vb.toLowerCase();
+                return estSortDir === "asc" ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+              })
               .slice(0, 200)
               .map((p, i) => {
                 const status =
@@ -1829,6 +1874,21 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
   const atencao = allProducts.filter((p) => p.ddv > 30 && p.ddv <= 90);
   const ok = allProducts.filter((p) => p.ddv > 90);
 
+  const [slSortCol, setSlSortCol] = useState<string>("ddv");
+  const [slSortDir, setSlSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleSlSort = (col: string) => {
+    if (slSortCol === col) setSlSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSlSortCol(col); setSlSortDir("asc"); }
+  };
+
+  const SlSortIcon = ({ col }: { col: string }) =>
+    slSortCol === col ? (
+      <span style={{ color: "#60a5fa", marginLeft: 4 }}>{slSortDir === "asc" ? "↑" : "↓"}</span>
+    ) : (
+      <span style={{ color: "#334155", marginLeft: 4 }}>↕</span>
+    );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
@@ -1840,16 +1900,38 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
-              {["Filial", "Cód.", "Descrição", "DDV (dias)", "Estoque", "Status"].map((h) => (
-                <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase" }}>
-                  {h}
+              {([
+                { key: "filial", label: "Filial" },
+                { key: "seqProd", label: "Cód." },
+                { key: "descricao", label: "Descrição" },
+                { key: "ddv", label: "DDV (dias)" },
+                { key: "estoque", label: "Estoque" },
+                { key: "status", label: "Status" },
+              ] as { key: string; label: string }[]).map((h) => (
+                <th
+                  key={h.key}
+                  onClick={() => toggleSlSort(h.key)}
+                  style={{ padding: "10px 14px", textAlign: "left", color: slSortCol === h.key ? "#60a5fa" : "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer", userSelect: "none", borderBottom: `2px solid ${slSortCol === h.key ? "#1e3a5f" : "#1e293b"}` }}
+                >
+                  {h.label}<SlSortIcon col={h.key} />
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {allProducts
-              .sort((a, b) => a.ddv - b.ddv)
+              .map((p) => ({
+                ...p,
+                status: p.ddv <= 30 ? 0 : p.ddv <= 90 ? 1 : 2,
+              }))
+              .sort((a, b) => {
+                const key = slSortCol as keyof typeof a;
+                let va: any = a[key];
+                let vb: any = b[key];
+                if (typeof va === "string") va = va.toLowerCase();
+                if (typeof vb === "string") vb = vb.toLowerCase();
+                return slSortDir === "asc" ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+              })
               .slice(0, 200)
               .map((p, i) => {
                 const status =
