@@ -168,13 +168,13 @@ const AnaliseGerencial = () => {
     const ws = XLSX.utils.aoa_to_sheet([headerRow1, headerRow2, ...rows]);
     // Merge filial header cells
     const merges: XLSX.Range[] = [];
-    let col = 1;
+    let col = 2;
     availableFiliais.forEach(() => {
       merges.push({ s: { r: 0, c: col }, e: { r: 0, c: col + 2 } });
       col += 3;
     });
     ws["!merges"] = merges;
-    ws["!cols"] = [{ wch: 30 }, ...availableFiliais.flatMap(() => [{ wch: 12 }, { wch: 14 }, { wch: 14 }])];
+    ws["!cols"] = [{ wch: 12 }, { wch: 30 }, ...availableFiliais.flatMap(() => [{ wch: 12 }, { wch: 14 }, { wch: 14 }])];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Visão Consolidada");
