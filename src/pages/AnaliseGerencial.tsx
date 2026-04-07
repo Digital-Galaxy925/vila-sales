@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BarChart3, TrendingUp, DollarSign, Package, Search, LayoutGrid } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
