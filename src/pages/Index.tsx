@@ -2309,6 +2309,7 @@ export default function Index() {
         <nav style={{ flex: 1, padding: "0 12px" }}>
           {/* 1 - Análise de Custos */}
           <button
+            className="sidebar-nav-btn"
             key="cruzamento"
             onClick={() => setActiveModule("cruzamento")}
             style={{
@@ -2326,6 +2327,7 @@ export default function Index() {
           </button>
           {/* 2 - Simulador de Ofertas */}
           <button
+            className="sidebar-nav-btn"
             onClick={() => navigate("/simulador")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
@@ -2340,6 +2342,7 @@ export default function Index() {
           </button>
           {/* 3 - Simulador de Propostas */}
           <button
+            className="sidebar-nav-btn"
             onClick={() => navigate("/propostas")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
@@ -2355,6 +2358,7 @@ export default function Index() {
           {/* 4-8 - Remaining modules */}
           {modules.filter(m => m.id !== "cruzamento").map((m) => (
             <button
+              className="sidebar-nav-btn"
               key={m.id}
               onClick={() => setActiveModule(m.id)}
               style={{

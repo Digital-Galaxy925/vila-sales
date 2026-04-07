@@ -81,3 +81,13 @@
     font-family: var(--font-heading);
   }
 }
+
+.sidebar-nav-btn:hover {
+  background: rgba(30, 58, 95, 0.5) !important;
+  color: #94a3b8 !important;
+  transform: translateX(4px);
+}
+
+.sidebar-nav-btn {
+  transition: all 0.2s ease !important;
+}

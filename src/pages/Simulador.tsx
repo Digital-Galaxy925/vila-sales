@@ -140,6 +140,7 @@ export default function Simulador() {
         <nav style={{ flex: 1, padding: "0 12px" }}>
           {/* 1 - Análise de Custos */}
           <button
+            className="sidebar-nav-btn"
             onClick={() => navigate("/")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
@@ -153,6 +154,7 @@ export default function Simulador() {
           </button>
           {/* 2 - Simulador de Ofertas (active) */}
           <button
+            className="sidebar-nav-btn"
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
               padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
@@ -165,6 +167,7 @@ export default function Simulador() {
           </button>
           {/* 3 - Simulador de Propostas */}
           <button
+            className="sidebar-nav-btn"
             onClick={() => navigate("/propostas")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
@@ -179,6 +182,7 @@ export default function Simulador() {
           {/* 4-8 - Remaining modules */}
           {sidebarModules.filter(m => m.id !== "cruzamento").map((m) => (
             <button
+              className="sidebar-nav-btn"
               key={m.id}
               onClick={() => navigate("/")}
               style={{
