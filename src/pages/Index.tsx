@@ -2342,6 +2342,7 @@ export default function Index() {
           </button>
           {/* 3 - Simulador de Propostas */}
           <button
+            className="sidebar-nav-btn"
             onClick={() => navigate("/propostas")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
