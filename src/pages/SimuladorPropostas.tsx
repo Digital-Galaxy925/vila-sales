@@ -89,7 +89,11 @@ export default function SimuladorPropostas() {
   };
 
   const removeProduto = (id: number) => {
-    setProdutos((prev) => (prev.length > 1 ? prev.filter((p) => p.id !== id) : prev));
+    if (produtos.length > 1) {
+      setProdutos((prev) => prev.filter((p) => p.id !== id));
+    } else {
+      setProdutos([{ id: Date.now(), codigo: "", filial: "01", precoVenda: "", volumeCaixas: "" }]);
+    }
   };
 
   const produtosCalc = produtos.map((item) => {
