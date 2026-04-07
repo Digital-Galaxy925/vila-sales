@@ -320,12 +320,13 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
 // ─── Upload Wizard (2 steps) ──────────────────────────────────────────────────
 const LIVRO_META: { key: keyof UploadedFiles; label: string; desc: string }[] = [
   { key: "livro_01",  label: "livro_01",  desc: "Filial 01 – Poços (preço/venda)"        },
-  { key: "livro_10",  label: "livro_10",  desc: "Poços + Focomix MG (estoque/custo)"     },
+  { key: "livro_10",  label: "livro_10",  desc: "Poços (estoque/custo)"                  },
   { key: "livro_11",  label: "livro_11",  desc: "Filial 11 – Campinas"                   },
   { key: "livro_12",  label: "livro_12",  desc: "Filial 12 – Osasco"                     },
   { key: "livro_14",  label: "livro_14",  desc: "Filial 14 – Betim"                      },
   { key: "livro_501", label: "livro_501", desc: "Filial 501 – Focomix SP"                },
-  { key: "livro_502", label: "livro_502", desc: "Filial 502 – Focomix MG (preço/venda)"  },
+  { key: "livro_502", label: "livro_502", desc: "Filial 502 – Focomix MG (estoque)"      },
+  { key: "livro_510", label: "livro_510", desc: "Focomix MG (preço custo/venda)"         },
 ];
 
 // Step indicator
