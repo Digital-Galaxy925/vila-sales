@@ -69,6 +69,10 @@ export default function SimuladorPropostas() {
 
   const hasData = Object.keys(data).length > 0;
 
+  const [nomeGerente, setNomeGerente] = useState("");
+  const [dataAnalise, setDataAnalise] = useState(() => new Date().toISOString().slice(0, 10));
+  const [statusProposta, setStatusProposta] = useState<"" | "aprovada" | "rejeitada">("");
+
   const [produtos, setProdutos] = useState<ProdutoItem[]>([
     { id: 1, codigo: "", filial: "01", precoVenda: "", volumeCaixas: "" },
   ]);
