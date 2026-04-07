@@ -336,7 +336,8 @@ const AnaliseGerencial = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">
-                      <th rowSpan={2} className={`${tableHeaderStyle} border-r border-border sticky left-0 bg-muted/30 z-10`}>Produto</th>
+                      <th rowSpan={2} className={`${tableHeaderStyle} border-r border-border sticky left-0 bg-muted/30 z-10 min-w-[90px]`}>Código</th>
+                      <th rowSpan={2} className={`${tableHeaderStyle} border-r border-border sticky left-[90px] bg-muted/30 z-10`}>Produto</th>
                       {bulkAvailableFiliais.map((f) => (
                         <th
                           key={f}
@@ -360,9 +361,12 @@ const AnaliseGerencial = () => {
                   <tbody>
                     {bulkResults.map((r, i) => (
                       <tr key={i} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                        <td className={`${tableCellStyle} font-medium text-card-foreground border-r border-border sticky left-0 bg-card z-10 max-w-[200px] truncate`}>
+                        <td className={`${tableCellStyle} font-mono text-card-foreground border-r border-border sticky left-0 bg-card z-10 min-w-[90px]`}>
+                          {r.code}
+                        </td>
+                        <td className={`${tableCellStyle} font-medium text-card-foreground border-r border-border sticky left-[90px] bg-card z-10 max-w-[200px] truncate`}>
                           {r.descricao !== "Não encontrado" ? r.descricao : (
-                            <span className="text-muted-foreground italic">{r.code} — não encontrado</span>
+                            <span className="text-muted-foreground italic">não encontrado</span>
                           )}
                         </td>
                         {bulkAvailableFiliais.map((f) => {
