@@ -118,10 +118,10 @@ const AnaliseGerencial = () => {
         animate={{ opacity: 1, y: 0 }}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
       >
-        <KpiCard title="Faturamento Total" value="R$ 2.450.000" icon={DollarSign} trend="up" />
-        <KpiCard title="Margem Média" value="18,4%" icon={TrendingUp} trend="down" />
-        <KpiCard title="Itens em Estoque" value="12.384" icon={Package} trend="up" />
-        <KpiCard title="SKUs Ativos" value="1.856" icon={BarChart3} trend="up" />
+        <KpiCard title="Custo Médio" value={kpis.custoMedio} icon={DollarSign} />
+        <KpiCard title="Venda Média" value={kpis.vendaMedia} icon={TrendingUp} />
+        <KpiCard title="Estoque Total" value={kpis.estoqueTotal} icon={Package} />
+        <KpiCard title="Filiais c/ Produto" value={kpis.filiaisPresentes} icon={BarChart3} />
       </motion.div>
 
       {/* Product search */}
