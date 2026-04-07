@@ -74,6 +74,13 @@ export default function SimuladorPropostas() {
     ) ?? null;
   }, [codigo, filial, data]);
 
+  const custoUnit = produto?.custoLiq ?? 0;
+  const qtdCaixa = produto ? parseFloat(produto.embCmp) || 1 : 1;
+  const precoVD = parseBR(precoVendaDesejado);
+  const volCx = parseBR(volumeCaixas);
+  const margemSimulada = precoVD > 0 ? (precoVD - custoUnit) / precoVD : 0;
+  const valorTotalSimulado = volCx * qtdCaixa * precoVD;
+
   const [pedidos, setPedidos] = useState<PedidoRow[]>([
     { label: "Pedido Promocional", valor: "", margem: "" },
     { label: "Pedido Sortimento", valor: "", margem: "" },
