@@ -52,6 +52,7 @@ function detectFileKey(filename: string): keyof UploadedFiles | null {
   if (name.includes("livro_12") || name === "livro12" || name.endsWith("_12")) return "livro_12";
   if (name.includes("livro_14") || name === "livro14" || name.endsWith("_14")) return "livro_14";
   if (name.includes("livro_501") || name === "livro501" || name.endsWith("_501")) return "livro_501";
+  if (name.includes("livro_510") || name === "livro510" || name.endsWith("_510")) return "livro_510";
   if (name.includes("livro_502") || name === "livro502" || name.endsWith("_502")) return "livro_502";
   if (name.includes("base") || name.includes("produto")) return "base";
   return null;
