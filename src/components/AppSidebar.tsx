@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Upload,
   SlidersHorizontal,
+  FileText,
 } from "lucide-react";
 
 const navItems = [
@@ -18,6 +19,7 @@ const navItems = [
   { to: "/shelf-life", label: "Análise de Shelf Life", icon: Clock },
   { to: "/manual", label: "Análise Manual", icon: BarChart3 },
   { to: "/simulador", label: "Simulador", icon: SlidersHorizontal },
+  { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
   { to: "/upload", label: "Upload de Dados", icon: Upload },
 ];
 
