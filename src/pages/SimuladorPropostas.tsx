@@ -302,12 +302,15 @@ export default function SimuladorPropostas() {
                           {row.label}
                         </td>
                         <td style={{ padding: "10px 12px" }}>
-                          <input
-                            style={{ ...inputStyle, width: 160 }}
-                            placeholder="0,00"
-                            value={pedidos[i].valor}
-                            onChange={(e) => updatePedido(i, "valor", e.target.value)}
-                          />
+                          <div style={{ position: "relative" }}>
+                            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#64748b", fontSize: 13 }}>R$</span>
+                            <input
+                              style={{ ...inputStyle, width: 180, paddingLeft: 40 }}
+                              placeholder="0,00"
+                              value={pedidos[i].valor}
+                              onChange={(e) => updatePedido(i, "valor", fmtInput(e.target.value))}
+                            />
+                          </div>
                         </td>
                         <td style={{ padding: "10px 12px" }}>
                           <input
