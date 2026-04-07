@@ -1879,7 +1879,7 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
 
   const toggleSlSort = (col: string) => {
     if (slSortCol === col) setSlSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSlSortCol(col); setSlSortDir("asc"); }
+    else { setSlSortCol(col); setSlSortDir("desc"); }
   };
 
   const SlSortIcon = ({ col }: { col: string }) =>
