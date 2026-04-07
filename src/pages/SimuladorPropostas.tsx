@@ -282,6 +282,44 @@ export default function SimuladorPropostas() {
               )}
             </div>
 
+            {/* Simulação de Venda */}
+            {produto && (
+              <div style={cardStyle}>
+                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                  💲 Simulação de Venda
+                </h2>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <label style={labelStyle}>Preço de Venda Desejado (R$)</label>
+                    <input
+                      style={inputStyle}
+                      placeholder="0,00"
+                      value={precoVendaDesejado}
+                      onChange={(e) => setPrecoVendaDesejado(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Volume em Caixas</label>
+                    <input
+                      style={inputStyle}
+                      placeholder="0"
+                      value={volumeCaixas}
+                      onChange={(e) => setVolumeCaixas(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  <InfoCard
+                    label="Margem Simulada"
+                    value={fmtPct(margemSimulada)}
+                    color={margemSimulada >= 0.15 ? "#34d399" : "#f87171"}
+                  />
+                  <InfoCard label="Valor Total Simulado" value={fmt(valorTotalSimulado)} />
+                  <InfoCard label="Total de Unidades" value={(volCx * qtdCaixa).toLocaleString("pt-BR")} />
+                </div>
+              </div>
+            )}
+
             {/* Orders Table */}
             <div style={cardStyle}>
               <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
