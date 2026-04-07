@@ -2313,7 +2313,7 @@ export default function Index() {
             onClick={() => setActiveModule("cruzamento")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer", className: undefined,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
               marginBottom: 4,
               background: activeModule === "cruzamento" ? "#1e3a5f" : "transparent",
               color: activeModule === "cruzamento" ? "#60a5fa" : "#475569",
@@ -2329,7 +2329,7 @@ export default function Index() {
             onClick={() => navigate("/simulador")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer", className: undefined,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
               marginBottom: 4,
               background: "transparent", color: "#475569",
               fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
@@ -2343,7 +2343,7 @@ export default function Index() {
             onClick={() => navigate("/propostas")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer", className: undefined,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
               marginBottom: 4,
               background: "transparent", color: "#475569",
               fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
@@ -2359,7 +2359,7 @@ export default function Index() {
               onClick={() => setActiveModule(m.id)}
               style={{
                 width: "100%", display: "flex", alignItems: "center", gap: 10,
-                padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer", className: undefined,
+                padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
                 marginBottom: 4,
                 background: activeModule === m.id ? "#1e3a5f" : "transparent",
                 color: activeModule === m.id ? "#60a5fa" : "#475569",
