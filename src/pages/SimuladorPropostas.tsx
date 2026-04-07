@@ -69,6 +69,10 @@ export default function SimuladorPropostas() {
 
   const hasData = Object.keys(data).length > 0;
 
+  const [nomeGerente, setNomeGerente] = useState("");
+  const [dataAnalise, setDataAnalise] = useState(() => new Date().toISOString().slice(0, 10));
+  const [statusProposta, setStatusProposta] = useState<"" | "aprovada" | "rejeitada">("");
+
   const [produtos, setProdutos] = useState<ProdutoItem[]>([
     { id: 1, codigo: "", filial: "01", precoVenda: "", volumeCaixas: "" },
   ]);
@@ -254,6 +258,32 @@ export default function SimuladorPropostas() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
+            {/* Gerente e Data */}
+            <div style={cardStyle}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                👤 Informações da Proposta
+              </h2>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <label style={labelStyle}>Nome do Gerente</label>
+                  <input
+                    style={inputStyle}
+                    placeholder="Ex: João Silva"
+                    value={nomeGerente}
+                    onChange={(e) => setNomeGerente(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Data da Análise</label>
+                  <input
+                    type="date"
+                    style={inputStyle}
+                    value={dataAnalise}
+                    onChange={(e) => setDataAnalise(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
             {/* Products */}
             {produtosCalc.map((pc, idx) => (
               <div key={pc.id} style={cardStyle}>
@@ -485,6 +515,44 @@ export default function SimuladorPropostas() {
                 color="#fbbf24"
                 subtitle={`Participação: ${fmtPct(participacoes[maiorPedidoIdx] ?? 0)}`}
               />
+            </div>
+
+            {/* Status da Proposta */}
+            <div style={cardStyle}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                ✅ Status da Proposta
+              </h2>
+              <div style={{ display: "flex", gap: 16 }}>
+                <button
+                  onClick={() => setStatusProposta("aprovada")}
+                  style={{
+                    flex: 1, padding: "14px 24px", borderRadius: 10, border: "2px solid",
+                    borderColor: statusProposta === "aprovada" ? "#34d399" : "#1e293b",
+                    background: statusProposta === "aprovada" ? "#34d39920" : "transparent",
+                    color: statusProposta === "aprovada" ? "#34d399" : "#94a3b8",
+                    fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all .2s",
+                  }}
+                >
+                  ✅ Aprovada
+                </button>
+                <button
+                  onClick={() => setStatusProposta("rejeitada")}
+                  style={{
+                    flex: 1, padding: "14px 24px", borderRadius: 10, border: "2px solid",
+                    borderColor: statusProposta === "rejeitada" ? "#f87171" : "#1e293b",
+                    background: statusProposta === "rejeitada" ? "#f8717120" : "transparent",
+                    color: statusProposta === "rejeitada" ? "#f87171" : "#94a3b8",
+                    fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all .2s",
+                  }}
+                >
+                  ❌ Rejeitada
+                </button>
+              </div>
+              {statusProposta && (
+                <p style={{ marginTop: 12, fontSize: 13, color: statusProposta === "aprovada" ? "#34d399" : "#f87171", fontWeight: 600 }}>
+                  Proposta marcada como: {statusProposta === "aprovada" ? "APROVADA" : "REJEITADA"}
+                </p>
+              )}
             </div>
           </div>
         )}
