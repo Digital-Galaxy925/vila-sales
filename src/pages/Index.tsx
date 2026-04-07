@@ -2045,19 +2045,20 @@ export default function Index() {
         return result;
       };
 
-      // ── 4. Lê livro_10 (estoque/custo compartilhado para Poços e Focomix MG) ──
-      // col[1] = código, col[6] = estoque, col[16] = custo liq
-      let map10 = new Map<string, { estoque: string; custo: string }>();
+      // ── 4. Lê livro_10 (custo/preço para Poços) ──
+      // Filial 01: estoque vem do livro_01, custo (CUSTO LIQ) e preço (ATUAL) vêm do livro_10
+      let map10 = new Map<string, { custo: string; preco: string }>();
       if (files.livro_10) {
-        const raw10 = await parseCSVRaw(files.livro_10);
-        const header10 = raw10[0] ?? [];
-        const codCol10 = findHeaderIndex(header10, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], 1);
-        const estoqueCol10 = findHeaderIndex(header10, ["ESTOQUE"], 6);
-        const custoCol10 = findHeaderIndex(header10, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], 16);
-        raw10.slice(1).forEach((cols) => {
-          const cod = normCod(cols[codCol10] ?? "");
-          if (cod) map10.set(cod, { estoque: cols[estoqueCol10] ?? "0", custo: cols[custoCol10] ?? "0" });
+        const rows10 = await readExcelAsRows(files.livro_10);
+        rows10.forEach((row) => {
+          const cod = normCod(findCol(row, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO", "SEQPROD", "SEQ_PROD"]));
+          if (cod) {
+            const custo = findCol(row, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]);
+            const preco = findCol(row, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"]);
+            map10.set(cod, { custo: custo || "0", preco: preco || "0" });
+          }
         });
+        console.log(`[livro_10] ${map10.size} produtos mapeados (custo/preço para Poços)`);
       }
 
       const newData: FilialData = {};
