@@ -2117,6 +2117,7 @@ export default function Index() {
       }
 
       setData(newData);
+      try { localStorage.setItem("vilasales_data", JSON.stringify(newData)); } catch(_) {}
       setLastUpdate(new Date().toLocaleString("pt-BR"));
       setShowUpload(false);
       setActiveModule("cruzamento");
