@@ -63,6 +63,8 @@ export default function SimuladorPropostas() {
 
   const [codigo, setCodigo] = useState("");
   const [filial, setFilial] = useState("01");
+  const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
+  const [volumeCaixas, setVolumeCaixas] = useState("");
 
   const produto = useMemo(() => {
     if (!codigo.trim() || !data[filial]) return null;
@@ -71,6 +73,13 @@ export default function SimuladorPropostas() {
       (p) => p.seqProd === cod || p.seqProd === cod.padStart(6, "0")
     ) ?? null;
   }, [codigo, filial, data]);
+
+  const custoUnit = produto?.custoLiq ?? 0;
+  const qtdCaixa = produto ? parseFloat(produto.embCmp) || 1 : 1;
+  const precoVD = parseBR(precoVendaDesejado);
+  const volCx = parseBR(volumeCaixas);
+  const margemSimulada = precoVD > 0 ? (precoVD - custoUnit) / precoVD : 0;
+  const valorTotalSimulado = volCx * qtdCaixa * precoVD;
 
   const [pedidos, setPedidos] = useState<PedidoRow[]>([
     { label: "Pedido Promocional", valor: "", margem: "" },
@@ -273,6 +282,44 @@ export default function SimuladorPropostas() {
               )}
             </div>
 
+            {/* Simulação de Venda */}
+            {produto && (
+              <div style={cardStyle}>
+                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                  💲 Simulação de Venda
+                </h2>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <label style={labelStyle}>Preço de Venda Desejado (R$)</label>
+                    <input
+                      style={inputStyle}
+                      placeholder="0,00"
+                      value={precoVendaDesejado}
+                      onChange={(e) => setPrecoVendaDesejado(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Volume em Caixas</label>
+                    <input
+                      style={inputStyle}
+                      placeholder="0"
+                      value={volumeCaixas}
+                      onChange={(e) => setVolumeCaixas(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  <InfoCard
+                    label="Margem Simulada"
+                    value={fmtPct(margemSimulada)}
+                    color={margemSimulada >= 0.15 ? "#34d399" : "#f87171"}
+                  />
+                  <InfoCard label="Valor Total Simulado" value={fmt(valorTotalSimulado)} />
+                  <InfoCard label="Total de Unidades" value={(volCx * qtdCaixa).toLocaleString("pt-BR")} />
+                </div>
+              </div>
+            )}
+
             {/* Orders Table */}
             <div style={cardStyle}>
               <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
@@ -401,7 +448,7 @@ export default function SimuladorPropostas() {
   );
 }
 
-function InfoCard({ label, value, span }: { label: string; value: string; span?: number }) {
+function InfoCard({ label, value, span, color }: { label: string; value: string; span?: number; color?: string }) {
   return (
     <div
       style={{
@@ -413,7 +460,7 @@ function InfoCard({ label, value, span }: { label: string; value: string; span?:
       <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginBottom: 4, textTransform: "uppercase" }}>
         {label}
       </div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>{value}</div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: color || "#e2e8f0" }}>{value}</div>
     </div>
   );
 }
