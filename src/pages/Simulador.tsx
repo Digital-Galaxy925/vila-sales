@@ -61,6 +61,7 @@ export default function Simulador() {
   const [filial, setFilial] = useState("01");
   const [volumeCaixas, setVolumeCaixas] = useState("");
   const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
+  const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
 
   // ─── Find product ─────────────────────────────────────────────────────────
   const produto = useMemo(() => {
@@ -79,6 +80,11 @@ export default function Simulador() {
 
   const margemReal = precoVenda > 0 ? (precoVenda - custoUnitario) / precoVenda : 0;
   const totalSellOut = volume * qtdPorCaixa * precoVenda;
+
+  const margemMinima = (parseFloat(margemMinimaDesejada.replace(",", ".")) || 0) / 100;
+  const totalUnidades = volume * qtdPorCaixa;
+  const investimentoPorUnidade = precoVenda > 0 ? custoUnitario - precoVenda * (1 - margemMinima) : 0;
+  const investimentoTotal = investimentoPorUnidade > 0 ? investimentoPorUnidade * totalUnidades : 0;
 
   // ─── Sidebar (matches Index.tsx style) ────────────────────────────────────
   const sidebarModules = [
@@ -299,6 +305,20 @@ export default function Simulador() {
                     />
                   </div>
                 )}
+
+                {/* Margem mínima desejada */}
+                {produto && precoVenda > 0 && (
+                  <div>
+                    <label style={labelStyle}>Margem Mínima Desejada (%)</label>
+                    <input
+                      type="text"
+                      value={margemMinimaDesejada}
+                      onChange={(e) => setMargemMinimaDesejada(e.target.value)}
+                      placeholder="Ex: 17"
+                      style={inputStyle}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -362,6 +382,42 @@ export default function Simulador() {
                       large
                       subtitle={`${volume} cx × ${qtdPorCaixa} un/cx × ${fmt(precoVenda)}`}
                     />
+                  </div>
+
+                  {/* Investimento necessário */}
+                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: 16 }}>
+                    <h3 style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>
+                      Investimento Necessário
+                    </h3>
+                    {margemReal >= margemMinima ? (
+                      <div
+                        style={{
+                          background: "#0f2a1f", borderRadius: 10, padding: 16,
+                          border: "1px solid #166534", fontSize: 13, color: "#4ade80",
+                          fontWeight: 600,
+                        }}
+                      >
+                        ✅ A margem atual ({fmtPct(margemReal)}) já atende a margem mínima de {fmtPct(margemMinima)}. Nenhum investimento necessário.
+                      </div>
+                    ) : (
+                      <>
+                        <ResultCard
+                          label="Investimento por Unidade"
+                          value={fmt(investimentoPorUnidade)}
+                          color="#f87171"
+                          subtitle={`Custo (${fmt(custoUnitario)}) - Custo máximo permitido (${fmt(precoVenda * (1 - margemMinima))})`}
+                        />
+                        <div style={{ marginTop: 12 }}>
+                          <ResultCard
+                            label="Investimento Total Necessário"
+                            value={fmt(investimentoTotal)}
+                            color="#f87171"
+                            large
+                            subtitle={`${fmt(investimentoPorUnidade)} × ${totalUnidades.toLocaleString("pt-BR")} unidades`}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
