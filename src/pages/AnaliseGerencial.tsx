@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChart3, TrendingUp, DollarSign, Package, Search } from "lucide-react";
+import { BarChart3, TrendingUp, DollarSign, Package, Search, LayoutGrid } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
 import { Input } from "@/components/ui/input";
