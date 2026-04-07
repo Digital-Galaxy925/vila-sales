@@ -1491,6 +1491,20 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
   const [selectedFilial, setSelectedFilial] = useState<Filial | "all">("all");
   const [selectedBU, setSelectedBU] = useState<"all" | "FOODS" | "HC">("all");
   const [filtro, setFiltro] = useState<"todos" | "sem" | "baixo" | "ok" | "alto">("todos");
+  const [estSortCol, setEstSortCol] = useState<string>("estoque");
+  const [estSortDir, setEstSortDir] = useState<"asc" | "desc">("asc");
+
+  const toggleEstSort = (col: string) => {
+    if (estSortCol === col) setEstSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setEstSortCol(col); setEstSortDir("asc"); }
+  };
+
+  const EstSortIcon = ({ col }: { col: string }) =>
+    estSortCol === col ? (
+      <span style={{ color: "#60a5fa", marginLeft: 4 }}>{estSortDir === "asc" ? "↑" : "↓"}</span>
+    ) : (
+      <span style={{ color: "#334155", marginLeft: 4 }}>↕</span>
+    );
 
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
   const buBase = selectedBU === "all" ? base : base.filter((p) => p.bu === selectedBU);
