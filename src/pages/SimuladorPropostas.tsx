@@ -256,8 +256,8 @@ export default function SimuladorPropostas() {
   const sidebarModules = [
     { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
     { id: "estoque", label: "Análise de Estoque", icon: "📦" },
-    { id: "preco", label: "Análise de Preço", icon: "💰" },
     { id: "margem", label: "Análise de Margem", icon: "📊" },
+    { id: "preco", label: "Análise de Preço", icon: "💰" },
     { id: "shelflife", label: "Análise de Shelf Life", icon: "⏰" },
     { id: "geral", label: "Análise Geral", icon: "🏢" },
   ];
