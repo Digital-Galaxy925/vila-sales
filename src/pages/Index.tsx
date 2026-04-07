@@ -2092,10 +2092,23 @@ export default function Index() {
         newData["501"] = buildProducts(raw, "501", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 502 – Focomix MG (preço/venda = livro_502; estoque/custo = livro_10)
+      // Filial 502 – Focomix MG (estoque = livro_502; preço custo/venda = livro_510)
+      let map510 = new Map<string, { custo: string; preco: string }>();
+      if (files.livro_510) {
+        const raw510 = await parseCSVRaw(files.livro_510);
+        const header510 = raw510[0] ?? [];
+        const codCol510 = findHeaderIndex(header510, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], 1);
+        const custoCol510 = findHeaderIndex(header510, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], 16);
+        const precoCol510 = findHeaderIndex(header510, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV"], 19);
+        raw510.slice(1).forEach((cols) => {
+          const cod = normCod(cols[codCol510] ?? "");
+          if (cod) map510.set(cod, { custo: cols[custoCol510] ?? "0", preco: cols[precoCol510] ?? "0" });
+        });
+      }
+
       if (files.livro_502) {
         const raw = await parseCSVRaw(files.livro_502);
-        newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 19, map10.size > 0 ? map10 : undefined);
+        newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 19, undefined, map510.size > 0 ? map510 : undefined);
       }
 
       setData(newData);
