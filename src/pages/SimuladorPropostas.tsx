@@ -1,17 +1,423 @@
-import AppSidebar from "@/components/AppSidebar";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
-const SimuladorPropostas = () => {
+interface Product {
+  familia: string;
+  seqProd: string;
+  descricao: string;
+  embCmp: string;
+  estoque: number;
+  custoLiq: number;
+  atual: number;
+  filial: string;
+  bu: string;
+}
+
+type DataMap = Record<string, Product[]>;
+
+const FILIAIS = [
+  { id: "01", nome: "Poços de Caldas" },
+  { id: "11", nome: "Campinas" },
+  { id: "12", nome: "Osasco" },
+  { id: "14", nome: "Betim" },
+  { id: "501", nome: "Focomix SP" },
+  { id: "502", nome: "Focomix MG" },
+];
+
+const fmt = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const fmtPct = (v: number) => (v * 100).toFixed(2) + "%";
+
+const parseBR = (s: string) => parseFloat(s.replace(/\./g, "").replace(",", ".")) || 0;
+
+interface PedidoRow {
+  label: string;
+  valor: string;
+  margem: string;
+}
+
+export default function SimuladorPropostas() {
+  const navigate = useNavigate();
+
+  const data: DataMap = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("vilasales_data");
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }, []);
+
+  const hasData = Object.keys(data).length > 0;
+
+  const [codigo, setCodigo] = useState("");
+  const [filial, setFilial] = useState("01");
+
+  const produto = useMemo(() => {
+    if (!codigo.trim() || !data[filial]) return null;
+    const cod = codigo.trim();
+    return data[filial].find(
+      (p) => p.seqProd === cod || p.seqProd === cod.padStart(6, "0")
+    ) ?? null;
+  }, [codigo, filial, data]);
+
+  const [pedidos, setPedidos] = useState<PedidoRow[]>([
+    { label: "Pedido Promocional", valor: "", margem: "" },
+    { label: "Pedido Sortimento", valor: "", margem: "" },
+    { label: "Pedido Adicional", valor: "", margem: "" },
+  ]);
+
+  const updatePedido = (i: number, field: "valor" | "margem", val: string) => {
+    setPedidos((prev) => prev.map((p, idx) => (idx === i ? { ...p, [field]: val } : p)));
+  };
+
+  const calcRows = pedidos.map((p) => {
+    const valor = parseBR(p.valor);
+    const margem = parseBR(p.margem) / 100;
+    const margemRS = valor * margem;
+    return { ...p, valorNum: valor, margemNum: margem, margemRS };
+  });
+
+  const totalValor = calcRows.reduce((s, r) => s + r.valorNum, 0);
+  const totalMargemRS = calcRows.reduce((s, r) => s + r.margemRS, 0);
+  const margemPonderada = totalValor > 0 ? totalMargemRS / totalValor : 0;
+
+  const participacoes = calcRows.map((r) => (totalValor > 0 ? r.valorNum / totalValor : 0));
+
+  const maiorPedidoIdx = calcRows.reduce((best, r, i) => (r.valorNum > (calcRows[best]?.valorNum ?? 0) ? i : best), 0);
+
+  // Sidebar
+  const sidebarModules = [
+    { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
+    { id: "estoque", label: "Análise de Estoque", icon: "📦" },
+    { id: "preco", label: "Análise de Preço", icon: "💰" },
+    { id: "margem", label: "Análise de Margem", icon: "📊" },
+    { id: "shelflife", label: "Análise de Shelf Life", icon: "⏰" },
+    { id: "geral", label: "Análise Geral", icon: "🏢" },
+  ];
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "10px 14px", borderRadius: 8,
+    border: "1px solid #334155", background: "#0f172a", color: "#e2e8f0",
+    fontSize: 14, outline: "none",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 12, fontWeight: 600, color: "#94a3b8", marginBottom: 6, display: "block",
+  };
+
+  const cardStyle: React.CSSProperties = {
+    background: "#111827", borderRadius: 14, border: "1px solid #1e293b", padding: 24,
+  };
+
   return (
-    <div className="flex min-h-screen bg-background">
-      <AppSidebar />
-      <main className="flex-1 ml-64 p-8">
-        <h1 className="text-2xl font-heading font-bold text-foreground mb-6">
-          Simulador de Propostas
+    <div
+      style={{
+        display: "flex", minHeight: "100vh", background: "#0b1120",
+        fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", color: "#e2e8f0",
+      }}
+    >
+      {/* Sidebar */}
+      <div
+        style={{
+          width: 240, minWidth: 240, background: "#0f1729",
+          display: "flex", flexDirection: "column", borderRight: "1px solid #1e293b",
+        }}
+      >
+        <div style={{ padding: "20px 16px 12px", borderBottom: "1px solid #1e293b" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 36, height: 36, borderRadius: 10,
+                background: "linear-gradient(135deg,#0ea5e9,#6366f1)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 16, fontWeight: 800, color: "#fff",
+              }}
+            >📊</div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 14, color: "#e2e8f0" }}>Vila Sales</div>
+              <div style={{ fontSize: 10, color: "#64748b" }}>Gestão Comercial</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 10, color: "#334155", marginTop: 8, paddingTop: 8, borderTop: "1px solid #1e293b" }}>
+            Unilever · {new Date().getFullYear()}
+          </div>
+        </div>
+
+        <nav style={{ flex: 1, padding: "0 12px", overflowY: "auto" }}>
+          {sidebarModules.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => navigate("/")}
+              style={{
+                width: "100%", display: "flex", alignItems: "center", gap: 10,
+                padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+                marginBottom: 4, background: "transparent", color: "#475569",
+                fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+              }}
+            >
+              <span style={{ fontSize: 16 }}>{m.icon}</span>
+              {m.label}
+            </button>
+          ))}
+          <button
+            onClick={() => navigate("/simulador")}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+              marginBottom: 4, background: "transparent", color: "#475569",
+              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🎛️</span>
+            Simulador
+          </button>
+          <button
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+              marginBottom: 4, background: "#1e3a5f", color: "#60a5fa",
+              fontWeight: 700, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>📝</span>
+            Simulador de Propostas
+          </button>
+        </nav>
+      </div>
+
+      {/* Main */}
+      <div style={{ flex: 1, padding: "32px 40px", overflowY: "auto" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>
+          📝 Simulador de Propostas
         </h1>
-        <p className="text-muted-foreground">Em construção...</p>
-      </main>
+        <p style={{ color: "#64748b", fontSize: 13, marginBottom: 32 }}>
+          Simule a margem combinada de pedidos para um produto específico.
+        </p>
+
+        {!hasData ? (
+          <div style={{ ...cardStyle, textAlign: "center" }}>
+            <p style={{ color: "#94a3b8", fontSize: 14, marginBottom: 16 }}>
+              Nenhum dado carregado. Faça o upload dos arquivos na tela principal primeiro.
+            </p>
+            <button
+              onClick={() => navigate("/")}
+              style={{
+                padding: "10px 24px", borderRadius: 8, border: "none",
+                background: "#2563eb", color: "#fff", fontWeight: 700, cursor: "pointer",
+              }}
+            >
+              Ir para Upload
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            {/* Product Lookup */}
+            <div style={cardStyle}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                🔍 Identificação do Produto
+              </h2>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <label style={labelStyle}>Código do Produto</label>
+                  <input
+                    style={inputStyle}
+                    placeholder="Ex: 123456"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Filial</label>
+                  <select
+                    style={inputStyle}
+                    value={filial}
+                    onChange={(e) => setFilial(e.target.value)}
+                  >
+                    {FILIAIS.map((f) => (
+                      <option key={f.id} value={f.id}>{f.id} – {f.nome}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {produto && (
+                <div
+                  style={{
+                    marginTop: 16, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12,
+                  }}
+                >
+                  <InfoCard label="Descrição" value={produto.descricao} span={2} />
+                  <InfoCard label="Preço de Custo" value={fmt(produto.custoLiq)} />
+                  <InfoCard label="Preço de Venda Atual" value={fmt(produto.atual)} />
+                  <InfoCard label="Estoque (un)" value={produto.estoque.toLocaleString("pt-BR")} />
+                  <InfoCard label="Unid/CX" value={produto.embCmp} />
+                </div>
+              )}
+
+              {codigo.trim() && !produto && (
+                <p style={{ marginTop: 12, color: "#f87171", fontSize: 13 }}>
+                  Produto não encontrado na filial selecionada.
+                </p>
+              )}
+            </div>
+
+            {/* Orders Table */}
+            <div style={cardStyle}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                📋 Entrada de Dados dos Pedidos
+              </h2>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #1e293b" }}>
+                      {["Pedido", "Valor Total (R$)", "Margem (%)", "Margem (R$)", "Participação"].map((h) => (
+                        <th
+                          key={h}
+                          style={{
+                            padding: "10px 12px", textAlign: "left", fontSize: 11,
+                            fontWeight: 700, color: "#64748b", textTransform: "uppercase",
+                          }}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {calcRows.map((row, i) => (
+                      <tr key={i} style={{ borderBottom: "1px solid #1e293b22" }}>
+                        <td style={{ padding: "10px 12px", fontWeight: 600, color: "#cbd5e1" }}>
+                          {row.label}
+                        </td>
+                        <td style={{ padding: "10px 12px" }}>
+                          <input
+                            style={{ ...inputStyle, width: 160 }}
+                            placeholder="0,00"
+                            value={pedidos[i].valor}
+                            onChange={(e) => updatePedido(i, "valor", e.target.value)}
+                          />
+                        </td>
+                        <td style={{ padding: "10px 12px" }}>
+                          <input
+                            style={{ ...inputStyle, width: 100 }}
+                            placeholder="0,00"
+                            value={pedidos[i].margem}
+                            onChange={(e) => updatePedido(i, "margem", e.target.value)}
+                          />
+                        </td>
+                        <td style={{ padding: "10px 12px", color: row.margemRS > 0 ? "#34d399" : "#94a3b8" }}>
+                          {fmt(row.margemRS)}
+                        </td>
+                        <td style={{ padding: "10px 12px", color: "#94a3b8" }}>
+                          {fmtPct(participacoes[i])}
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Total row */}
+                    <tr style={{ borderTop: "2px solid #334155", background: "#0f172a" }}>
+                      <td style={{ padding: "12px", fontWeight: 800, color: "#60a5fa" }}>
+                        TOTAL CONSOLIDADO
+                      </td>
+                      <td style={{ padding: "12px", fontWeight: 700, color: "#e2e8f0" }}>
+                        {fmt(totalValor)}
+                      </td>
+                      <td style={{ padding: "12px", fontWeight: 700, color: margemPonderada >= 0.15 ? "#34d399" : "#f87171" }}>
+                        {fmtPct(margemPonderada)}
+                      </td>
+                      <td style={{ padding: "12px", fontWeight: 700, color: totalMargemRS > 0 ? "#34d399" : "#94a3b8" }}>
+                        {fmt(totalMargemRS)}
+                      </td>
+                      <td style={{ padding: "12px", fontWeight: 700, color: "#94a3b8" }}>
+                        100,00%
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <button
+                onClick={() =>
+                  setPedidos((prev) => [
+                    ...prev,
+                    { label: `Pedido ${prev.length + 1}`, valor: "", margem: "" },
+                  ])
+                }
+                style={{
+                  marginTop: 12, padding: "8px 16px", borderRadius: 8, border: "1px solid #334155",
+                  background: "transparent", color: "#60a5fa", fontSize: 12, fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                + Adicionar Pedido
+              </button>
+            </div>
+
+            {/* Results */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+              <ResultCard
+                label="Margem Ponderada Real"
+                value={fmtPct(margemPonderada)}
+                color={margemPonderada >= 0.15 ? "#34d399" : "#f87171"}
+                subtitle="Margem combinada de todos os pedidos"
+              />
+              <ResultCard
+                label="Margem R$ Total"
+                value={fmt(totalMargemRS)}
+                color="#60a5fa"
+                subtitle="Soma das margens em reais"
+              />
+              <ResultCard
+                label="Volume Total de Vendas"
+                value={fmt(totalValor)}
+                color="#a78bfa"
+                subtitle="Soma dos valores de pedidos"
+              />
+              <ResultCard
+                label="Maior Pedido"
+                value={calcRows[maiorPedidoIdx]?.label ?? "-"}
+                color="#fbbf24"
+                subtitle={`Participação: ${fmtPct(participacoes[maiorPedidoIdx] ?? 0)}`}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
-};
+}
 
-export default SimuladorPropostas;
+function InfoCard({ label, value, span }: { label: string; value: string; span?: number }) {
+  return (
+    <div
+      style={{
+        background: "#0f172a", borderRadius: 10, padding: "12px 16px",
+        border: "1px solid #1e293b",
+        gridColumn: span ? `span ${span}` : undefined,
+      }}
+    >
+      <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginBottom: 4, textTransform: "uppercase" }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>{value}</div>
+    </div>
+  );
+}
+
+function ResultCard({ label, value, color, subtitle }: { label: string; value: string; color: string; subtitle: string }) {
+  return (
+    <div
+      style={{
+        background: "#111827", borderRadius: 14, border: "1px solid #1e293b",
+        padding: 20, display: "flex", flexDirection: "column", gap: 4,
+      }}
+    >
+      <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
+      <div style={{ fontSize: 11, color: "#475569" }}>{subtitle}</div>
+    </div>
+  );
+}
