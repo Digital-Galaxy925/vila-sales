@@ -2095,15 +2095,17 @@ export default function Index() {
       // Filial 502 – Focomix MG (estoque = livro_502; preço custo/venda = livro_510)
       let map510 = new Map<string, { custo: string; preco: string }>();
       if (files.livro_510) {
-        const raw510 = await parseCSVRaw(files.livro_510);
-        const header510 = raw510[0] ?? [];
-        const codCol510 = findHeaderIndex(header510, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], 1);
-        const custoCol510 = findHeaderIndex(header510, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], 16);
-        const precoCol510 = findHeaderIndex(header510, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV"], 19);
-        raw510.slice(1).forEach((cols) => {
-          const cod = normCod(cols[codCol510] ?? "");
-          if (cod) map510.set(cod, { custo: cols[custoCol510] ?? "0", preco: cols[precoCol510] ?? "0" });
+        // Usa readExcelAsRows (header-based) para garantir match correto das colunas
+        const rows510 = await readExcelAsRows(files.livro_510);
+        rows510.forEach((row) => {
+          const cod = normCod(findCol(row, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO", "SEQPROD", "SEQ_PROD"]));
+          if (cod) {
+            const custo = findCol(row, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]);
+            const preco = findCol(row, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"]);
+            map510.set(cod, { custo: custo || "0", preco: preco || "0" });
+          }
         });
+        console.log(`[livro_510] ${map510.size} produtos mapeados`);
       }
 
       if (files.livro_502) {
