@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChart3, TrendingUp, DollarSign, Package, Search, LayoutGrid, FileSpreadsheet, FileText } from "lucide-react";
+import { BarChart3, TrendingUp, DollarSign, Package, Search, LayoutGrid, FileSpreadsheet, FileText, ShoppingCart, BoxesIcon } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
 import { Input } from "@/components/ui/input";
@@ -89,16 +89,19 @@ const AnaliseGerencial = () => {
   // KPI calculations based on search results
   const kpis = useMemo(() => {
     if (results.length === 0) {
-      return { custoMedio: "—", vendaMedia: "—", estoqueTotal: "—", filiaisPresentes: "—" };
+      return { custoMedio: "—", vendaMedia: "—", estoqueTotal: "—", filiaisPresentes: "—", valorEstoqueVenda: "—", estoqueCaixas: "—" };
     }
     const custoMedio = results.reduce((s, r) => s + r.custoLiq, 0) / results.length;
     const vendaMedia = results.reduce((s, r) => s + r.atual, 0) / results.length;
     const estoqueTotal = results.reduce((s, r) => s + r.estoque, 0);
+    const valorEstoqueVenda = results.reduce((s, r) => s + (r.estoque * r.atual), 0);
     return {
       custoMedio: fmt(custoMedio),
       vendaMedia: fmt(vendaMedia),
       estoqueTotal: fmtNum(estoqueTotal),
       filiaisPresentes: `${results.length} de ${FILIAL_ORDER.length}`,
+      valorEstoqueVenda: fmt(valorEstoqueVenda),
+      estoqueCaixas: `${fmtNum(estoqueTotal)} cx`,
     };
   }, [results]);
 
@@ -116,12 +119,14 @@ const AnaliseGerencial = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
       >
         <KpiCard title="Custo Médio" value={kpis.custoMedio} icon={DollarSign} />
         <KpiCard title="Venda Média" value={kpis.vendaMedia} icon={TrendingUp} />
         <KpiCard title="Estoque Total" value={kpis.estoqueTotal} icon={Package} />
         <KpiCard title="Filiais c/ Produto" value={kpis.filiaisPresentes} icon={BarChart3} />
+        <KpiCard title="Valor Total Venda" value={kpis.valorEstoqueVenda} icon={ShoppingCart} />
+        <KpiCard title="Volume Total (cx)" value={kpis.estoqueCaixas} icon={BoxesIcon} />
       </motion.div>
 
       {/* Product search */}
