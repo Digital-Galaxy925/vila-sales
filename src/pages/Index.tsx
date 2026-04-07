@@ -477,7 +477,7 @@ function UploadPanel({
           multiple
           accept=".csv"
           label="Arraste ou clique para selecionar todos os CSVs"
-          sublabel="livro_01, livro_10, livro_11, livro_12, livro_14, livro_501, livro_502"
+          sublabel="livro_01, livro_10, livro_11, livro_12, livro_14, livro_501, livro_502, livro_510"
           icon="🗂️"
           draggingColor="#3B82F6"
         />
