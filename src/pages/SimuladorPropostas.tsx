@@ -455,7 +455,7 @@ export default function SimuladorPropostas() {
                     <InfoCard label="Descrição" value={pc.found.descricao} span={2} />
                     <InfoCard label="Preço de Custo" value={fmt(pc.found.custoLiq)} />
                     <InfoCard label="Preço de Venda Atual" value={fmt(pc.found.atual)} />
-                    <InfoCard label="Estoque (un)" value={pc.found.estoque.toLocaleString("pt-BR")} />
+                    <InfoCard label="Estoque (CX)" value={pc.found.estoque.toLocaleString("pt-BR")} />
                     <InfoCard label="Unid/CX" value={pc.found.embCmp} />
                   </div>
                 )}
