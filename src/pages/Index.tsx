@@ -1916,13 +1916,22 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
                   {h.label}<SlSortIcon col={h.key} />
                 </th>
               ))}
-                </th>
-              ))}
             </tr>
           </thead>
           <tbody>
             {allProducts
-              .sort((a, b) => a.ddv - b.ddv)
+              .map((p) => ({
+                ...p,
+                status: p.ddv <= 30 ? 0 : p.ddv <= 90 ? 1 : 2,
+              }))
+              .sort((a, b) => {
+                const key = slSortCol as keyof typeof a;
+                let va: any = a[key];
+                let vb: any = b[key];
+                if (typeof va === "string") va = va.toLowerCase();
+                if (typeof vb === "string") vb = vb.toLowerCase();
+                return slSortDir === "asc" ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+              })
               .slice(0, 200)
               .map((p, i) => {
                 const status =
