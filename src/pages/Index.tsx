@@ -1656,7 +1656,20 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
           </thead>
           <tbody>
             {filtered
-              .sort((a, b) => a.estoque - b.estoque)
+              .map((p) => ({
+                ...p,
+                valorCusto: p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.custoLiq,
+                valorVenda: p.estoque * (parseFloat(String(p.embCmp)) || 1) * p.atual,
+                status: p.ddv === 0 || p.estoque === 0 ? 0 : p.ddv < 7 ? 1 : p.ddv > 40 ? 3 : 2,
+              }))
+              .sort((a, b) => {
+                const key = estSortCol as keyof typeof a;
+                let va: any = a[key];
+                let vb: any = b[key];
+                if (typeof va === "string") va = va.toLowerCase();
+                if (typeof vb === "string") vb = vb.toLowerCase();
+                return estSortDir === "asc" ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+              })
               .slice(0, 200)
               .map((p, i) => {
                 const status =
