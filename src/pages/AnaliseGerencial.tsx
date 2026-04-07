@@ -145,8 +145,8 @@ const AnaliseGerencial = () => {
   };
 
   const exportBulkToExcel = () => {
-    const headerRow1 = ["PRODUTO"];
-    const headerRow2 = [""];
+    const headerRow1 = ["CÓDIGO", "PRODUTO"];
+    const headerRow2 = ["", ""];
     const availableFiliais = FILIAL_ORDER.filter((f) =>
       bulkResults.some((r) => r.filiais[f])
     );
@@ -157,7 +157,7 @@ const AnaliseGerencial = () => {
     });
 
     const rows = bulkResults.map((r) => {
-      const row: (string | number)[] = [r.descricao || r.code];
+      const row: (string | number)[] = [r.code, r.descricao || r.code];
       availableFiliais.forEach((f) => {
         const d = r.filiais[f];
         row.push(d ? d.estoque : 0, d ? d.custoLiq : 0, d ? d.atual : 0);
