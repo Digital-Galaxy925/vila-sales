@@ -516,6 +516,44 @@ export default function SimuladorPropostas() {
                 subtitle={`Participação: ${fmtPct(participacoes[maiorPedidoIdx] ?? 0)}`}
               />
             </div>
+
+            {/* Status da Proposta */}
+            <div style={cardStyle}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                ✅ Status da Proposta
+              </h2>
+              <div style={{ display: "flex", gap: 16 }}>
+                <button
+                  onClick={() => setStatusProposta("aprovada")}
+                  style={{
+                    flex: 1, padding: "14px 24px", borderRadius: 10, border: "2px solid",
+                    borderColor: statusProposta === "aprovada" ? "#34d399" : "#1e293b",
+                    background: statusProposta === "aprovada" ? "#34d39920" : "transparent",
+                    color: statusProposta === "aprovada" ? "#34d399" : "#94a3b8",
+                    fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all .2s",
+                  }}
+                >
+                  ✅ Aprovada
+                </button>
+                <button
+                  onClick={() => setStatusProposta("rejeitada")}
+                  style={{
+                    flex: 1, padding: "14px 24px", borderRadius: 10, border: "2px solid",
+                    borderColor: statusProposta === "rejeitada" ? "#f87171" : "#1e293b",
+                    background: statusProposta === "rejeitada" ? "#f8717120" : "transparent",
+                    color: statusProposta === "rejeitada" ? "#f87171" : "#94a3b8",
+                    fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all .2s",
+                  }}
+                >
+                  ❌ Rejeitada
+                </button>
+              </div>
+              {statusProposta && (
+                <p style={{ marginTop: 12, fontSize: 13, color: statusProposta === "aprovada" ? "#34d399" : "#f87171", fontWeight: 600 }}>
+                  Proposta marcada como: {statusProposta === "aprovada" ? "APROVADA" : "REJEITADA"}
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>
