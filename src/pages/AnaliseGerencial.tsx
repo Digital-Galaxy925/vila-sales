@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChart3, TrendingUp, DollarSign, Package, Search, LayoutGrid } from "lucide-react";
+import { BarChart3, TrendingUp, DollarSign, Package, Search, LayoutGrid, FileSpreadsheet, FileText } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { exportToExcel, exportToPDF } from "@/utils/exportGerencial";
 
 interface Product {
   seqProd: string;
@@ -157,13 +158,31 @@ const AnaliseGerencial = () => {
               </div>
             ) : (
               <>
-                <div className="bg-card rounded-2xl p-4 shadow-[var(--shadow-card)]">
+                <div className="bg-card rounded-2xl p-4 shadow-[var(--shadow-card)] flex items-center justify-between flex-wrap gap-3">
                   <p className="text-sm text-muted-foreground">
                     Produto: <span className="font-semibold text-card-foreground">{activeCode}</span>
                     {productName && (
                       <span className="ml-2 text-card-foreground">— {productName}</span>
                     )}
                   </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => exportToExcel(results, activeCode, productName)}
+                    >
+                      <FileSpreadsheet className="w-4 h-4 mr-1" />
+                      Excel
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => exportToPDF(results, activeCode, productName)}
+                    >
+                      <FileText className="w-4 h-4 mr-1" />
+                      PDF
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Table 1: Preço de Custo */}
