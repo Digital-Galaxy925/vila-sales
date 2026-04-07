@@ -313,6 +313,7 @@ export default function SimuladorPropostas() {
         <nav style={{ flex: 1, padding: "0 12px", overflowY: "auto" }}>
           {/* 1 - Análise de Custos */}
           <button
+            className="sidebar-nav-btn"
             onClick={() => navigate("/")}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
