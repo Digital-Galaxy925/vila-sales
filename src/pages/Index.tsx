@@ -1985,7 +1985,8 @@ export default function Index() {
         colDDV: number,
         colCustoFallback: number,
         colPrecoFallback: number,
-        overrideEstoque?: Map<string, { estoque: string; custo: string }> // livro_10
+        overrideEstoque?: Map<string, { estoque: string; custo: string }>, // livro_10
+        overridePrecos?: Map<string, { custo: string; preco: string }> // livro_510
       ): Product[] => {
         const header = rawRows[0] ?? [];
         const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
@@ -2008,13 +2009,13 @@ export default function Index() {
           const baseEntry = baseMap.get(cod)!;
           const desc = baseEntry.desc || cols[finalColDesc] || rawCod;
 
-          // Usa override de livro_10 se fornecido (Poços e Focomix MG)
+          // Usa override de livro_10 se fornecido (Poços)
           const estoqueStr = overrideEstoque?.get(cod)?.estoque ?? cols[finalColEstoque] ?? "0";
-          const custoStr   = overrideEstoque?.get(cod)?.custo   ?? cols[finalColCusto]   ?? "0";
+          const custoStr   = overridePrecos?.get(cod)?.custo ?? overrideEstoque?.get(cod)?.custo ?? cols[finalColCusto] ?? "0";
 
           const estoque  = num(estoqueStr);
           const custoLiq = num(custoStr);
-          const atual    = num(cols[finalColPreco] ?? "0");
+          const atual    = num(overridePrecos?.get(cod)?.preco ?? cols[finalColPreco] ?? "0");
           const ddv      = num(cols[finalColDDV] ?? "0");
           const marg     = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
