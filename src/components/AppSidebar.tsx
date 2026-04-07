@@ -7,6 +7,7 @@ import {
   Clock,
   LayoutDashboard,
   Upload,
+  SlidersHorizontal,
 } from "lucide-react";
 
 const navItems = [
@@ -16,6 +17,7 @@ const navItems = [
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
   { to: "/shelf-life", label: "Análise de Shelf Life", icon: Clock },
   { to: "/manual", label: "Análise Manual", icon: BarChart3 },
+  { to: "/simulador", label: "Simulador", icon: SlidersHorizontal },
   { to: "/upload", label: "Upload de Dados", icon: Upload },
 ];
 
