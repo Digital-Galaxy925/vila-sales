@@ -170,7 +170,7 @@ export default function Simulador() {
       {/* Main content */}
       <div style={{ flex: 1, padding: "32px 40px", overflowY: "auto" }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>
-          🎛️ Simulador de Custos
+          🎛️ Simulador de Ofertas
         </h1>
         <p style={{ color: "#64748b", fontSize: 13, marginBottom: 32 }}>
           Simule preços, margens e sell out de um produto específico por filial.
