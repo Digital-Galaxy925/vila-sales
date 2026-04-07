@@ -81,6 +81,11 @@ export default function Simulador() {
   const margemReal = precoVenda > 0 ? (precoVenda - custoUnitario) / precoVenda : 0;
   const totalSellOut = volume * qtdPorCaixa * precoVenda;
 
+  const margemMinima = (parseFloat(margemMinimaDesejada.replace(",", ".")) || 0) / 100;
+  const totalUnidades = volume * qtdPorCaixa;
+  const investimentoPorUnidade = precoVenda > 0 ? custoUnitario - precoVenda * (1 - margemMinima) : 0;
+  const investimentoTotal = investimentoPorUnidade > 0 ? investimentoPorUnidade * totalUnidades : 0;
+
   // ─── Sidebar (matches Index.tsx style) ────────────────────────────────────
   const sidebarModules = [
     { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
