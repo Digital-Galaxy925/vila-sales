@@ -319,8 +319,8 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
 
 // ─── Upload Wizard (2 steps) ──────────────────────────────────────────────────
 const LIVRO_META: { key: keyof UploadedFiles; label: string; desc: string }[] = [
-  { key: "livro_01",  label: "livro_01",  desc: "Filial 01 – Poços (preço/venda)"        },
-  { key: "livro_10",  label: "livro_10",  desc: "Poços (estoque/custo)"                  },
+  { key: "livro_01",  label: "livro_01",  desc: "Filial 01 – Poços (estoque)"              },
+  { key: "livro_10",  label: "livro_10",  desc: "Poços (preço custo/venda)"               },
   { key: "livro_11",  label: "livro_11",  desc: "Filial 11 – Campinas"                   },
   { key: "livro_12",  label: "livro_12",  desc: "Filial 12 – Osasco"                     },
   { key: "livro_14",  label: "livro_14",  desc: "Filial 14 – Betim"                      },
@@ -2045,27 +2045,28 @@ export default function Index() {
         return result;
       };
 
-      // ── 4. Lê livro_10 (estoque/custo compartilhado para Poços e Focomix MG) ──
-      // col[1] = código, col[6] = estoque, col[16] = custo liq
-      let map10 = new Map<string, { estoque: string; custo: string }>();
+      // ── 4. Lê livro_10 (custo/preço para Poços) ──
+      // Filial 01: estoque vem do livro_01, custo (CUSTO LIQ) e preço (ATUAL) vêm do livro_10
+      let map10 = new Map<string, { custo: string; preco: string }>();
       if (files.livro_10) {
-        const raw10 = await parseCSVRaw(files.livro_10);
-        const header10 = raw10[0] ?? [];
-        const codCol10 = findHeaderIndex(header10, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], 1);
-        const estoqueCol10 = findHeaderIndex(header10, ["ESTOQUE"], 6);
-        const custoCol10 = findHeaderIndex(header10, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], 16);
-        raw10.slice(1).forEach((cols) => {
-          const cod = normCod(cols[codCol10] ?? "");
-          if (cod) map10.set(cod, { estoque: cols[estoqueCol10] ?? "0", custo: cols[custoCol10] ?? "0" });
+        const rows10 = await readExcelAsRows(files.livro_10);
+        rows10.forEach((row) => {
+          const cod = normCod(findCol(row, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO", "SEQPROD", "SEQ_PROD"]));
+          if (cod) {
+            const custo = findCol(row, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]);
+            const preco = findCol(row, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"]);
+            map10.set(cod, { custo: custo || "0", preco: preco || "0" });
+          }
         });
+        console.log(`[livro_10] ${map10.size} produtos mapeados (custo/preço para Poços)`);
       }
 
       const newData: FilialData = {};
 
-      // Filial 01 – Poços (padrão, sempre primeiro)
+      // Filial 01 – Poços (estoque = livro_01; preço custo/venda = livro_10)
       if (files.livro_01) {
         const raw01 = await parseCSVRaw(files.livro_01);
-        newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 19, map10.size > 0 ? map10 : undefined);
+        newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 19, undefined, map10.size > 0 ? map10 : undefined);
       }
 
       // Filial 11 – Campinas
