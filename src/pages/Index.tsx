@@ -2358,6 +2358,7 @@ export default function Index() {
           {/* 4-8 - Remaining modules */}
           {modules.filter(m => m.id !== "cruzamento").map((m) => (
             <button
+              className="sidebar-nav-btn"
               key={m.id}
               onClick={() => setActiveModule(m.id)}
               style={{
