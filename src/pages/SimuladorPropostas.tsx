@@ -336,7 +336,7 @@ export default function SimuladorPropostas() {
             }}
           >
             <span style={{ fontSize: 16 }}>🎛️</span>
-            Simulador
+            Simulador de Ofertas
           </button>
           <button
             style={{

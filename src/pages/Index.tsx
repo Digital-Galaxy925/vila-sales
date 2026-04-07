@@ -2356,7 +2356,7 @@ export default function Index() {
             }}
           >
             <span style={{ fontSize: 16 }}>🎛️</span>
-            Simulador
+            Simulador de Ofertas
           </button>
           {/* Simulador de Propostas link */}
           <button

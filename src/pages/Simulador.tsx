@@ -162,7 +162,7 @@ export default function Simulador() {
             }}
           >
             <span style={{ fontSize: 16 }}>🎛️</span>
-            Simulador
+            Simulador de Ofertas
           </button>
           <button
             onClick={() => navigate("/propostas")}
