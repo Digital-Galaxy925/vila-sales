@@ -1941,12 +1941,24 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
                 status: p.ddv <= 30 ? 0 : p.ddv <= 90 ? 1 : 2,
               }))
               .sort((a, b) => {
-                const key = slSortCol as keyof typeof a;
-                let va: any = a[key];
-                let vb: any = b[key];
-                if (typeof va === "string") va = va.toLowerCase();
-                if (typeof vb === "string") vb = vb.toLowerCase();
-                return slSortDir === "asc" ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+                const numVal = (item: typeof a, col: string): number => {
+                  const raw = item[col as keyof typeof item];
+                  if (raw == null) return 0;
+                  if (typeof raw === "number") return raw;
+                  const s = String(raw).replace(/\./g, "").replace(",", ".");
+                  return parseFloat(s) || 0;
+                };
+                const numCols = ["estoque", "ddv", "status"];
+                if (numCols.includes(slSortCol)) {
+                  const va = numVal(a, slSortCol);
+                  const vb = numVal(b, slSortCol);
+                  return slSortDir === "asc" ? va - vb : vb - va;
+                }
+                const va = String(a[slSortCol as keyof typeof a] ?? "").toLowerCase();
+                const vb = String(b[slSortCol as keyof typeof b] ?? "").toLowerCase();
+                return slSortDir === "asc"
+                  ? va.localeCompare(vb, "pt-BR", { numeric: true })
+                  : vb.localeCompare(va, "pt-BR", { numeric: true });
               })
               .slice(0, 200)
               .map((p, i) => {
