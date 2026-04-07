@@ -1947,7 +1947,7 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
                     <td style={{ padding: "8px 14px", color: "#475569", fontFamily: "monospace" }}>{p.seqProd}</td>
                     <td style={{ padding: "8px 14px", color: "#e2e8f0" }}>{p.descricao}</td>
                     <td style={{ padding: "8px 14px", color: "#e2e8f0", fontWeight: 700, fontFamily: "monospace" }}>{p.ddv}</td>
-                    <td style={{ padding: "8px 14px", color: "#94a3b8" }}>{p.estoque}</td>
+                    <td style={{ padding: "8px 14px", color: "#94a3b8" }}>{p.estoque.toLocaleString("pt-BR")}</td>
                     <td style={{ padding: "8px 14px" }}>
                       <span style={{ padding: "3px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700, background: status.bg, color: status.color }}>{status.label}</span>
                     </td>
