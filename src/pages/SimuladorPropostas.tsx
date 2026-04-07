@@ -295,18 +295,16 @@ export default function SimuladorPropostas() {
                   <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>
                     🔍 Produto {idx + 1}
                   </h2>
-                  {produtos.length > 1 && (
-                    <button
-                      onClick={() => removeProduto(pc.id)}
-                      style={{
-                        padding: "4px 12px", borderRadius: 6, border: "1px solid #ef4444",
-                        background: "transparent", color: "#ef4444", fontSize: 11, fontWeight: 600,
-                        cursor: "pointer",
-                      }}
-                    >
-                      ✕ Remover
-                    </button>
-                  )}
+                  <button
+                    onClick={() => removeProduto(pc.id)}
+                    style={{
+                      padding: "4px 12px", borderRadius: 6, border: "1px solid #ef4444",
+                      background: "transparent", color: "#ef4444", fontSize: 11, fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✕ Remover
+                  </button>
                 </div>
 
                 {/* Inputs: código, filial */}
