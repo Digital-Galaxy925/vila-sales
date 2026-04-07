@@ -1492,11 +1492,11 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
   const [selectedBU, setSelectedBU] = useState<"all" | "FOODS" | "HC">("all");
   const [filtro, setFiltro] = useState<"todos" | "sem" | "baixo" | "ok" | "alto">("todos");
   const [estSortCol, setEstSortCol] = useState<string>("estoque");
-  const [estSortDir, setEstSortDir] = useState<"asc" | "desc">("asc");
+  const [estSortDir, setEstSortDir] = useState<"asc" | "desc">("desc");
 
   const toggleEstSort = (col: string) => {
     if (estSortCol === col) setEstSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setEstSortCol(col); setEstSortDir("asc"); }
+    else { setEstSortCol(col); setEstSortDir("desc"); }
   };
 
   const EstSortIcon = ({ col }: { col: string }) =>
@@ -1879,7 +1879,7 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
 
   const toggleSlSort = (col: string) => {
     if (slSortCol === col) setSlSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSlSortCol(col); setSlSortDir("asc"); }
+    else { setSlSortCol(col); setSlSortDir("desc"); }
   };
 
   const SlSortIcon = ({ col }: { col: string }) =>
