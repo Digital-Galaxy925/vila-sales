@@ -1629,9 +1629,27 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
-              {["Filial", "Cód.", "Descrição", "Unid/CX", "Estoque", "Preço de Custo", "Estoque Valor Pr Custo", "Preço de Venda", "Estoque Valor Pr Venda", "DDV", "Mes Ant", "Mes Atu", "Status"].map((h) => (
-                <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", whiteSpace: "nowrap" }}>
-                  {h}
+              {([
+                { key: "filial", label: "Filial" },
+                { key: "seqProd", label: "Cód." },
+                { key: "descricao", label: "Descrição" },
+                { key: "embCmp", label: "Unid/CX" },
+                { key: "estoque", label: "Estoque" },
+                { key: "custoLiq", label: "Preço de Custo" },
+                { key: "valorCusto", label: "Estoque Valor Pr Custo" },
+                { key: "atual", label: "Preço de Venda" },
+                { key: "valorVenda", label: "Estoque Valor Pr Venda" },
+                { key: "ddv", label: "DDV" },
+                { key: "mesAnt", label: "Mes Ant" },
+                { key: "mesAtu", label: "Mes Atu" },
+                { key: "status", label: "Status" },
+              ] as { key: string; label: string }[]).map((h) => (
+                <th
+                  key={h.key}
+                  onClick={() => toggleEstSort(h.key)}
+                  style={{ padding: "10px 14px", textAlign: "left", color: estSortCol === h.key ? "#60a5fa" : "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", whiteSpace: "nowrap", cursor: "pointer", userSelect: "none", borderBottom: `2px solid ${estSortCol === h.key ? "#1e3a5f" : "#1e293b"}` }}
+                >
+                  {h.label}<EstSortIcon col={h.key} />
                 </th>
               ))}
             </tr>
