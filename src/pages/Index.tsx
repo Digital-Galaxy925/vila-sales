@@ -1663,12 +1663,39 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
                 status: p.ddv === 0 || p.estoque === 0 ? 0 : p.ddv < 7 ? 1 : p.ddv > 40 ? 3 : 2,
               }))
               .sort((a, b) => {
-                const key = estSortCol as keyof typeof a;
-                let va: any = a[key];
-                let vb: any = b[key];
-                if (typeof va === "string") va = va.toLowerCase();
-                if (typeof vb === "string") vb = vb.toLowerCase();
-                return estSortDir === "asc" ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+                const getSortValue = (item: typeof a) => {
+                  switch (estSortCol) {
+                    case "estoque":
+                    case "custoLiq":
+                    case "valorCusto":
+                    case "atual":
+                    case "valorVenda":
+                    case "ddv":
+                    case "mesAnt":
+                    case "mesAtu":
+                    case "status":
+                      return Number(item[estSortCol as keyof typeof item] ?? 0);
+                    case "embCmp":
+                      return parseFloat(String(item.embCmp).replace(",", ".")) || 0;
+                    case "filial":
+                      return FILIAL_INFO[item.filial]?.nome?.toLowerCase() || item.filial.toLowerCase();
+                    default:
+                      return String(item[estSortCol as keyof typeof item] ?? "").toLowerCase();
+                  }
+                };
+
+                const va = getSortValue(a);
+                const vb = getSortValue(b);
+
+                if (va === vb) return 0;
+
+                if (typeof va === "number" && typeof vb === "number") {
+                  return estSortDir === "asc" ? va - vb : vb - va;
+                }
+
+                return estSortDir === "asc"
+                  ? String(va).localeCompare(String(vb), "pt-BR", { numeric: true })
+                  : String(vb).localeCompare(String(va), "pt-BR", { numeric: true });
               })
               .slice(0, 200)
               .map((p, i) => {
