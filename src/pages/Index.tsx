@@ -2247,8 +2247,8 @@ export default function Index() {
   const modules: { id: Module; label: string; icon: string }[] = [
     { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
     { id: "estoque", label: "Análise de Estoque", icon: "📦" },
-    { id: "preco", label: "Análise de Preço", icon: "💰" },
     { id: "margem", label: "Análise de Margem", icon: "📊" },
+    { id: "preco", label: "Análise de Preço", icon: "💰" },
     { id: "shelflife", label: "Análise de Shelf Life", icon: "⏰" },
     { id: "geral", label: "Análise Geral", icon: "🏢" },
   ];
@@ -2307,81 +2307,70 @@ export default function Index() {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: "0 12px" }}>
-          {modules.map((m) => (
+          {/* 1 - Análise de Custos */}
+          <button
+            key="cruzamento"
+            onClick={() => setActiveModule("cruzamento")}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+              marginBottom: 4,
+              background: activeModule === "cruzamento" ? "#1e3a5f" : "transparent",
+              color: activeModule === "cruzamento" ? "#60a5fa" : "#475569",
+              fontWeight: activeModule === "cruzamento" ? 700 : 400,
+              fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🔗</span>
+            Análise de Custos
+          </button>
+          {/* 2 - Simulador de Ofertas */}
+          <button
+            onClick={() => navigate("/simulador")}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+              marginBottom: 4,
+              background: "transparent", color: "#475569",
+              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🎛️</span>
+            Simulador de Ofertas
+          </button>
+          {/* 3 - Simulador de Propostas */}
+          <button
+            onClick={() => navigate("/propostas")}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+              marginBottom: 4,
+              background: "transparent", color: "#475569",
+              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>📝</span>
+            Simulador de Propostas
+          </button>
+          {/* 4-8 - Remaining modules */}
+          {modules.filter(m => m.id !== "cruzamento").map((m) => (
             <button
               key={m.id}
               onClick={() => setActiveModule(m.id)}
               style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "none",
-                cursor: "pointer",
+                width: "100%", display: "flex", alignItems: "center", gap: 10,
+                padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
                 marginBottom: 4,
                 background: activeModule === m.id ? "#1e3a5f" : "transparent",
                 color: activeModule === m.id ? "#60a5fa" : "#475569",
                 fontWeight: activeModule === m.id ? 700 : 400,
-                fontSize: 13,
-                textAlign: "left",
-                transition: "all .2s",
+                fontSize: 13, textAlign: "left" as const, transition: "all .2s",
               }}
             >
               <span style={{ fontSize: 16 }}>{m.icon}</span>
               {m.label}
             </button>
           ))}
-          {/* Simulador link */}
-          <button
-            onClick={() => navigate("/simulador")}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "none",
-              cursor: "pointer",
-              marginBottom: 4,
-              marginTop: 4,
-              background: "transparent",
-              color: "#475569",
-              fontWeight: 400,
-              fontSize: 13,
-              textAlign: "left" as const,
-              transition: "all .2s",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>🎛️</span>
-            Simulador de Ofertas
-          </button>
-          {/* Simulador de Propostas link */}
-          <button
-            onClick={() => navigate("/propostas")}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "10px 12px",
-              borderRadius: 10,
-              border: "none",
-              cursor: "pointer",
-              marginBottom: 4,
-              background: "transparent",
-              color: "#475569",
-              fontWeight: 400,
-              fontSize: 13,
-              textAlign: "left" as const,
-              transition: "all .2s",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>📝</span>
-            Simulador de Propostas
-          </button>
         </nav>
 
         {/* Upload button */}

@@ -90,8 +90,8 @@ export default function Simulador() {
   const sidebarModules = [
     { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
     { id: "estoque", label: "Análise de Estoque", icon: "📦" },
-    { id: "preco", label: "Análise de Preço", icon: "💰" },
     { id: "margem", label: "Análise de Margem", icon: "📊" },
+    { id: "preco", label: "Análise de Preço", icon: "💰" },
     { id: "shelflife", label: "Análise de Shelf Life", icon: "⏰" },
     { id: "geral", label: "Análise Geral", icon: "🏢" },
   ];
@@ -138,7 +138,46 @@ export default function Simulador() {
         </div>
 
         <nav style={{ flex: 1, padding: "0 12px" }}>
-          {sidebarModules.map((m) => (
+          {/* 1 - Análise de Custos */}
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+              marginBottom: 4, background: "transparent", color: "#475569",
+              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🔗</span>
+            Análise de Custos
+          </button>
+          {/* 2 - Simulador de Ofertas (active) */}
+          <button
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+              marginBottom: 4, background: "#1e3a5f", color: "#60a5fa",
+              fontWeight: 700, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>🎛️</span>
+            Simulador de Ofertas
+          </button>
+          {/* 3 - Simulador de Propostas */}
+          <button
+            onClick={() => navigate("/propostas")}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
+              marginBottom: 4, background: "transparent", color: "#475569",
+              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>📝</span>
+            Simulador de Propostas
+          </button>
+          {/* 4-8 - Remaining modules */}
+          {sidebarModules.filter(m => m.id !== "cruzamento").map((m) => (
             <button
               key={m.id}
               onClick={() => navigate("/")}
@@ -153,29 +192,6 @@ export default function Simulador() {
               {m.label}
             </button>
           ))}
-          <button
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
-              marginBottom: 4, background: "#1e3a5f", color: "#60a5fa",
-              fontWeight: 700, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>🎛️</span>
-            Simulador de Ofertas
-          </button>
-          <button
-            onClick={() => navigate("/propostas")}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
-              marginBottom: 4, background: "transparent", color: "#475569",
-              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>📝</span>
-            Simulador de Propostas
-          </button>
         </nav>
       </div>
 
