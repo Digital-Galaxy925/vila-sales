@@ -39,6 +39,7 @@ interface UploadedFiles {
   livro_14?: File;
   livro_501?: File;
   livro_502?: File;
+  livro_510?: File;
   base?: File;
 }
 
