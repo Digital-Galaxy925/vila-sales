@@ -405,7 +405,7 @@ export default function SimuladorPropostas() {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                   <thead>
                     <tr style={{ borderBottom: "1px solid #1e293b" }}>
-                      {["Pedido", "Valor Total (R$)", "Margem (%)", "Margem (R$)", "Participação"].map((h) => (
+                      {["Pedido", "Valor Total (R$)", "Margem (%)", "Margem (R$)", "Participação", ""].map((h) => (
                         <th
                           key={h}
                           style={{
@@ -448,6 +448,20 @@ export default function SimuladorPropostas() {
                         </td>
                         <td style={{ padding: "10px 12px", color: "#94a3b8" }}>
                           {fmtPct(participacoes[i])}
+                        </td>
+                        <td style={{ padding: "10px 8px" }}>
+                          {pedidos.length > 1 && (
+                            <button
+                              onClick={() => setPedidos((prev) => prev.filter((_, idx) => idx !== i))}
+                              style={{
+                                padding: "4px 10px", borderRadius: 6, border: "1px solid #ef4444",
+                                background: "transparent", color: "#ef4444", fontSize: 11,
+                                fontWeight: 600, cursor: "pointer",
+                              }}
+                            >
+                              ✕
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
