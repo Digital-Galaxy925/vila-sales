@@ -89,16 +89,19 @@ const AnaliseGerencial = () => {
   // KPI calculations based on search results
   const kpis = useMemo(() => {
     if (results.length === 0) {
-      return { custoMedio: "—", vendaMedia: "—", estoqueTotal: "—", filiaisPresentes: "—" };
+      return { custoMedio: "—", vendaMedia: "—", estoqueTotal: "—", filiaisPresentes: "—", valorEstoqueVenda: "—", estoqueCaixas: "—" };
     }
     const custoMedio = results.reduce((s, r) => s + r.custoLiq, 0) / results.length;
     const vendaMedia = results.reduce((s, r) => s + r.atual, 0) / results.length;
     const estoqueTotal = results.reduce((s, r) => s + r.estoque, 0);
+    const valorEstoqueVenda = results.reduce((s, r) => s + (r.estoque * r.atual), 0);
     return {
       custoMedio: fmt(custoMedio),
       vendaMedia: fmt(vendaMedia),
       estoqueTotal: fmtNum(estoqueTotal),
       filiaisPresentes: `${results.length} de ${FILIAL_ORDER.length}`,
+      valorEstoqueVenda: fmt(valorEstoqueVenda),
+      estoqueCaixas: `${fmtNum(estoqueTotal)} cx`,
     };
   }, [results]);
 
