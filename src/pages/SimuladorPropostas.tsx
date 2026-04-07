@@ -137,6 +137,121 @@ export default function SimuladorPropostas() {
   const participacoes = calcRows.map((r) => (totalValor > 0 ? r.valorNum / totalValor : 0));
   const maiorPedidoIdx = calcRows.reduce((best, r, i) => (r.valorNum > (calcRows[best]?.valorNum ?? 0) ? i : best), 0);
 
+  const exportPDF = useCallback(() => {
+    const doc = new jsPDF();
+    const status = statusProposta === "aprovada" ? "APROVADA" : statusProposta === "rejeitada" ? "REJEITADA" : "PENDENTE";
+    const dataFmt = dataAnalise.split("-").reverse().join("/");
+
+    // Header
+    doc.setFillColor(10, 15, 30);
+    doc.rect(0, 0, 210, 40, "F");
+    doc.setTextColor(226, 232, 240);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("Vila Sales - Simulador de Propostas", 14, 18);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Gerente: ${nomeGerente || "N/A"}    |    Data: ${dataFmt}    |    Status: ${status}`, 14, 30);
+
+    let y = 50;
+
+    // Produtos
+    produtosCalc.forEach((pc, idx) => {
+      if (!pc.found) return;
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Produto ${idx + 1}: ${pc.found.descricao}`, 14, y);
+      y += 8;
+
+      autoTable(doc, {
+        startY: y,
+        theme: "grid",
+        headStyles: { fillColor: [30, 58, 95], textColor: [226, 232, 240], fontSize: 9 },
+        bodyStyles: { fontSize: 9 },
+        head: [["Código", "Filial", "Custo", "Preço Venda Atual", "Estoque", "Unid/CX", "Preço Desejado", "Margem Sim.", "Valor Total"]],
+        body: [[
+          pc.found.seqProd,
+          pc.filial,
+          fmt(pc.found.custoLiq),
+          fmt(pc.found.atual),
+          pc.found.estoque.toLocaleString("pt-BR"),
+          pc.found.embCmp,
+          pc.precoVD > 0 ? fmt(pc.precoVD) : "-",
+          pc.precoVD > 0 ? fmtPct(pc.margem) : "-",
+          pc.valorTotal > 0 ? fmt(pc.valorTotal) : "-",
+        ]],
+      });
+      y = (doc as any).lastAutoTable.finalY + 10;
+    });
+
+    // Pedidos
+    if (y > 240) { doc.addPage(); y = 20; }
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("Entrada de Dados dos Pedidos", 14, y);
+    y += 6;
+
+    const pedidoBody = calcRows.map((r, i) => [
+      r.label,
+      fmt(r.valorNum),
+      fmtPct(r.margemNum),
+      fmt(r.margemRS),
+      fmtPct(participacoes[i]),
+    ]);
+    pedidoBody.push(["TOTAL CONSOLIDADO", fmt(totalValor), fmtPct(margemPonderada), fmt(totalMargemRS), "100,00%"]);
+
+    autoTable(doc, {
+      startY: y,
+      theme: "grid",
+      headStyles: { fillColor: [30, 58, 95], textColor: [226, 232, 240], fontSize: 9 },
+      bodyStyles: { fontSize: 9 },
+      head: [["Pedido", "Valor Total (R$)", "Margem (%)", "Margem (R$)", "Participação"]],
+      body: pedidoBody,
+      didParseCell: (data: any) => {
+        if (data.row.index === pedidoBody.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fillColor = [15, 23, 42];
+          data.cell.styles.textColor = [96, 165, 250];
+        }
+      },
+    });
+    y = (doc as any).lastAutoTable.finalY + 12;
+
+    // Results summary
+    if (y > 250) { doc.addPage(); y = 20; }
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 41, 59);
+    doc.text("Resultado da Análise", 14, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Margem Ponderada Real: ${fmtPct(margemPonderada)}`, 14, y); y += 6;
+    doc.text(`Margem R$ Total: ${fmt(totalMargemRS)}`, 14, y); y += 6;
+    doc.text(`Volume Total de Vendas: ${fmt(totalValor)}`, 14, y); y += 6;
+    doc.text(`Maior Pedido: ${calcRows[maiorPedidoIdx]?.label ?? "-"} (${fmtPct(participacoes[maiorPedidoIdx] ?? 0)})`, 14, y); y += 12;
+
+    // Status stamp
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    if (statusProposta === "aprovada") {
+      doc.setTextColor(52, 211, 153);
+      doc.text("STATUS: APROVADA", 14, y);
+    } else if (statusProposta === "rejeitada") {
+      doc.setTextColor(248, 113, 113);
+      doc.text("STATUS: REJEITADA", 14, y);
+    } else {
+      doc.setTextColor(148, 163, 184);
+      doc.text("STATUS: PENDENTE", 14, y);
+    }
+
+    // File name
+    const nomeArq = `${(nomeGerente || "proposta").replace(/\s+/g, "_")}_${dataAnalise}_${status}.pdf`;
+    doc.save(nomeArq);
+  }, [nomeGerente, dataAnalise, statusProposta, produtosCalc, calcRows, totalValor, totalMargemRS, margemPonderada, participacoes, maiorPedidoIdx]);
+
   // Sidebar
   const sidebarModules = [
     { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
