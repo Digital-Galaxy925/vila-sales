@@ -319,8 +319,8 @@ function ProgressBar({ value, max, color }: { value: number; max: number; color:
 
 // ─── Upload Wizard (2 steps) ──────────────────────────────────────────────────
 const LIVRO_META: { key: keyof UploadedFiles; label: string; desc: string }[] = [
-  { key: "livro_01",  label: "livro_01",  desc: "Filial 01 – Poços (preço/venda)"        },
-  { key: "livro_10",  label: "livro_10",  desc: "Poços (estoque/custo)"                  },
+  { key: "livro_01",  label: "livro_01",  desc: "Filial 01 – Poços (estoque)"              },
+  { key: "livro_10",  label: "livro_10",  desc: "Poços (preço custo/venda)"               },
   { key: "livro_11",  label: "livro_11",  desc: "Filial 11 – Campinas"                   },
   { key: "livro_12",  label: "livro_12",  desc: "Filial 12 – Osasco"                     },
   { key: "livro_14",  label: "livro_14",  desc: "Filial 14 – Betim"                      },
