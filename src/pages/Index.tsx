@@ -2309,6 +2309,7 @@ export default function Index() {
         <nav style={{ flex: 1, padding: "0 12px" }}>
           {/* 1 - Análise de Custos */}
           <button
+            className="sidebar-nav-btn"
             key="cruzamento"
             onClick={() => setActiveModule("cruzamento")}
             style={{
