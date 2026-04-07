@@ -12,14 +12,14 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { to: "/", label: "Análise Geral", icon: LayoutDashboard },
-  { to: "/preco", label: "Análise de Preço", icon: DollarSign },
-  { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
-  { to: "/estoque", label: "Análise de Estoque", icon: Package },
-  { to: "/shelf-life", label: "Análise de Shelf Life", icon: Clock },
-  { to: "/manual", label: "Análise Manual", icon: BarChart3 },
+  { to: "/manual", label: "Análise de Custos", icon: BarChart3 },
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
+  { to: "/estoque", label: "Análise de Estoque", icon: Package },
+  { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
+  { to: "/preco", label: "Análise de Preço", icon: DollarSign },
+  { to: "/shelf-life", label: "Análise de Shelf Life", icon: Clock },
+  { to: "/", label: "Análise Geral", icon: LayoutDashboard },
   { to: "/upload", label: "Upload de Dados", icon: Upload },
 ];
 
