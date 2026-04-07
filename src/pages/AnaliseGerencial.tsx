@@ -86,6 +86,22 @@ const AnaliseGerencial = () => {
 
   const productName = results.length > 0 ? results[0].descricao : "";
 
+  // KPI calculations based on search results
+  const kpis = useMemo(() => {
+    if (results.length === 0) {
+      return { custoMedio: "—", vendaMedia: "—", estoqueTotal: "—", filiaisPresentes: "—" };
+    }
+    const custoMedio = results.reduce((s, r) => s + r.custoLiq, 0) / results.length;
+    const vendaMedia = results.reduce((s, r) => s + r.atual, 0) / results.length;
+    const estoqueTotal = results.reduce((s, r) => s + r.estoque, 0);
+    return {
+      custoMedio: fmt(custoMedio),
+      vendaMedia: fmt(vendaMedia),
+      estoqueTotal: fmtNum(estoqueTotal),
+      filiaisPresentes: `${results.length} de ${FILIAL_ORDER.length}`,
+    };
+  }, [results]);
+
   const tableHeaderStyle =
     "px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground";
   const tableCellStyle = "px-4 py-3 text-sm";
