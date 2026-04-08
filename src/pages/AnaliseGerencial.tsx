@@ -14,6 +14,7 @@ interface Product {
   custoLiq: number;
   atual: number;
   estoque: number;
+  sellout: number;
   filial: string;
 }
 
@@ -38,11 +39,11 @@ const fmtNum = (v: number) => v.toLocaleString("pt-BR");
 interface BulkProductResult {
   code: string;
   descricao: string;
-  filiais: Record<string, { estoque: number; custoLiq: number; atual: number }>;
+  filiais: Record<string, { estoque: number; custoLiq: number; atual: number; sellout: number }>;
 }
 
 const findProductInData = (code: string, data: DataMap) => {
-  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; descricao: string }[] = [];
+  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; descricao: string }[] = [];
   FILIAL_ORDER.forEach((filialId) => {
     const products = data[filialId];
     if (!products) return;
@@ -56,6 +57,7 @@ const findProductInData = (code: string, data: DataMap) => {
         custoLiq: match.custoLiq ?? 0,
         atual: match.atual ?? 0,
         estoque: match.estoque ?? 0,
+        sellout: (match as any).sellout ?? 0,
         descricao: match.descricao ?? "",
       });
     }
@@ -114,9 +116,9 @@ const AnaliseGerencial = () => {
         codes.forEach((code) => {
           const found = findProductInData(code, data);
           if (found.length > 0) {
-            const filiais: Record<string, { estoque: number; custoLiq: number; atual: number }> = {};
+            const filiais: Record<string, { estoque: number; custoLiq: number; atual: number; sellout: number }> = {};
             found.forEach((f) => {
-              filiais[f.filial] = { estoque: f.estoque, custoLiq: f.custoLiq, atual: f.atual };
+              filiais[f.filial] = { estoque: f.estoque, custoLiq: f.custoLiq, atual: f.atual, sellout: f.sellout };
             });
             results.push({ code, descricao: found[0].descricao, filiais });
           } else {
@@ -152,15 +154,15 @@ const AnaliseGerencial = () => {
     );
     availableFiliais.forEach((f) => {
       const name = FILIAL_NAMES[f]?.split(" - ")[1] || f;
-      headerRow1.push(`${name} | ${f}`, "", "");
-      headerRow2.push("ESTOQUE", "CUSTO", "VENDA");
+      headerRow1.push(`${name} | ${f}`, "", "", "");
+      headerRow2.push("ESTOQUE", "CUSTO", "VENDA", "SELLOUT");
     });
 
     const rows = bulkResults.map((r) => {
       const row: (string | number)[] = [r.code, r.descricao || r.code];
       availableFiliais.forEach((f) => {
         const d = r.filiais[f];
-        row.push(d ? d.estoque : 0, d ? d.custoLiq : 0, d ? d.atual : 0);
+        row.push(d ? d.estoque : 0, d ? d.custoLiq : 0, d ? d.atual : 0, d ? d.sellout : 0);
       });
       return row;
     });
@@ -170,11 +172,11 @@ const AnaliseGerencial = () => {
     const merges: XLSX.Range[] = [];
     let col = 2;
     availableFiliais.forEach(() => {
-      merges.push({ s: { r: 0, c: col }, e: { r: 0, c: col + 2 } });
-      col += 3;
+      merges.push({ s: { r: 0, c: col }, e: { r: 0, c: col + 3 } });
+      col += 4;
     });
     ws["!merges"] = merges;
-    ws["!cols"] = [{ wch: 12 }, { wch: 30 }, ...availableFiliais.flatMap(() => [{ wch: 12 }, { wch: 14 }, { wch: 14 }])];
+    ws["!cols"] = [{ wch: 12 }, { wch: 30 }, ...availableFiliais.flatMap(() => [{ wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 12 }])];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Visão Consolidada");
@@ -340,7 +342,7 @@ const AnaliseGerencial = () => {
                       {bulkAvailableFiliais.map((f) => (
                         <th
                           key={f}
-                          colSpan={3}
+                          colSpan={4}
                           className={`${tableHeaderStyle} text-center border-r border-border last:border-r-0`}
                         >
                           {FILIAL_NAMES[f]?.split(" - ")[1] || f} | {f}
@@ -352,7 +354,8 @@ const AnaliseGerencial = () => {
                         <React.Fragment key={f}>
                           <th className={`${tableHeaderStyle} text-right`}>Estoque</th>
                           <th className={`${tableHeaderStyle} text-right`}>Custo</th>
-                          <th className={`${tableHeaderStyle} text-right border-r border-border last:border-r-0`}>Venda</th>
+                          <th className={`${tableHeaderStyle} text-right`}>Venda</th>
+                          <th className={`${tableHeaderStyle} text-right border-r border-border last:border-r-0`}>Sellout</th>
                         </React.Fragment>
                       ))}
                     </tr>
@@ -378,8 +381,11 @@ const AnaliseGerencial = () => {
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>
                                 {d ? fmt(d.custoLiq) : "—"}
                               </td>
-                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border last:border-r-0`}>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>
                                 {d ? fmt(d.atual) : "—"}
+                              </td>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border last:border-r-0`}>
+                                {d ? fmtNum(d.sellout) : "—"}
                               </td>
                             </React.Fragment>
                           );
@@ -538,7 +544,7 @@ const AnaliseGerencial = () => {
                           {results.map((r) => (
                             <th
                               key={r.filial}
-                              colSpan={3}
+                              colSpan={4}
                               className={`${tableHeaderStyle} text-center border-r border-border last:border-r-0`}
                             >
                               {FILIAL_NAMES[r.filial]?.split(" - ")[1] || r.filial} | {r.filial}
@@ -550,7 +556,8 @@ const AnaliseGerencial = () => {
                             <React.Fragment key={r.filial}>
                               <th className={`${tableHeaderStyle} text-right`}>Estoque</th>
                               <th className={`${tableHeaderStyle} text-right`}>Custo</th>
-                              <th className={`${tableHeaderStyle} text-right border-r border-border last:border-r-0`}>Venda</th>
+                              <th className={`${tableHeaderStyle} text-right`}>Venda</th>
+                              <th className={`${tableHeaderStyle} text-right border-r border-border last:border-r-0`}>Sellout</th>
                             </React.Fragment>
                           ))}
                         </tr>
@@ -564,7 +571,8 @@ const AnaliseGerencial = () => {
                             <React.Fragment key={r.filial}>
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmtNum(r.estoque)}</td>
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.custoLiq)}</td>
-                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border last:border-r-0`}>{fmt(r.atual)}</td>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.atual)}</td>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border last:border-r-0`}>{fmtNum(r.sellout)}</td>
                             </React.Fragment>
                           ))}
                         </tr>
