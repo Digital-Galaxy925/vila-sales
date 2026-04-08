@@ -8,6 +8,12 @@ import Index from "./pages/Index";
 import Simulador from "./pages/Simulador";
 import SimuladorPropostas from "./pages/SimuladorPropostas";
 import AnaliseGerencial from "./pages/AnaliseGerencial";
+import AnaliseManual from "./pages/AnaliseManual";
+import AnaliseEstoque from "./pages/AnaliseEstoque";
+import AnaliseMargem from "./pages/AnaliseMargem";
+import AnalisePreco from "./pages/AnalisePreco";
+import AnaliseShelfLife from "./pages/AnaliseShelfLife";
+import UploadDados from "./pages/UploadDados";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,9 +27,15 @@ const App = () => (
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/" element={<Index />} />
+            <Route path="/manual" element={<AnaliseManual />} />
+            <Route path="/gerencial" element={<AnaliseGerencial />} />
             <Route path="/simulador" element={<Simulador />} />
             <Route path="/propostas" element={<SimuladorPropostas />} />
-            <Route path="/gerencial" element={<AnaliseGerencial />} />
+            <Route path="/estoque" element={<AnaliseEstoque />} />
+            <Route path="/margem" element={<AnaliseMargem />} />
+            <Route path="/preco" element={<AnalisePreco />} />
+            <Route path="/shelf-life" element={<AnaliseShelfLife />} />
+            <Route path="/upload" element={<UploadDados />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
