@@ -2112,6 +2112,65 @@ export default function Index() {
           .map((row) => row.map((cell) => String(cell ?? "").trim()));
       };
 
+      const chooseBestMetric = (...values: Array<string | undefined>): string => {
+        const cleaned = values
+          .map((value) => String(value ?? "").trim())
+          .filter((value) => value !== "");
+        const nonZero = cleaned.find((value) => num(value) !== 0);
+        return nonZero ?? cleaned[0] ?? "0";
+      };
+
+      const buildOverrideMap = async (file: File | undefined, label: string) => {
+        const map = new Map<string, { custo: string; preco: string; sellout: string }>();
+        if (!file) return map;
+
+        if (/\.csv$/i.test(file.name)) {
+          const rawRows = await parseCSVRaw(file);
+          const header = rawRows[0] ?? [];
+          const colCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO", "SEQPROD", "SEQ_PROD"], 1);
+          const colCusto = findHeaderIndex(header, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"], 16);
+          const colPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"], 19);
+          const colSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
+
+          rawRows.slice(1).forEach((cols) => {
+            const cod = normCod(cols[colCod] ?? "");
+            if (!cod) return;
+
+            const current = map.get(cod);
+            map.set(cod, {
+              custo: chooseBestMetric(cols[colCusto], current?.custo),
+              preco: chooseBestMetric(cols[colPreco], current?.preco),
+              sellout: chooseBestMetric(colSellout >= 0 ? cols[colSellout] : undefined, current?.sellout),
+            });
+          });
+        } else {
+          const rows = await readExcelAsRows(file);
+          rows.forEach((row) => {
+            const cod = normCod(findCol(row, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO", "SEQPROD", "SEQ_PROD"]));
+            if (!cod) return;
+
+            const current = map.get(cod);
+            map.set(cod, {
+              custo: chooseBestMetric(
+                findCol(row, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]),
+                current?.custo,
+              ),
+              preco: chooseBestMetric(
+                findCol(row, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"]),
+                current?.preco,
+              ),
+              sellout: chooseBestMetric(
+                findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"]),
+                current?.sellout,
+              ),
+            });
+          });
+        }
+
+        console.log(`[${label}] ${map.size} produtos mapeados`);
+        return map;
+      };
+
       // ── 3. Cruzamento direto por posição ──────────────────────────────────────
       // livro_01 – Poços:
       //   col[1] = código (coluna 2)
@@ -2155,10 +2214,10 @@ export default function Index() {
           const baseEntry = baseMap.get(cod)!;
           const desc = baseEntry.desc || cols[finalColDesc] || rawCod;
           const overrideRow = overridePrecos?.get(cod) ?? overrideEstoque?.get(cod);
-          const estoqueStr = overrideEstoque?.get(cod)?.estoque ?? cols[finalColEstoque] ?? "0";
-          const custoStr = overrideRow?.custo ?? cols[finalColCusto] ?? "0";
-          const precoStr = overridePrecos?.get(cod)?.preco ?? cols[finalColPreco] ?? "0";
-          const selloutStr = overrideRow?.sellout ?? (finalColSellout >= 0 ? cols[finalColSellout] ?? "0" : "0");
+          const estoqueStr = chooseBestMetric(overrideEstoque?.get(cod)?.estoque, cols[finalColEstoque]);
+          const custoStr = chooseBestMetric(overrideRow?.custo, cols[finalColCusto]);
+          const precoStr = chooseBestMetric(overridePrecos?.get(cod)?.preco, cols[finalColPreco]);
+          const selloutStr = chooseBestMetric(overrideRow?.sellout, finalColSellout >= 0 ? cols[finalColSellout] : undefined);
 
           const estoque = num(estoqueStr);
           const custoLiq = num(custoStr);
@@ -2195,20 +2254,7 @@ export default function Index() {
 
       // ── 4. Lê livro_10 (custo/preço para Poços) ──
       // Filial 01: estoque vem do livro_01, custo (CUSTO LIQ) e preço (ATUAL) vêm do livro_10
-      let map10 = new Map<string, { custo: string; preco: string; sellout: string }>();
-      if (files.livro_10) {
-        const rows10 = await readExcelAsRows(files.livro_10);
-        rows10.forEach((row) => {
-          const cod = normCod(findCol(row, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO", "SEQPROD", "SEQ_PROD"]));
-          if (cod) {
-            const custo = findCol(row, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]);
-            const preco = findCol(row, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"]);
-            const sellout = findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"]);
-            map10.set(cod, { custo: custo || "0", preco: preco || "0", sellout: sellout || "0" });
-          }
-        });
-        console.log(`[livro_10] ${map10.size} produtos mapeados (custo/preço para Poços)`);
-      }
+      const map10 = await buildOverrideMap(files.livro_10, "livro_10");
 
       const newData: FilialData = {};
 
@@ -2243,20 +2289,7 @@ export default function Index() {
       }
 
       // Filial 502 – Focomix MG (estoque = livro_502; preço custo/venda = livro_510)
-      let map510 = new Map<string, { custo: string; preco: string; sellout: string }>();
-      if (files.livro_510) {
-        const rows510 = await readExcelAsRows(files.livro_510);
-        rows510.forEach((row) => {
-          const cod = normCod(findCol(row, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO", "SEQPROD", "SEQ_PROD"]));
-          if (cod) {
-            const custo = findCol(row, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]);
-            const preco = findCol(row, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"]);
-            const sellout = findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"]);
-            map510.set(cod, { custo: custo || "0", preco: preco || "0", sellout: sellout || "0" });
-          }
-        });
-        console.log(`[livro_510] ${map510.size} produtos mapeados`);
-      }
+      const map510 = await buildOverrideMap(files.livro_510, "livro_510");
 
       if (files.livro_502) {
         const raw = await parseCSVRaw(files.livro_502);
