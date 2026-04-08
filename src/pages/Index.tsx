@@ -2513,6 +2513,10 @@ export default function Index() {
               setFiles({});
               setBaseFile(null);
               setUnrecognizedFiles([]);
+              try {
+                localStorage.removeItem("vilasales_data");
+                localStorage.removeItem("vilasales_lastUpdate");
+              } catch (_) {}
             }}
             style={{
               padding: "10px 24px",
