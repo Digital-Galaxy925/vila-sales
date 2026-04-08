@@ -140,7 +140,7 @@ function findCol(row: Record<string, string>, candidates: string[]): string {
 }
 
 function rowToProduct(row: Record<string, string>, filial: Filial): Product {
-  const pv = num(findCol(row, ["ATUAL", "PRECO_VENDA", "PV", "SELLOUT"]));
+  const pv = num(findCol(row, ["ATUAL", "PRECO_VENDA", "PV"]));
   const pc = num(findCol(row, ["CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "PC"]));
   const margCalc = pv > 0 ? ((pv - pc) / pv) * 100 : 0;
   return {
@@ -150,7 +150,7 @@ function rowToProduct(row: Record<string, string>, filial: Filial): Product {
     embCmp: findCol(row, ["EMB.CMP", "EMBCMP", "EMB_CMP"]),
     embVir: findCol(row, ["EMB.VIR", "EMBVIR", "EMB_VIR"]),
     estoque: num(findCol(row, ["ESTOQUE"])),
-    sellout: num(findCol(row, ["SELLOUT"])),
+    sellout: num(findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"])),
     custoLiq: pc,
     comis: num(findCol(row, ["COMIS"])),
     marg: num(findCol(row, ["MARG"])) || margCalc,
