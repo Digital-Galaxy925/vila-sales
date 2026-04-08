@@ -2039,6 +2039,10 @@ export default function Index() {
     setUnrecognizedFiles([]);
     setData({});
     setLastUpdate(null);
+    try {
+      localStorage.removeItem("vilasales_data");
+      localStorage.removeItem("vilasales_lastUpdate");
+    } catch (_) {}
   }, []);
 
   const processFiles = useCallback(async () => {
