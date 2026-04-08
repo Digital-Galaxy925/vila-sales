@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
@@ -2001,11 +2001,28 @@ export default function Index() {
   const [files, setFiles] = useState<UploadedFiles>({});
   const [baseFile, setBaseFile] = useState<File | null>(null);
   const [unrecognizedFiles, setUnrecognizedFiles] = useState<string[]>([]);
-  const [data, setData] = useState<FilialData>({});
+  const [data, setData] = useState<FilialData>(() => {
+    try {
+      const saved = localStorage.getItem("vilasales_data");
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    return {};
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showUpload, setShowUpload] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState<string | null>(null);
+  const [showUpload, setShowUpload] = useState(() => {
+    try {
+      const saved = localStorage.getItem("vilasales_data");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return !Object.values(parsed).some((arr: any) => arr.length > 0);
+      }
+    } catch (_) {}
+    return true;
+  });
+  const [lastUpdate, setLastUpdate] = useState<string | null>(() => {
+    return localStorage.getItem("vilasales_lastUpdate") || null;
+  });
 
   const handleFiles = useCallback((newFiles: Partial<UploadedFiles>, unrecognized: string[]) => {
     setFiles((prev) => ({ ...prev, ...newFiles }));
