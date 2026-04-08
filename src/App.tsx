@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import Simulador from "./pages/Simulador";
 import SimuladorPropostas from "./pages/SimuladorPropostas";
 import AnaliseGerencial from "./pages/AnaliseGerencial";
-import AnaliseManual from "./pages/AnaliseManual";
+
 import AnaliseEstoque from "./pages/AnaliseEstoque";
 import AnaliseMargem from "./pages/AnaliseMargem";
 import AnalisePreco from "./pages/AnalisePreco";
@@ -25,9 +25,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/manual" element={<Index />} />
           <Route element={<AppLayout />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/manual" element={<AnaliseManual />} />
             <Route path="/gerencial" element={<AnaliseGerencial />} />
             <Route path="/simulador" element={<Simulador />} />
             <Route path="/propostas" element={<SimuladorPropostas />} />
