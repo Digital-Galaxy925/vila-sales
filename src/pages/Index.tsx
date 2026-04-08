@@ -600,7 +600,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [selectedFilial, setSelectedFilial] = useState<Filial | "all">("all");
   const [selectedBU, setSelectedBU] = useState<"all" | "FOODS" | "HC">("all");
   const [search, setSearch] = useState("");
-  const [sortCol, setSortCol] = useState<"seqProd" | "descricao" | "estoque" | "custoLiq" | "atual" | "marg">("marg");
+  const [sortCol, setSortCol] = useState<"seqProd" | "descricao" | "estoque" | "custoLiq" | "sellout" | "atual" | "marg">("marg");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [filterMarg, setFilterMarg] = useState<"all" | "critico" | "ok">("all");
   const [minMargin, setMinMargin] = useState(17);
@@ -667,7 +667,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export XLSX
   const exportXLSX = () => {
-    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
+    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
     const rows = filtered.map((p) => {
       const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
       const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
@@ -688,6 +688,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.embCmp || "",
         p.estoque,
         p.custoLiq.toFixed(2),
+        p.sellout.toFixed(2),
         p.atual.toFixed(2),
         p.marg.toFixed(2),
         p.marg >= minMargin ? "Saudável" : "Crítico",
@@ -974,6 +975,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               </th>
               <ThBtn col="estoque">Estoque</ThBtn>
               <ThBtn col="custoLiq">Custo Liq</ThBtn>
+              <ThBtn col="sellout">Sell Out</ThBtn>
               <ThBtn col="atual">Preço Venda</ThBtn>
               <ThBtn col="marg">Margem</ThBtn>
               <th style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b" }}>
@@ -1073,6 +1075,11 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                   {/* Custo Liq */}
                   <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", color: "#94a3b8", whiteSpace: "nowrap" }}>
                     R$ {p.custoLiq.toFixed(2)}
+                  </td>
+
+                  {/* Sell Out */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", color: "#38bdf8", whiteSpace: "nowrap" }}>
+                    R$ {p.sellout.toFixed(2)}
                   </td>
 
                   {/* Preço Venda */}
