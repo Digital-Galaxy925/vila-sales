@@ -130,12 +130,17 @@ function findHeaderIndex(header: string[], candidates: string[], fallback: numbe
 }
 
 function findCol(row: Record<string, string>, candidates: string[]): string {
-  for (const c of candidates) {
-    const key = Object.keys(row).find(
-      (k) => k.trim().toUpperCase() === c.toUpperCase()
+  const entries = Object.entries(row);
+  const normalizedCandidates = candidates.map(normalizeHeader);
+
+  for (const [key, value] of entries) {
+    const normalizedKey = normalizeHeader(key);
+    const matched = normalizedCandidates.some(
+      (candidate) => normalizedKey === candidate || normalizedKey.includes(candidate) || candidate.includes(normalizedKey)
     );
-    if (key && row[key] !== undefined) return row[key];
+    if (matched && value !== undefined) return value;
   }
+
   return "";
 }
 
