@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import Simulador from "./pages/Simulador";
 import SimuladorPropostas from "./pages/SimuladorPropostas";
 import AnaliseGerencial from "./pages/AnaliseGerencial";
-import AnaliseManual from "./pages/AnaliseManual";
+
 import AnaliseEstoque from "./pages/AnaliseEstoque";
 import AnaliseMargem from "./pages/AnaliseMargem";
 import AnalisePreco from "./pages/AnalisePreco";
