@@ -2110,7 +2110,7 @@ export default function Index() {
       //   col[25] = ATUAL / preço venda (coluna 26)
 
       const buildProducts = (
-        rawRows: string[][],        // todas as linhas incluindo header
+        rawRows: string[][],
         filial: Filial,
         colCod: number,
         colDesc: number,
@@ -2118,8 +2118,8 @@ export default function Index() {
         colDDV: number,
         colCustoFallback: number,
         colPrecoFallback: number,
-        overrideEstoque?: Map<string, { estoque: string; custo: string }>, // livro_10
-        overridePrecos?: Map<string, { custo: string; preco: string }> // livro_510
+        overrideEstoque?: Map<string, { estoque: string; custo: string; sellout: string }>,
+        overridePrecos?: Map<string, { custo: string; preco: string; sellout: string }>
       ): Product[] => {
         const header = rawRows[0] ?? [];
         const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
@@ -2130,27 +2130,30 @@ export default function Index() {
         const finalColDDV = findHeaderIndex(header, ["DDV"], colDDV);
         const finalColCusto = findHeaderIndex(header, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], colCustoFallback);
         const finalColPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV"], colPrecoFallback);
+        const finalColSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
 
-        const dataRows = rawRows.slice(1); // pula header
+        const dataRows = rawRows.slice(1);
         const result: Product[] = [];
 
         dataRows.forEach((cols) => {
           const rawCod = cols[finalColCod] ?? "";
           const cod = normCod(rawCod);
-          if (!cod || !baseMap.has(cod)) return; // só produtos da base
+          if (!cod || !baseMap.has(cod)) return;
 
           const baseEntry = baseMap.get(cod)!;
           const desc = baseEntry.desc || cols[finalColDesc] || rawCod;
-
-          // Usa override de livro_10 se fornecido (Poços)
+          const overrideRow = overridePrecos?.get(cod) ?? overrideEstoque?.get(cod);
           const estoqueStr = overrideEstoque?.get(cod)?.estoque ?? cols[finalColEstoque] ?? "0";
-          const custoStr   = overridePrecos?.get(cod)?.custo ?? overrideEstoque?.get(cod)?.custo ?? cols[finalColCusto] ?? "0";
+          const custoStr = overrideRow?.custo ?? cols[finalColCusto] ?? "0";
+          const precoStr = overridePrecos?.get(cod)?.preco ?? cols[finalColPreco] ?? "0";
+          const selloutStr = overrideRow?.sellout ?? (finalColSellout >= 0 ? cols[finalColSellout] ?? "0" : "0");
 
-          const estoque  = num(estoqueStr);
+          const estoque = num(estoqueStr);
           const custoLiq = num(custoStr);
-          const atual    = num(overridePrecos?.get(cod)?.preco ?? cols[finalColPreco] ?? "0");
-          const ddv      = num(cols[finalColDDV] ?? "0");
-          const marg     = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
+          const atual = num(precoStr);
+          const sellout = num(selloutStr);
+          const ddv = num(cols[finalColDDV] ?? "0");
+          const marg = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
           result.push({
             familia: finalColFamilia >= 0 ? (cols[finalColFamilia] ?? "") : "",
@@ -2159,7 +2162,7 @@ export default function Index() {
             embCmp: finalColEmbCmp >= 0 ? (cols[finalColEmbCmp] ?? "") : "",
             embVir: "",
             estoque,
-            sellout: 0,
+            sellout,
             custoLiq,
             comis: 0,
             marg,
@@ -2180,7 +2183,7 @@ export default function Index() {
 
       // ── 4. Lê livro_10 (custo/preço para Poços) ──
       // Filial 01: estoque vem do livro_01, custo (CUSTO LIQ) e preço (ATUAL) vêm do livro_10
-      let map10 = new Map<string, { custo: string; preco: string }>();
+      let map10 = new Map<string, { custo: string; preco: string; sellout: string }>();
       if (files.livro_10) {
         const rows10 = await readExcelAsRows(files.livro_10);
         rows10.forEach((row) => {
@@ -2188,7 +2191,8 @@ export default function Index() {
           if (cod) {
             const custo = findCol(row, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]);
             const preco = findCol(row, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"]);
-            map10.set(cod, { custo: custo || "0", preco: preco || "0" });
+            const sellout = findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"]);
+            map10.set(cod, { custo: custo || "0", preco: preco || "0", sellout: sellout || "0" });
           }
         });
         console.log(`[livro_10] ${map10.size} produtos mapeados (custo/preço para Poços)`);
@@ -2227,16 +2231,16 @@ export default function Index() {
       }
 
       // Filial 502 – Focomix MG (estoque = livro_502; preço custo/venda = livro_510)
-      let map510 = new Map<string, { custo: string; preco: string }>();
+      let map510 = new Map<string, { custo: string; preco: string; sellout: string }>();
       if (files.livro_510) {
-        // Usa readExcelAsRows (header-based) para garantir match correto das colunas
         const rows510 = await readExcelAsRows(files.livro_510);
         rows510.forEach((row) => {
           const cod = normCod(findCol(row, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO", "SEQPROD", "SEQ_PROD"]));
           if (cod) {
             const custo = findCol(row, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]);
             const preco = findCol(row, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"]);
-            map510.set(cod, { custo: custo || "0", preco: preco || "0" });
+            const sellout = findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"]);
+            map510.set(cod, { custo: custo || "0", preco: preco || "0", sellout: sellout || "0" });
           }
         });
         console.log(`[livro_510] ${map510.size} produtos mapeados`);
