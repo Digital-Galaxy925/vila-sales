@@ -156,15 +156,15 @@ const AnaliseGerencial = () => {
     );
     availableFiliais.forEach((f) => {
       const name = FILIAL_NAMES[f]?.split(" - ")[1] || f;
-      headerRow1.push(`${name} | ${f}`, "", "", "");
-      headerRow2.push("ESTOQUE", "CUSTO", "VENDA", "SELLOUT");
+      headerRow1.push(`${name} | ${f}`, "", "", "", "");
+      headerRow2.push("ESTOQUE", "CUSTO", "VENDA", "PROMOÇÃO", "SELLOUT");
     });
 
     const rows = bulkResults.map((r) => {
       const row: (string | number)[] = [r.code, r.descricao || r.code];
       availableFiliais.forEach((f) => {
         const d = r.filiais[f];
-        row.push(d ? d.estoque : 0, d ? d.custoLiq : 0, d ? d.atual : 0, d ? d.sellout : 0);
+        row.push(d ? d.estoque : 0, d ? d.custoLiq : 0, d ? d.atual : 0, d ? d.promoc : 0, d ? d.sellout : 0);
       });
       return row;
     });
@@ -174,11 +174,11 @@ const AnaliseGerencial = () => {
     const merges: XLSX.Range[] = [];
     let col = 2;
     availableFiliais.forEach(() => {
-      merges.push({ s: { r: 0, c: col }, e: { r: 0, c: col + 3 } });
-      col += 4;
+      merges.push({ s: { r: 0, c: col }, e: { r: 0, c: col + 4 } });
+      col += 5;
     });
     ws["!merges"] = merges;
-    ws["!cols"] = [{ wch: 12 }, { wch: 30 }, ...availableFiliais.flatMap(() => [{ wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 12 }])];
+    ws["!cols"] = [{ wch: 12 }, { wch: 30 }, ...availableFiliais.flatMap(() => [{ wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 12 }])];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Visão Consolidada");
