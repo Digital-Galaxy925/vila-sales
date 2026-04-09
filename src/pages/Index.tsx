@@ -2197,8 +2197,8 @@ export default function Index() {
         colDDV: number,
         colCustoFallback: number,
         colPrecoFallback: number,
-        overrideEstoque?: Map<string, { estoque: string; custo: string; sellout: string }>,
-        overridePrecos?: Map<string, { custo: string; preco: string; sellout: string }>
+        overrideEstoque?: Map<string, { estoque: string; custo: string; sellout: string; promoc: string }>,
+        overridePrecos?: Map<string, { custo: string; preco: string; sellout: string; promoc: string }>
       ): Product[] => {
         const header = rawRows[0] ?? [];
         const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
