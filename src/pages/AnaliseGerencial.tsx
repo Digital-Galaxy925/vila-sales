@@ -344,7 +344,7 @@ const AnaliseGerencial = () => {
                       {bulkAvailableFiliais.map((f) => (
                         <th
                           key={f}
-                          colSpan={4}
+                          colSpan={5}
                           className={`${tableHeaderStyle} text-center border-r border-border last:border-r-0`}
                         >
                           {FILIAL_NAMES[f]?.split(" - ")[1] || f} | {f}
@@ -357,6 +357,7 @@ const AnaliseGerencial = () => {
                           <th className={`${tableHeaderStyle} text-right`}>Estoque</th>
                           <th className={`${tableHeaderStyle} text-right`}>Custo</th>
                           <th className={`${tableHeaderStyle} text-right`}>Venda</th>
+                          <th className={`${tableHeaderStyle} text-right`}>Promoção</th>
                           <th className={`${tableHeaderStyle} text-right border-r border-border last:border-r-0`}>Sellout</th>
                         </React.Fragment>
                       ))}
@@ -385,6 +386,9 @@ const AnaliseGerencial = () => {
                               </td>
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>
                                 {d ? fmt(d.atual) : "—"}
+                              </td>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>
+                                {d ? fmt(d.promoc) : "—"}
                               </td>
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border last:border-r-0`}>
                                 {d ? fmtNum(d.sellout) : "—"}
