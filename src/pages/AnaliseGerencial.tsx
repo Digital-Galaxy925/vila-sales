@@ -550,7 +550,7 @@ const AnaliseGerencial = () => {
                           {results.map((r) => (
                             <th
                               key={r.filial}
-                              colSpan={4}
+                              colSpan={5}
                               className={`${tableHeaderStyle} text-center border-r border-border last:border-r-0`}
                             >
                               {FILIAL_NAMES[r.filial]?.split(" - ")[1] || r.filial} | {r.filial}
@@ -563,6 +563,7 @@ const AnaliseGerencial = () => {
                               <th className={`${tableHeaderStyle} text-right`}>Estoque</th>
                               <th className={`${tableHeaderStyle} text-right`}>Custo</th>
                               <th className={`${tableHeaderStyle} text-right`}>Venda</th>
+                              <th className={`${tableHeaderStyle} text-right`}>Promoção</th>
                               <th className={`${tableHeaderStyle} text-right border-r border-border last:border-r-0`}>Sellout</th>
                             </React.Fragment>
                           ))}
@@ -578,6 +579,7 @@ const AnaliseGerencial = () => {
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmtNum(r.estoque)}</td>
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.custoLiq)}</td>
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.atual)}</td>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.promoc)}</td>
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border last:border-r-0`}>{fmtNum(r.sellout)}</td>
                             </React.Fragment>
                           ))}
