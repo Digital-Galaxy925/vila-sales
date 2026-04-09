@@ -118,9 +118,9 @@ const AnaliseGerencial = () => {
         codes.forEach((code) => {
           const found = findProductInData(code, data);
           if (found.length > 0) {
-            const filiais: Record<string, { estoque: number; custoLiq: number; atual: number; sellout: number }> = {};
+            const filiais: Record<string, { estoque: number; custoLiq: number; atual: number; sellout: number; promoc: number }> = {};
             found.forEach((f) => {
-              filiais[f.filial] = { estoque: f.estoque, custoLiq: f.custoLiq, atual: f.atual, sellout: f.sellout };
+              filiais[f.filial] = { estoque: f.estoque, custoLiq: f.custoLiq, atual: f.atual, sellout: f.sellout, promoc: f.promoc };
             });
             results.push({ code, descricao: found[0].descricao, filiais });
           } else {
