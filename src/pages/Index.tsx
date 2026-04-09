@@ -669,7 +669,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export XLSX
   const exportXLSX = () => {
-    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
+    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Promoção (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
     const rows = filtered.map((p) => {
       const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
       const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
@@ -692,6 +692,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.custoLiq.toFixed(2),
         p.sellout.toFixed(2),
         p.atual.toFixed(2),
+        p.promoc.toFixed(2),
         p.marg.toFixed(2),
         p.marg >= minMargin ? "Saudável" : "Crítico",
         raw || "",
