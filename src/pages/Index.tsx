@@ -796,7 +796,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           />
           {specificList ? (
             <button
-              onClick={() => { setSpecificList(null); setSpecificFileName(""); }}
+              onClick={() => { setSpecificList(null); setSpecificFileName(""); setSpecificNotFound([]); }}
               style={{
                 padding: "8px 18px", borderRadius: 8, border: "1px solid #b45309",
                 background: "#451a03", color: "#fbbf24", cursor: "pointer",
@@ -818,6 +818,27 @@ function CrossAnalysis({ data }: { data: FilialData }) {
             </button>
           )}
         </div>
+
+        {specificNotFound.length > 0 && (
+          <div style={{
+            margin: "12px 0", padding: "14px 18px", borderRadius: 10,
+            background: "#451a03", border: "1px solid #b45309", color: "#fbbf24",
+          }}>
+            <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
+              ⚠️ {specificNotFound.length} código(s) não encontrado(s) nos dados:
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {specificNotFound.map((code) => (
+                <span key={code} style={{
+                  background: "#78350f", padding: "2px 10px", borderRadius: 6,
+                  fontSize: 12, fontFamily: "monospace",
+                }}>
+                  {code}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* BU filter — destaque visual no topo */}
