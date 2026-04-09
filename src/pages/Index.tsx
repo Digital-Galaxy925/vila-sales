@@ -755,7 +755,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
             Produtos da sua base cruzados com os dados das filiais
           </p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button
             onClick={() => {
               setDesiredMargins({});
@@ -782,6 +782,36 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           >
             ⬇️ Exportar Excel
           </button>
+          <input
+            ref={specificFileRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            style={{ display: "none" }}
+            onChange={handleSpecificUpload}
+          />
+          {specificList ? (
+            <button
+              onClick={() => { setSpecificList(null); setSpecificFileName(""); }}
+              style={{
+                padding: "8px 18px", borderRadius: 8, border: "1px solid #b45309",
+                background: "#451a03", color: "#fbbf24", cursor: "pointer",
+                fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              ✕ {specificFileName} ({specificList.length} itens)
+            </button>
+          ) : (
+            <button
+              onClick={() => specificFileRef.current?.click()}
+              style={{
+                padding: "8px 18px", borderRadius: 8, border: "1px solid #1e40af",
+                background: "#172554", color: "#60a5fa", cursor: "pointer",
+                fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              📋 Upload Lista Específica
+            </button>
+          )}
         </div>
       </div>
 
