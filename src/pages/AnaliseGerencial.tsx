@@ -492,6 +492,7 @@ const AnaliseGerencial = () => {
                         <tr className="border-b border-border bg-muted/30">
                           <th className={tableHeaderStyle}>Filial</th>
                           <th className={`${tableHeaderStyle} text-right`}>Preço de Venda</th>
+                          <th className={`${tableHeaderStyle} text-right`}>Promoção</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -499,6 +500,7 @@ const AnaliseGerencial = () => {
                           <tr key={r.filial} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                             <td className={`${tableCellStyle} font-medium text-card-foreground`}>{r.filialName}</td>
                             <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.atual)}</td>
+                            <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.promoc)}</td>
                           </tr>
                         ))}
                       </tbody>
