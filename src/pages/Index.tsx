@@ -613,6 +613,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
   const [specificList, setSpecificList] = useState<string[] | null>(null);
   const [specificFileName, setSpecificFileName] = useState("");
+  const [specificNotFound, setSpecificNotFound] = useState<string[]>([]);
   const specificFileRef = useRef<HTMLInputElement>(null);
 
   const handleSpecificUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -621,8 +622,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const data = new Uint8Array(ev.target?.result as ArrayBuffer);
-        const wb = XLSX.read(data, { type: "array" });
+        const d = new Uint8Array(ev.target?.result as ArrayBuffer);
+        const wb = XLSX.read(d, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows: any[] = XLSX.utils.sheet_to_json(ws, { header: 1 });
         const codes: string[] = [];
@@ -631,8 +632,12 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           const val = String(row[0]).trim();
           if (val && /^\d+$/.test(val)) codes.push(val.padStart(6, "0"));
         }
+        const allProds = Object.values(data).flat();
+        const allCodes = new Set(allProds.map((p) => p.seqProd));
+        const notFound = codes.filter((c) => !allCodes.has(c));
         setSpecificList(codes);
         setSpecificFileName(file.name);
+        setSpecificNotFound(notFound);
       } catch { /* ignore */ }
     };
     reader.readAsArrayBuffer(file);
