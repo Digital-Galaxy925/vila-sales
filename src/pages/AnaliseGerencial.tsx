@@ -15,6 +15,7 @@ interface Product {
   atual: number;
   estoque: number;
   sellout: number;
+  promoc: number;
   filial: string;
 }
 
@@ -39,11 +40,11 @@ const fmtNum = (v: number) => v.toLocaleString("pt-BR");
 interface BulkProductResult {
   code: string;
   descricao: string;
-  filiais: Record<string, { estoque: number; custoLiq: number; atual: number; sellout: number }>;
+  filiais: Record<string, { estoque: number; custoLiq: number; atual: number; sellout: number; promoc: number }>;
 }
 
 const findProductInData = (code: string, data: DataMap) => {
-  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; descricao: string }[] = [];
+  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; promoc: number; descricao: string }[] = [];
   FILIAL_ORDER.forEach((filialId) => {
     const products = data[filialId];
     if (!products) return;
@@ -58,6 +59,7 @@ const findProductInData = (code: string, data: DataMap) => {
         atual: match.atual ?? 0,
         estoque: match.estoque ?? 0,
         sellout: (match as any).sellout ?? 0,
+        promoc: (match as any).promoc ?? 0,
         descricao: match.descricao ?? "",
       });
     }
