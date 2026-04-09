@@ -2167,6 +2167,10 @@ export default function Index() {
                 findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"]),
                 current?.sellout,
               ),
+              promoc: chooseBestMetric(
+                findCol(row, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"]),
+                current?.promoc,
+              ),
             });
           });
         }
@@ -2206,6 +2210,7 @@ export default function Index() {
         const finalColCusto = findHeaderIndex(header, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], colCustoFallback);
         const finalColPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV"], colPrecoFallback);
         const finalColSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
+        const finalColPromoc = findHeaderIndex(header, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"], -1);
 
         const dataRows = rawRows.slice(1);
         const result: Product[] = [];
@@ -2222,11 +2227,13 @@ export default function Index() {
           const custoStr = chooseBestMetric(overrideRow?.custo, cols[finalColCusto]);
           const precoStr = chooseBestMetric(overridePrecos?.get(cod)?.preco, cols[finalColPreco]);
           const selloutStr = chooseBestMetric(overrideRow?.sellout, finalColSellout >= 0 ? cols[finalColSellout] : undefined);
+          const promocStr = chooseBestMetric(overrideRow?.promoc, finalColPromoc >= 0 ? cols[finalColPromoc] : undefined);
 
           const estoque = num(estoqueStr);
           const custoLiq = num(custoStr);
           const atual = num(precoStr);
           const sellout = num(selloutStr);
+          const promoc = num(promocStr);
           const ddv = num(cols[finalColDDV] ?? "0");
           const marg = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
@@ -2238,6 +2245,7 @@ export default function Index() {
             embVir: "",
             estoque,
             sellout,
+            promoc,
             custoLiq,
             comis: 0,
             marg,
