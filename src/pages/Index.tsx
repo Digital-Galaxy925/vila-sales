@@ -611,6 +611,33 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
   const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
+  const [specificList, setSpecificList] = useState<string[] | null>(null);
+  const [specificFileName, setSpecificFileName] = useState("");
+  const specificFileRef = useRef<HTMLInputElement>(null);
+
+  const handleSpecificUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = new Uint8Array(ev.target?.result as ArrayBuffer);
+        const wb = XLSX.read(data, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows: any[] = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        const codes: string[] = [];
+        for (const row of rows) {
+          if (!row || !row[0]) continue;
+          const val = String(row[0]).trim();
+          if (val && /^\d+$/.test(val)) codes.push(val.padStart(6, "0"));
+        }
+        setSpecificList(codes);
+        setSpecificFileName(file.name);
+      } catch { /* ignore */ }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = "";
+  };
 
   const allProducts = Object.values(data).flat();
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
@@ -621,7 +648,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       const matchSearch = !q || p.seqProd.toLowerCase().includes(q) || p.descricao.toLowerCase().includes(q);
       const matchMarg = filterMarg === "all" || (filterMarg === "critico" ? p.marg < minMargin : p.marg >= minMargin);
       const matchBU = selectedBU === "all" || p.bu === selectedBU;
-      return matchSearch && matchMarg && matchBU;
+      const matchSpecific = !specificList || specificList.includes(p.seqProd);
+      return matchSearch && matchMarg && matchBU && matchSpecific;
     })
     .sort((a, b) => {
       let va: string | number = a[sortCol];
@@ -727,7 +755,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
             Produtos da sua base cruzados com os dados das filiais
           </p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button
             onClick={() => {
               setDesiredMargins({});
@@ -754,6 +782,36 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           >
             ⬇️ Exportar Excel
           </button>
+          <input
+            ref={specificFileRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            style={{ display: "none" }}
+            onChange={handleSpecificUpload}
+          />
+          {specificList ? (
+            <button
+              onClick={() => { setSpecificList(null); setSpecificFileName(""); }}
+              style={{
+                padding: "8px 18px", borderRadius: 8, border: "1px solid #b45309",
+                background: "#451a03", color: "#fbbf24", cursor: "pointer",
+                fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              ✕ {specificFileName} ({specificList.length} itens)
+            </button>
+          ) : (
+            <button
+              onClick={() => specificFileRef.current?.click()}
+              style={{
+                padding: "8px 18px", borderRadius: 8, border: "1px solid #1e40af",
+                background: "#172554", color: "#60a5fa", cursor: "pointer",
+                fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              📋 Upload Lista Específica
+            </button>
+          )}
         </div>
       </div>
 
