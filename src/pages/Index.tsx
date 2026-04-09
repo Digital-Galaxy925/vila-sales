@@ -626,16 +626,31 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         const wb = XLSX.read(d, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows: any[] = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        const codes: string[] = [];
+        const rawCodes: string[] = [];
         for (const row of rows) {
-          if (!row || !row[0]) continue;
+          if (!row || row[0] == null) continue;
           const val = String(row[0]).trim();
-          if (val) codes.push(val);
+          if (!val || /[a-zA-ZÀ-ú]/.test(val)) continue; // skip headers/text
+          rawCodes.push(val);
         }
         const allProds = Object.values(data).flat();
-        const allCodes = new Set(allProds.map((p) => p.seqProd));
-        const notFound = codes.filter((c) => !allCodes.has(c));
-        setSpecificList(codes);
+        // Build lookup: both raw seqProd and stripped-leading-zeros version
+        const prodByRaw = new Map<string, string>();
+        allProds.forEach((p) => {
+          prodByRaw.set(p.seqProd, p.seqProd);
+          prodByRaw.set(p.seqProd.replace(/^0+/, ""), p.seqProd);
+        });
+        const matchedCodes: string[] = [];
+        const notFound: string[] = [];
+        for (const c of rawCodes) {
+          const matched = prodByRaw.get(c) ?? prodByRaw.get(c.replace(/^0+/, ""));
+          if (matched) {
+            matchedCodes.push(matched);
+          } else {
+            notFound.push(c);
+          }
+        }
+        setSpecificList(matchedCodes);
         setSpecificFileName(file.name);
         setSpecificNotFound(notFound);
       } catch { /* ignore */ }
