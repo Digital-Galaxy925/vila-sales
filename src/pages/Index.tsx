@@ -630,7 +630,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         for (const row of rows) {
           if (!row || !row[0]) continue;
           const val = String(row[0]).trim();
-          if (val && /^\d+$/.test(val)) codes.push(val.padStart(6, "0"));
+          if (val) codes.push(val);
         }
         const allProds = Object.values(data).flat();
         const allCodes = new Set(allProds.map((p) => p.seqProd));
