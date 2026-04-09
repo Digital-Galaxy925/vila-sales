@@ -979,6 +979,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <ThBtn col="custoLiq">Custo Liq</ThBtn>
               <ThBtn col="sellout">Sell Out</ThBtn>
               <ThBtn col="atual">Preço Venda</ThBtn>
+              <ThBtn col="promoc">Promoção</ThBtn>
               <ThBtn col="marg">Margem</ThBtn>
               <th style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b" }}>
                 Status
@@ -1087,6 +1088,11 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                   {/* Preço Venda */}
                   <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap" }}>
                     R$ {p.atual.toFixed(2)}
+                  </td>
+
+                  {/* Promoção */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", color: "#c084fc", whiteSpace: "nowrap" }}>
+                    R$ {p.promoc.toFixed(2)}
                   </td>
 
                   {/* Margem */}
