@@ -613,6 +613,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
   const [specificList, setSpecificList] = useState<string[] | null>(null);
   const [specificFileName, setSpecificFileName] = useState("");
+  const [specificNotFound, setSpecificNotFound] = useState<string[]>([]);
   const specificFileRef = useRef<HTMLInputElement>(null);
 
   const handleSpecificUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -621,8 +622,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const data = new Uint8Array(ev.target?.result as ArrayBuffer);
-        const wb = XLSX.read(data, { type: "array" });
+        const d = new Uint8Array(ev.target?.result as ArrayBuffer);
+        const wb = XLSX.read(d, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows: any[] = XLSX.utils.sheet_to_json(ws, { header: 1 });
         const codes: string[] = [];
@@ -631,8 +632,12 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           const val = String(row[0]).trim();
           if (val && /^\d+$/.test(val)) codes.push(val.padStart(6, "0"));
         }
+        const allProds = Object.values(data).flat();
+        const allCodes = new Set(allProds.map((p) => p.seqProd));
+        const notFound = codes.filter((c) => !allCodes.has(c));
         setSpecificList(codes);
         setSpecificFileName(file.name);
+        setSpecificNotFound(notFound);
       } catch { /* ignore */ }
     };
     reader.readAsArrayBuffer(file);
@@ -791,7 +796,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           />
           {specificList ? (
             <button
-              onClick={() => { setSpecificList(null); setSpecificFileName(""); }}
+              onClick={() => { setSpecificList(null); setSpecificFileName(""); setSpecificNotFound([]); }}
               style={{
                 padding: "8px 18px", borderRadius: 8, border: "1px solid #b45309",
                 background: "#451a03", color: "#fbbf24", cursor: "pointer",
@@ -813,6 +818,27 @@ function CrossAnalysis({ data }: { data: FilialData }) {
             </button>
           )}
         </div>
+
+        {specificNotFound.length > 0 && (
+          <div style={{
+            margin: "12px 0", padding: "14px 18px", borderRadius: 10,
+            background: "#451a03", border: "1px solid #b45309", color: "#fbbf24",
+          }}>
+            <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
+              ⚠️ {specificNotFound.length} código(s) não encontrado(s) nos dados:
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {specificNotFound.map((code) => (
+                <span key={code} style={{
+                  background: "#78350f", padding: "2px 10px", borderRadius: 6,
+                  fontSize: 12, fontFamily: "monospace",
+                }}>
+                  {code}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* BU filter — destaque visual no topo */}
