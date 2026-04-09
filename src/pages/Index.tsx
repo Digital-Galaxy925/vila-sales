@@ -14,6 +14,7 @@ interface Product {
   embVir: string;
   estoque: number;
   sellout: number;
+  promoc: number;
   custoLiq: number;
   comis: number;
   marg: number;
@@ -156,6 +157,7 @@ function rowToProduct(row: Record<string, string>, filial: Filial): Product {
     embVir: findCol(row, ["EMB.VIR", "EMBVIR", "EMB_VIR"]),
     estoque: num(findCol(row, ["ESTOQUE"])),
     sellout: num(findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"])),
+    promoc: num(findCol(row, ["PROMOC", "PROMOÇÃO", "PROMOCAO", "PROMO"])),
     custoLiq: pc,
     comis: num(findCol(row, ["COMIS"])),
     marg: num(findCol(row, ["MARG"])) || margCalc,
@@ -2121,7 +2123,7 @@ export default function Index() {
       };
 
       const buildOverrideMap = async (file: File | undefined, label: string) => {
-        const map = new Map<string, { custo: string; preco: string; sellout: string }>();
+        const map = new Map<string, { custo: string; preco: string; sellout: string; promoc: string }>();
         if (!file) return map;
 
         if (/\.csv$/i.test(file.name)) {
@@ -2131,6 +2133,7 @@ export default function Index() {
           const colCusto = findHeaderIndex(header, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"], 16);
           const colPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"], 19);
           const colSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
+          const colPromoc = findHeaderIndex(header, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"], -1);
 
           rawRows.slice(1).forEach((cols) => {
             const cod = normCod(cols[colCod] ?? "");
@@ -2141,6 +2144,7 @@ export default function Index() {
               custo: chooseBestMetric(cols[colCusto], current?.custo),
               preco: chooseBestMetric(cols[colPreco], current?.preco),
               sellout: chooseBestMetric(colSellout >= 0 ? cols[colSellout] : undefined, current?.sellout),
+              promoc: chooseBestMetric(colPromoc >= 0 ? cols[colPromoc] : undefined, current?.promoc),
             });
           });
         } else {
@@ -2162,6 +2166,10 @@ export default function Index() {
               sellout: chooseBestMetric(
                 findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"]),
                 current?.sellout,
+              ),
+              promoc: chooseBestMetric(
+                findCol(row, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"]),
+                current?.promoc,
               ),
             });
           });
@@ -2189,8 +2197,8 @@ export default function Index() {
         colDDV: number,
         colCustoFallback: number,
         colPrecoFallback: number,
-        overrideEstoque?: Map<string, { estoque: string; custo: string; sellout: string }>,
-        overridePrecos?: Map<string, { custo: string; preco: string; sellout: string }>
+        overrideEstoque?: Map<string, { estoque: string; custo: string; sellout: string; promoc: string }>,
+        overridePrecos?: Map<string, { custo: string; preco: string; sellout: string; promoc: string }>
       ): Product[] => {
         const header = rawRows[0] ?? [];
         const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
@@ -2202,6 +2210,7 @@ export default function Index() {
         const finalColCusto = findHeaderIndex(header, ["CUSTO LIQ", "CUSTO LIQUIDO", "CUSTO.LIQ"], colCustoFallback);
         const finalColPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV"], colPrecoFallback);
         const finalColSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
+        const finalColPromoc = findHeaderIndex(header, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"], -1);
 
         const dataRows = rawRows.slice(1);
         const result: Product[] = [];
@@ -2218,11 +2227,13 @@ export default function Index() {
           const custoStr = chooseBestMetric(overrideRow?.custo, cols[finalColCusto]);
           const precoStr = chooseBestMetric(overridePrecos?.get(cod)?.preco, cols[finalColPreco]);
           const selloutStr = chooseBestMetric(overrideRow?.sellout, finalColSellout >= 0 ? cols[finalColSellout] : undefined);
+          const promocStr = chooseBestMetric(overrideRow?.promoc, finalColPromoc >= 0 ? cols[finalColPromoc] : undefined);
 
           const estoque = num(estoqueStr);
           const custoLiq = num(custoStr);
           const atual = num(precoStr);
           const sellout = num(selloutStr);
+          const promoc = num(promocStr);
           const ddv = num(cols[finalColDDV] ?? "0");
           const marg = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
@@ -2234,6 +2245,7 @@ export default function Index() {
             embVir: "",
             estoque,
             sellout,
+            promoc,
             custoLiq,
             comis: 0,
             marg,
