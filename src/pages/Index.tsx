@@ -692,7 +692,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.custoLiq.toFixed(2),
         p.sellout.toFixed(2),
         p.atual.toFixed(2),
-        p.promoc.toFixed(2),
+        (p.promoc ?? 0).toFixed(2),
         p.marg.toFixed(2),
         p.marg >= minMargin ? "Saudável" : "Crítico",
         raw || "",
@@ -1093,7 +1093,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
                   {/* Promoção */}
                   <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", color: "#c084fc", whiteSpace: "nowrap" }}>
-                    R$ {p.promoc.toFixed(2)}
+                    R$ {(p.promoc ?? 0).toFixed(2)}
                   </td>
 
                   {/* Margem */}
