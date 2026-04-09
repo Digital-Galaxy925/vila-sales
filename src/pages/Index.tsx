@@ -611,6 +611,33 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
   const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
+  const [specificList, setSpecificList] = useState<string[] | null>(null);
+  const [specificFileName, setSpecificFileName] = useState("");
+  const specificFileRef = useRef<HTMLInputElement>(null);
+
+  const handleSpecificUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = new Uint8Array(ev.target?.result as ArrayBuffer);
+        const wb = XLSX.read(data, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows: any[] = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        const codes: string[] = [];
+        for (const row of rows) {
+          if (!row || !row[0]) continue;
+          const val = String(row[0]).trim();
+          if (val && /^\d+$/.test(val)) codes.push(val.padStart(6, "0"));
+        }
+        setSpecificList(codes);
+        setSpecificFileName(file.name);
+      } catch { /* ignore */ }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = "";
+  };
 
   const allProducts = Object.values(data).flat();
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
