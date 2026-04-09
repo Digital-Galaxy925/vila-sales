@@ -8,6 +8,8 @@ interface ResultRow {
   custoLiq: number;
   atual: number;
   estoque: number;
+  sellout: number;
+  promoc: number;
   descricao: string;
 }
 
@@ -19,30 +21,28 @@ const fmtNum = (v: number) => v.toLocaleString("pt-BR");
 export function exportToExcel(results: ResultRow[], activeCode: string, productName: string) {
   const wb = XLSX.utils.book_new();
 
-  // Sheet 1: Consolidado
   const consolidado = results.map((r) => ({
     Filial: r.filialName,
     "Preço de Custo": r.custoLiq,
     "Preço de Venda": r.atual,
+    "Promoção": r.promoc,
     Estoque: r.estoque,
+    Sellout: r.sellout,
   }));
   const ws1 = XLSX.utils.json_to_sheet(consolidado);
-  ws1["!cols"] = [{ wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 12 }];
+  ws1["!cols"] = [{ wch: 28 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 12 }, { wch: 12 }];
   XLSX.utils.book_append_sheet(wb, ws1, "Consolidado");
 
-  // Sheet 2: Custo
   const custo = results.map((r) => ({ Filial: r.filialName, "Preço de Custo": r.custoLiq }));
   const ws2 = XLSX.utils.json_to_sheet(custo);
   ws2["!cols"] = [{ wch: 28 }, { wch: 16 }];
   XLSX.utils.book_append_sheet(wb, ws2, "Preço de Custo");
 
-  // Sheet 3: Venda
   const venda = results.map((r) => ({ Filial: r.filialName, "Preço de Venda": r.atual }));
   const ws3 = XLSX.utils.json_to_sheet(venda);
   ws3["!cols"] = [{ wch: 28 }, { wch: 16 }];
   XLSX.utils.book_append_sheet(wb, ws3, "Preço de Venda");
 
-  // Sheet 4: Estoque
   const estoque = results.map((r) => ({ Filial: r.filialName, Estoque: r.estoque }));
   const ws4 = XLSX.utils.json_to_sheet(estoque);
   ws4["!cols"] = [{ wch: 28 }, { wch: 12 }];
@@ -54,9 +54,7 @@ export function exportToExcel(results: ResultRow[], activeCode: string, productN
 
 export function exportToPDF(results: ResultRow[], activeCode: string, productName: string) {
   const doc = new jsPDF({ orientation: "landscape" });
-  const pageW = doc.internal.pageSize.getWidth();
 
-  // Title
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.text("Análise Gerencial - Comparativo por Filial", 14, 18);
@@ -68,7 +66,6 @@ export function exportToPDF(results: ResultRow[], activeCode: string, productNam
 
   let startY = 40;
 
-  // Table 1: Custo
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text("Preço de Custo por Filial", 14, startY);
@@ -84,7 +81,6 @@ export function exportToPDF(results: ResultRow[], activeCode: string, productNam
 
   startY = (doc as any).lastAutoTable.finalY + 12;
 
-  // Table 2: Venda
   doc.setFont("helvetica", "bold");
   doc.text("Preço de Venda por Filial", 14, startY);
   autoTable(doc, {
@@ -99,7 +95,6 @@ export function exportToPDF(results: ResultRow[], activeCode: string, productNam
 
   startY = (doc as any).lastAutoTable.finalY + 12;
 
-  // Table 3: Estoque
   doc.setFont("helvetica", "bold");
   doc.text("Estoque por Filial", 14, startY);
   autoTable(doc, {
@@ -114,22 +109,20 @@ export function exportToPDF(results: ResultRow[], activeCode: string, productNam
 
   startY = (doc as any).lastAutoTable.finalY + 12;
 
-  // Check if need new page for consolidated
   if (startY > doc.internal.pageSize.getHeight() - 60) {
     doc.addPage();
     startY = 20;
   }
 
-  // Table 4: Consolidado
   doc.setFont("helvetica", "bold");
   doc.text("Visão Consolidada por Filial", 14, startY);
   autoTable(doc, {
     startY: startY + 4,
-    head: [["Filial", "Estoque", "Preço de Custo", "Preço de Venda"]],
-    body: results.map((r) => [r.filialName, fmtNum(r.estoque), fmt(r.custoLiq), fmt(r.atual)]),
+    head: [["Filial", "Estoque", "Preço de Custo", "Preço de Venda", "Promoção", "Sellout"]],
+    body: results.map((r) => [r.filialName, fmtNum(r.estoque), fmt(r.custoLiq), fmt(r.atual), fmt(r.promoc), fmtNum(r.sellout)]),
     styles: { fontSize: 9, cellPadding: 3 },
     headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: "bold" },
-    columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" } },
+    columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "right" }, 5: { halign: "right" } },
     margin: { left: 14, right: 14 },
   });
 
