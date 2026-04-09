@@ -648,7 +648,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       const matchSearch = !q || p.seqProd.toLowerCase().includes(q) || p.descricao.toLowerCase().includes(q);
       const matchMarg = filterMarg === "all" || (filterMarg === "critico" ? p.marg < minMargin : p.marg >= minMargin);
       const matchBU = selectedBU === "all" || p.bu === selectedBU;
-      return matchSearch && matchMarg && matchBU;
+      const matchSpecific = !specificList || specificList.includes(p.seqProd);
+      return matchSearch && matchMarg && matchBU && matchSpecific;
     })
     .sort((a, b) => {
       let va: string | number = a[sortCol];
