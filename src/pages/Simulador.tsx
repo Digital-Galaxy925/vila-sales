@@ -338,19 +338,6 @@ export default function Simulador() {
                   </div>
                 )}
 
-                {/* Margem mínima desejada */}
-                {produto && (
-                  <div>
-                    <label style={labelStyle}>Margem Mínima Desejada (%)</label>
-                    <input
-                      type="text"
-                      value={margemMinimaDesejada}
-                      onChange={(e) => setMargemMinimaDesejada(e.target.value)}
-                      placeholder="Ex: 17"
-                      style={inputStyle}
-                    />
-                  </div>
-                )}
               </div>
             </div>
 
