@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ProdutoComparativo {
   bu: string;
+  categoria: string;
   seqProd: string;
   familia: string;
   descricao: string;
@@ -95,6 +96,7 @@ async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
 
 interface ParsedProduct {
   bu: string;
+  categoria: string;
   seqProd: string;
   familia: string;
   descricao: string;
