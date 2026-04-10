@@ -228,7 +228,7 @@ export default function ComparativoLivros() {
       return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
     });
     return data;
-  }, [result, filterStatus, search, sortCol, sortDir]);
+  }, [result, selectedFilial, filterStatus, search, sortCol, sortDir]);
 
   const stats = useMemo(() => {
     if (!result) return { total: 0, aumentos: 0, reducoes: 0, iguais: 0, novos: 0, removidos: 0 };
