@@ -382,6 +382,26 @@ export default function ComparativoLivros() {
             ))}
           </div>
 
+          {/* Filial Selector */}
+          <div style={{ display: "flex", items: "center", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+            {FILIAIS.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setSelectedFilial(f.id)}
+                style={{
+                  padding: "6px 14px", borderRadius: 99, border: "1px solid",
+                  fontSize: 11, fontWeight: 700, cursor: "pointer",
+                  background: selectedFilial === f.id ? "#1e3a5f" : "#0f172a",
+                  color: selectedFilial === f.id ? "#60a5fa" : "#475569",
+                  borderColor: selectedFilial === f.id ? "#1d4ed8" : "#1e293b",
+                  transition: "all .2s",
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
           {/* Filters */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
             <div style={{ position: "relative", flex: "1 1 300px" }}>
