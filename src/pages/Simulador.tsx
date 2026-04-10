@@ -332,6 +332,9 @@ export default function Simulador() {
                           <span style={{ color: "#94a3b8" }}>
                             Promocional: <strong style={{ color: "#c084fc" }}>{fmt(produto.promoc ?? 0)}</strong>
                           </span>
+                          <span style={{ color: "#94a3b8" }}>
+                            Sell Out: <strong style={{ color: "#38bdf8" }}>{fmt(produto.sellout ?? 0)}</strong>
+                          </span>
                         </div>
                       </>
                     ) : (
