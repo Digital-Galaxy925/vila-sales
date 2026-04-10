@@ -7,11 +7,30 @@ interface ProdutoComparativo {
   seqProd: string;
   familia: string;
   descricao: string;
+  filial: string;
   precoAnterior: number;
   precoAtual: number;
   diff: number;
   diffPct: number;
   status: "aumento" | "reducao" | "igual" | "novo" | "removido";
+}
+
+const FILIAIS = [
+  { id: "all", label: "Todas as Filiais" },
+  { id: "01", label: "Filial 01 - Poços" },
+  { id: "10", label: "Filial 10" },
+  { id: "11", label: "Filial 11 - Campinas" },
+  { id: "12", label: "Filial 12 - Osasco" },
+  { id: "14", label: "Filial 14 - Betim" },
+  { id: "501", label: "Filial 501 - Focomix SP" },
+  { id: "502", label: "Filial 502 - Focomix MG" },
+  { id: "510", label: "Filial 510" },
+];
+
+function extractFilialFromFileName(name: string): string {
+  const clean = name.replace(/^P_/i, "");
+  const m = clean.match(/(?:livro)[_\s-]*(\d+)/i);
+  return m ? m[1] : "";
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -107,6 +126,8 @@ export default function ComparativoLivros() {
   const [sortCol, setSortCol] = useState<string>("diffPct");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
+  const [selectedFilial, setSelectedFilial] = useState("all");
+
   const handleDrop = useCallback((e: React.DragEvent, type: "anterior" | "atual") => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files).filter((f) =>
@@ -126,31 +147,33 @@ export default function ComparativoLivros() {
   const processar = useCallback(async () => {
     setProcessing(true);
     try {
-      const anteriorMap = new Map<string, ParsedProduct>();
-      const atualMap = new Map<string, ParsedProduct>();
+      const anteriorMap = new Map<string, ParsedProduct & { filial: string }>();
+      const atualMap = new Map<string, ParsedProduct & { filial: string }>();
 
       for (const f of anterioresFiles) {
+        const filial = extractFilialFromFileName(f.name);
         const rows = await readExcelAsRows(f);
         for (const row of rows) {
           const p = rowToSimple(row);
-          if (p.seqProd) anteriorMap.set(p.seqProd.replace(/^0+/, ""), p);
+          if (p.seqProd) anteriorMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
         }
       }
 
       for (const f of atuaisFiles) {
+        const filial = extractFilialFromFileName(f.name);
         const rows = await readExcelAsRows(f);
         for (const row of rows) {
           const p = rowToSimple(row);
-          if (p.seqProd) atualMap.set(p.seqProd.replace(/^0+/, ""), p);
+          if (p.seqProd) atualMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
         }
       }
 
-      const allCodes = new Set([...anteriorMap.keys(), ...atualMap.keys()]);
+      const allKeys = new Set([...anteriorMap.keys(), ...atualMap.keys()]);
       const comparativo: ProdutoComparativo[] = [];
 
-      for (const cod of allCodes) {
-        const ant = anteriorMap.get(cod);
-        const atu = atualMap.get(cod);
+      for (const key of allKeys) {
+        const ant = anteriorMap.get(key);
+        const atu = atualMap.get(key);
         const precoAnt = ant?.preco ?? 0;
         const precoAtu = atu?.preco ?? 0;
         const diff = precoAtu - precoAnt;
@@ -164,9 +187,10 @@ export default function ComparativoLivros() {
 
         comparativo.push({
           bu: atu?.bu || ant?.bu || "",
-          seqProd: atu?.seqProd || ant?.seqProd || cod,
+          seqProd: atu?.seqProd || ant?.seqProd || key.split("_").pop() || "",
           familia: atu?.familia || ant?.familia || "",
           descricao: atu?.descricao || ant?.descricao || "",
+          filial: atu?.filial || ant?.filial || "",
           precoAnterior: precoAnt,
           precoAtual: precoAtu,
           diff,
@@ -191,6 +215,7 @@ export default function ComparativoLivros() {
   const filtered = useMemo(() => {
     if (!result) return [];
     let data = result;
+    if (selectedFilial !== "all") data = data.filter((p) => p.filial === selectedFilial);
     if (filterStatus !== "all") data = data.filter((p) => p.status === filterStatus);
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -203,7 +228,7 @@ export default function ComparativoLivros() {
       return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
     });
     return data;
-  }, [result, filterStatus, search, sortCol, sortDir]);
+  }, [result, selectedFilial, filterStatus, search, sortCol, sortDir]);
 
   const stats = useMemo(() => {
     if (!result) return { total: 0, aumentos: 0, reducoes: 0, iguais: 0, novos: 0, removidos: 0 };
@@ -357,6 +382,26 @@ export default function ComparativoLivros() {
             ))}
           </div>
 
+          {/* Filial Selector */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+            {FILIAIS.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setSelectedFilial(f.id)}
+                style={{
+                  padding: "6px 14px", borderRadius: 99, border: "1px solid",
+                  fontSize: 11, fontWeight: 700, cursor: "pointer",
+                  background: selectedFilial === f.id ? "#1e3a5f" : "#0f172a",
+                  color: selectedFilial === f.id ? "#60a5fa" : "#475569",
+                  borderColor: selectedFilial === f.id ? "#1d4ed8" : "#1e293b",
+                  transition: "all .2s",
+                }}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
           {/* Filters */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
             <div style={{ position: "relative", flex: "1 1 300px" }}>
@@ -385,7 +430,7 @@ export default function ComparativoLivros() {
             ))}
 
             <button
-              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); }}
+              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); }}
               style={{
                 padding: "6px 14px", borderRadius: 99, border: "1px solid #7f1d1d",
                 fontSize: 11, fontWeight: 700, cursor: "pointer", background: "#450a0a", color: "#f87171",
