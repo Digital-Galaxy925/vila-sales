@@ -23,6 +23,7 @@ interface Product {
   ddv: number;
   filial: string;
   bu: string;
+  promoc: number;
 }
 
 type DataMap = Record<string, Product[]>;
@@ -313,6 +314,9 @@ export default function Simulador() {
                           </span>
                           <span style={{ color: "#94a3b8" }}>
                             Preço Atual: <strong style={{ color: "#e2e8f0" }}>{fmt(produto.atual)}</strong>
+                          </span>
+                          <span style={{ color: "#94a3b8" }}>
+                            Promocional: <strong style={{ color: "#c084fc" }}>{fmt(produto.promoc ?? 0)}</strong>
                           </span>
                         </div>
                       </>
