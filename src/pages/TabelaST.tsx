@@ -208,6 +208,7 @@ export default function TabelaST() {
                 { label: "Categoria", value: result.categoria },
                 { label: "Produto", value: result.nome },
                 { label: "Código Família", value: result.familia },
+                { label: "Promocional", value: result.promocional ? fmt(result.promocional) : "—", promo: true },
                 { label: "ST MG (MVA)", value: result.stMG || "—" },
                 { label: "ST SP (MVA)", value: result.stSP || "—" },
                 { label: "Compensação", value: result.compensacao, highlight: true },
