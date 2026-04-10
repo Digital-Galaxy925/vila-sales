@@ -571,7 +571,10 @@ export default function ComparativoLivros() {
               <thead>
                 <tr style={{ background: "#080f1a" }}>
                   <th onClick={() => toggleSort("bu")} style={thStyle("bu")}>
-                    Categoria {sortCol === "bu" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                    BU {sortCol === "bu" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                  </th>
+                  <th onClick={() => toggleSort("categoria")} style={thStyle("categoria")}>
+                    Categoria {sortCol === "categoria" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
                   </th>
                   <th onClick={() => toggleSort("seqProd")} style={thStyle("seqProd")}>
                     Cód. Produto {sortCol === "seqProd" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
