@@ -43,6 +43,7 @@ export default function TabelaST() {
     if (!match) return null;
 
     const nome = findCol(match, ["PRODUTO", "DESCRICAO", "NOME", "DESC", "ITEM"]);
+    const descricao = findCol(match, ["DESCRICAO", "DESC", "NOME_PRODUTO", "NOME PRODUTO", "DESCRIPTION"]);
     const categoria = findCol(match, ["CATEGORIA", "CAT", "GRUPO"]);
     const familia = findCol(match, ["FAMILIA", "FAM", "COD_FAMILIA", "CODIGO FAMILIA"]);
     const stMG = findCol(match, ["ST_MG", "ST MG", "STMG", "MVA MG", "MVA_MG"]);
@@ -56,7 +57,7 @@ export default function TabelaST() {
       compensacao = stSPNum < stMGNum ? "Compensa comprar por SP" : stMGNum < stSPNum ? "Compensa comprar por MG" : "Valores iguais";
     }
 
-    return { nome, categoria, familia, stMG, stSP, compensacao };
+    return { nome, descricao, categoria, familia, stMG, stSP, compensacao };
   }, [searched, codigo, stData]);
 
   const handleSearch = () => {
@@ -123,6 +124,14 @@ export default function TabelaST() {
             <h3 className="text-sm font-heading font-semibold text-card-foreground">
               Resultado da Consulta
             </h3>
+          </div>
+          <div className="border-b border-border bg-card px-5 py-4">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+              Descrição do Produto
+            </p>
+            <p className="text-sm font-medium text-card-foreground">
+              {result.descricao || "—"}
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
             {[
