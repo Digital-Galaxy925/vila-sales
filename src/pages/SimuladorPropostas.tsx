@@ -10,6 +10,7 @@ interface Product {
   embCmp: string;
   estoque: number;
   custoLiq: number;
+  sellout: number;
   atual: number;
   filial: string;
   bu: string;
@@ -491,6 +492,7 @@ export default function SimuladorPropostas() {
                     <InfoCard label="Preço de Custo" value={fmt(pc.found.custoLiq)} />
                     <InfoCard label="Preço de Venda Atual" value={fmt(pc.found.atual)} />
                     <InfoCard label="Promocional" value={pc.found.promoc ? fmt(pc.found.promoc) : "—"} color="#c084fc" />
+                    <InfoCard label="Sell Out" value={pc.found.sellout ? fmt(pc.found.sellout) : "—"} color="#38bdf8" />
                     <InfoCard label="Estoque (CX)" value={pc.found.estoque.toLocaleString("pt-BR")} />
                     <InfoCard label="Unid/CX" value={pc.found.embCmp} />
                   </div>
