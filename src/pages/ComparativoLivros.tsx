@@ -474,36 +474,41 @@ export default function ComparativoLivros() {
             ))}
           </div>
 
-          {/* BU Selector */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-            <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase" }}>BU:</span>
-            <button
-              onClick={() => setSelectedBU("all")}
-              style={{
-                padding: "6px 14px", borderRadius: 99, border: "1px solid",
-                fontSize: 11, fontWeight: 700, cursor: "pointer",
-                background: selectedBU === "all" ? "#1e3a5f" : "#0f172a",
-                color: selectedBU === "all" ? "#60a5fa" : "#475569",
-                borderColor: selectedBU === "all" ? "#1d4ed8" : "#1e293b",
-                transition: "all .2s",
-              }}
-            >
-              Todas
-            </button>
-            {availableBUs.map((bu) => (
+          {/* Categoria filter */}
+          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16 }}>
+            <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600 }}>Categoria:</span>
+            {[
+              { key: "all", label: "Todas", count: result.length },
+              { key: "HC", label: "HC", count: result.filter((p) => p.bu === "HC").length },
+              { key: "FOODS", label: "FR", count: result.filter((p) => p.bu === "FOODS").length },
+            ].map(({ key, label, count }) => (
               <button
-                key={bu}
-                onClick={() => setSelectedBU(bu)}
+                key={key}
+                onClick={() => setSelectedBU(key)}
                 style={{
-                  padding: "6px 14px", borderRadius: 99, border: "1px solid",
-                  fontSize: 11, fontWeight: 700, cursor: "pointer",
-                  background: selectedBU === bu ? (bu === "FOODS" ? "#052e16" : "#1e1b4b") : "#0f172a",
-                  color: selectedBU === bu ? (bu === "FOODS" ? "#4ade80" : "#a78bfa") : "#475569",
-                  borderColor: selectedBU === bu ? (bu === "FOODS" ? "#166534" : "#4c1d95") : "#1e293b",
-                  transition: "all .2s",
+                  padding: "8px 18px", borderRadius: 10, border: "2px solid", cursor: "pointer",
+                  fontSize: 13, fontWeight: 700, transition: "all .2s",
+                  background: selectedBU === key
+                    ? (key === "FOODS" ? "#052e16" : key === "HC" ? "#1e1b4b" : "#1e3a5f")
+                    : "#080f1a",
+                  color: selectedBU === key
+                    ? (key === "FOODS" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
+                    : "#475569",
+                  borderColor: selectedBU === key
+                    ? (key === "FOODS" ? "#166534" : key === "HC" ? "#6d28d9" : "#1d4ed8")
+                    : "#1e293b",
                 }}
               >
-                {bu}
+                {label}
+                <span style={{
+                  padding: "1px 8px", borderRadius: 99, fontSize: 11, fontWeight: 800, marginLeft: 8,
+                  background: selectedBU === key ? "rgba(255,255,255,0.1)" : "#1e293b",
+                  color: selectedBU === key
+                    ? (key === "FOODS" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
+                    : "#64748b",
+                }}>
+                  {count}
+                </span>
               </button>
             ))}
           </div>
