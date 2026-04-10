@@ -129,6 +129,7 @@ export default function ComparativoLivros() {
   const [selectedFilial, setSelectedFilial] = useState("all");
   const [produtoFilterFile, setProdutoFilterFile] = useState<File | null>(null);
   const [produtoFilterCodes, setProdutoFilterCodes] = useState<Set<string> | null>(null);
+  const [selectedBU, setSelectedBU] = useState("all");
 
   const handleDrop = useCallback((e: React.DragEvent, type: "anterior" | "atual") => {
     e.preventDefault();
@@ -239,6 +240,7 @@ export default function ComparativoLivros() {
     if (!result) return [];
     let data = result;
     if (selectedFilial !== "all") data = data.filter((p) => p.filial === selectedFilial);
+    if (selectedBU !== "all") data = data.filter((p) => p.bu.toUpperCase() === selectedBU);
     if (filterStatus !== "all") data = data.filter((p) => p.status === filterStatus);
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -251,7 +253,7 @@ export default function ComparativoLivros() {
       return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
     });
     return data;
-  }, [result, selectedFilial, filterStatus, search, sortCol, sortDir]);
+  }, [result, selectedFilial, selectedBU, filterStatus, search, sortCol, sortDir]);
 
   const stats = useMemo(() => {
     if (!result) return { total: 0, aumentos: 0, reducoes: 0, iguais: 0, novos: 0, removidos: 0 };
