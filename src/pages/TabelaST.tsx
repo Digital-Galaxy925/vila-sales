@@ -43,6 +43,7 @@ export default function TabelaST() {
     if (!match) return null;
 
     const nome = findCol(match, ["PRODUTO", "DESCRICAO", "NOME", "DESC", "ITEM"]);
+    const descricao = findCol(match, ["DESCRICAO", "DESC", "NOME_PRODUTO", "NOME PRODUTO", "DESCRIPTION"]);
     const categoria = findCol(match, ["CATEGORIA", "CAT", "GRUPO"]);
     const familia = findCol(match, ["FAMILIA", "FAM", "COD_FAMILIA", "CODIGO FAMILIA"]);
     const stMG = findCol(match, ["ST_MG", "ST MG", "STMG", "MVA MG", "MVA_MG"]);
