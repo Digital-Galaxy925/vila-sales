@@ -338,19 +338,6 @@ export default function Simulador() {
                   </div>
                 )}
 
-                {/* Margem mínima desejada */}
-                {produto && (
-                  <div>
-                    <label style={labelStyle}>Margem Mínima Desejada (%)</label>
-                    <input
-                      type="text"
-                      value={margemMinimaDesejada}
-                      onChange={(e) => setMargemMinimaDesejada(e.target.value)}
-                      placeholder="Ex: 17"
-                      style={inputStyle}
-                    />
-                  </div>
-                )}
               </div>
             </div>
 
@@ -414,6 +401,20 @@ export default function Simulador() {
                       large
                       subtitle={`${volume} cx × ${qtdPorCaixa} un/cx × ${fmt(precoVenda)}`}
                     />
+                  </div>
+
+                  {/* Margem mínima desejada */}
+                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: 16 }}>
+                    <div>
+                      <label style={labelStyle}>Margem Mínima Desejada (%)</label>
+                      <input
+                        type="text"
+                        value={margemMinimaDesejada}
+                        onChange={(e) => setMargemMinimaDesejada(e.target.value)}
+                        placeholder="Ex: 17"
+                        style={inputStyle}
+                      />
+                    </div>
                   </div>
 
                   {/* Investimento necessário */}
