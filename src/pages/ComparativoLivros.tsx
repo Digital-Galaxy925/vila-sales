@@ -215,6 +215,7 @@ export default function ComparativoLivros() {
   const filtered = useMemo(() => {
     if (!result) return [];
     let data = result;
+    if (selectedFilial !== "all") data = data.filter((p) => p.filial === selectedFilial);
     if (filterStatus !== "all") data = data.filter((p) => p.status === filterStatus);
     if (search.trim()) {
       const q = search.toLowerCase();
