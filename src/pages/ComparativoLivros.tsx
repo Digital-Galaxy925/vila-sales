@@ -104,7 +104,7 @@ interface ParsedProduct {
 function rowToSimple(row: Record<string, string>): ParsedProduct {
   const pv = num(findCol(row, ["ATUAL", "PRECO_VENDA", "PV"]));
   return {
-    bu: findCol(row, ["BU"]),
+    bu: findCol(row, ["BU", "B.U", "B U", "CATEGORIA", "BUSINESS UNIT", "UNIDADE DE NEGOCIO", "UNIDADE NEGOCIO"]),
     seqProd: findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD"]),
     familia: findCol(row, ["FAMILIA"]),
     descricao: findCol(row, ["DESCRICAO", "DESCRIÇÃO", "DESC"]),
