@@ -103,17 +103,20 @@ interface ParsedProduct {
 
 function rowToSimple(row: Record<string, string>): ParsedProduct {
   const pv = num(findCol(row, ["ATUAL", "PRECO_VENDA", "PV", "PRECO DE VENDA", "PRECO VENDA"]));
-  let bu = findCol(row, ["BU", "B.U", "B U", "CATEGORIA", "BUSINESS UNIT", "UNIDADE DE NEGOCIO", "UNIDADE NEGOCIO"]);
-  // Fallback: first column value if it looks like a BU (FOODS or HC)
-  if (!bu) {
-    const firstKey = Object.keys(row)[0];
-    if (firstKey) {
-      const val = String(row[firstKey] ?? "").trim().toUpperCase();
-      if (val === "FOODS" || val === "HC") bu = val;
+  // BU column specifically (HC / FOODS)
+  let bu = "";
+  for (const [key, value] of Object.entries(row)) {
+    const nk = normalizeHeader(key);
+    if (nk === "BU" || nk === "B U" || nk === "B.U") {
+      bu = String(value ?? "").trim().toUpperCase();
+      break;
     }
   }
+  // Categoria/subcategoria column
+  const categoria = findCol(row, ["CATEGORIA", "SUBCATEGORIA", "SUB CATEGORIA"]);
   return {
-    bu: bu.toUpperCase(),
+    bu,
+    categoria,
     seqProd: findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO"]),
     familia: findCol(row, ["FAMILIA", "COD FAMILIA", "COD.FAMILIA", "COD_FAMILIA"]),
     descricao: findCol(row, ["DESCRICAO", "DESCRIÇÃO", "DESC", "NOME", "PRODUTO"]),
