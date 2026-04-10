@@ -127,6 +127,8 @@ export default function ComparativoLivros() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const [selectedFilial, setSelectedFilial] = useState("all");
+  const [produtoFilterFile, setProdutoFilterFile] = useState<File | null>(null);
+  const [produtoFilterCodes, setProdutoFilterCodes] = useState<Set<string> | null>(null);
 
   const handleDrop = useCallback((e: React.DragEvent, type: "anterior" | "atual") => {
     e.preventDefault();
@@ -141,6 +143,24 @@ export default function ComparativoLivros() {
     const files = Array.from(e.target.files || []);
     if (type === "anterior") setAnterioresFiles((prev) => [...prev, ...files]);
     else setAtuaisFiles((prev) => [...prev, ...files]);
+    e.target.value = "";
+  }, []);
+
+  const handleProdutoFilterFile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProdutoFilterFile(file);
+    try {
+      const rows = await readExcelAsRows(file);
+      const codes = new Set<string>();
+      for (const row of rows) {
+        const cod = findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO", "COD_PRODUTO"]);
+        if (cod) codes.add(String(cod).replace(/^0+/, "").trim());
+      }
+      setProdutoFilterCodes(codes.size > 0 ? codes : null);
+    } catch {
+      setProdutoFilterCodes(null);
+    }
     e.target.value = "";
   }, []);
 
@@ -172,6 +192,9 @@ export default function ComparativoLivros() {
       const comparativo: ProdutoComparativo[] = [];
 
       for (const key of allKeys) {
+        const codOnly = key.split("_").pop() || "";
+        if (produtoFilterCodes && !produtoFilterCodes.has(codOnly)) continue;
+
         const ant = anteriorMap.get(key);
         const atu = atualMap.get(key);
         const precoAnt = ant?.preco ?? 0;
@@ -205,7 +228,7 @@ export default function ComparativoLivros() {
     } finally {
       setProcessing(false);
     }
-  }, [anterioresFiles, atuaisFiles]);
+  }, [anterioresFiles, atuaisFiles, produtoFilterCodes]);
 
   const toggleSort = (col: string) => {
     if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -264,7 +287,7 @@ export default function ComparativoLivros() {
       </p>
 
       {/* Upload area */}
-      {!result && (
+      {!result && (<>
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 32 }}>
           {/* Anteriores */}
           <div
@@ -340,7 +363,39 @@ export default function ComparativoLivros() {
             )}
           </div>
         </div>
-      )}
+
+        {/* Upload de produtos para filtro */}
+        <div style={{
+          background: "#111827", borderRadius: 14, padding: 24,
+          border: "2px dashed #334155", textAlign: "center", marginBottom: 32,
+        }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: "#34d399", marginBottom: 6 }}>
+            Filtro de Produtos (opcional)
+          </h3>
+          <p style={{ color: "#64748b", fontSize: 12, marginBottom: 14 }}>
+            Faça upload de uma planilha com os códigos dos produtos que deseja analisar. Se não enviar, todos os produtos serão comparados.
+          </p>
+          <label style={{
+            display: "inline-block", background: "#064e3b", color: "#34d399", border: "none",
+            borderRadius: 8, padding: "10px 24px", cursor: "pointer", fontWeight: 600, fontSize: 13,
+          }}>
+            Selecionar Planilha
+            <input type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }}
+              onChange={handleProdutoFilterFile} />
+          </label>
+          {produtoFilterFile && (
+            <div style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+              <span style={{ color: "#34d399", fontSize: 12 }}>📄 {produtoFilterFile.name}</span>
+              {produtoFilterCodes && (
+                <span style={{ color: "#94a3b8", fontSize: 11 }}>({produtoFilterCodes.size} códigos)</span>
+              )}
+              <button onClick={() => { setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
+                style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 14 }}>✕</button>
+            </div>
+          )}
+        </div>
+      </>)}
 
       {/* Processar button */}
       {!result && anterioresFiles.length > 0 && atuaisFiles.length > 0 && (
@@ -430,7 +485,7 @@ export default function ComparativoLivros() {
             ))}
 
             <button
-              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); }}
+              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
               style={{
                 padding: "6px 14px", borderRadius: 99, border: "1px solid #7f1d1d",
                 fontSize: 11, fontWeight: 700, cursor: "pointer", background: "#450a0a", color: "#f87171",
