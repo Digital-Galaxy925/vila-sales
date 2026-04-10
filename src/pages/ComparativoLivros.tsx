@@ -225,6 +225,7 @@ export default function ComparativoLivros() {
 
         comparativo.push({
           bu: atu?.bu || ant?.bu || "",
+          categoria: atu?.categoria || ant?.categoria || "",
           seqProd: atu?.seqProd || ant?.seqProd || key.split("_").pop() || "",
           familia: atu?.familia || ant?.familia || "",
           descricao: atu?.descricao || ant?.descricao || "",
