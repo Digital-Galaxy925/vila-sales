@@ -19,6 +19,7 @@ const navItems = [
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
   { to: "/tabela-st", label: "Tabela de ST", icon: Table },
+  { to: "/upload-st", label: "Upload ST", icon: Upload },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
   { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
   { to: "/preco", label: "Análise de Preço", icon: DollarSign },
