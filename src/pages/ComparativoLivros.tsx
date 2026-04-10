@@ -527,7 +527,7 @@ export default function ComparativoLivros() {
             ))}
 
             <button
-              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
+              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setSelectedBU("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
               style={{
                 padding: "6px 14px", borderRadius: 99, border: "1px solid #7f1d1d",
                 fontSize: 11, fontWeight: 700, cursor: "pointer", background: "#450a0a", color: "#f87171",
