@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ProdutoComparativo {
   bu: string;
+  categoria: string;
   seqProd: string;
   familia: string;
   descricao: string;
@@ -95,6 +96,7 @@ async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
 
 interface ParsedProduct {
   bu: string;
+  categoria: string;
   seqProd: string;
   familia: string;
   descricao: string;
@@ -103,17 +105,20 @@ interface ParsedProduct {
 
 function rowToSimple(row: Record<string, string>): ParsedProduct {
   const pv = num(findCol(row, ["ATUAL", "PRECO_VENDA", "PV", "PRECO DE VENDA", "PRECO VENDA"]));
-  let bu = findCol(row, ["BU", "B.U", "B U", "CATEGORIA", "BUSINESS UNIT", "UNIDADE DE NEGOCIO", "UNIDADE NEGOCIO"]);
-  // Fallback: first column value if it looks like a BU (FOODS or HC)
-  if (!bu) {
-    const firstKey = Object.keys(row)[0];
-    if (firstKey) {
-      const val = String(row[firstKey] ?? "").trim().toUpperCase();
-      if (val === "FOODS" || val === "HC") bu = val;
+  // BU column specifically (HC / FOODS)
+  let bu = "";
+  for (const [key, value] of Object.entries(row)) {
+    const nk = normalizeHeader(key);
+    if (nk === "BU" || nk === "B U" || nk === "B.U") {
+      bu = String(value ?? "").trim().toUpperCase();
+      break;
     }
   }
+  // Categoria/subcategoria column
+  const categoria = findCol(row, ["CATEGORIA", "SUBCATEGORIA", "SUB CATEGORIA"]);
   return {
-    bu: bu.toUpperCase(),
+    bu,
+    categoria,
     seqProd: findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO"]),
     familia: findCol(row, ["FAMILIA", "COD FAMILIA", "COD.FAMILIA", "COD_FAMILIA"]),
     descricao: findCol(row, ["DESCRICAO", "DESCRIÇÃO", "DESC", "NOME", "PRODUTO"]),
@@ -220,6 +225,7 @@ export default function ComparativoLivros() {
 
         comparativo.push({
           bu: atu?.bu || ant?.bu || "",
+          categoria: atu?.categoria || ant?.categoria || "",
           seqProd: atu?.seqProd || ant?.seqProd || key.split("_").pop() || "",
           familia: atu?.familia || ant?.familia || "",
           descricao: atu?.descricao || ant?.descricao || "",
@@ -565,7 +571,10 @@ export default function ComparativoLivros() {
               <thead>
                 <tr style={{ background: "#080f1a" }}>
                   <th onClick={() => toggleSort("bu")} style={thStyle("bu")}>
-                    Categoria {sortCol === "bu" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                    BU {sortCol === "bu" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                  </th>
+                  <th onClick={() => toggleSort("categoria")} style={thStyle("categoria")}>
+                    Categoria {sortCol === "categoria" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
                   </th>
                   <th onClick={() => toggleSort("seqProd")} style={thStyle("seqProd")}>
                     Cód. Produto {sortCol === "seqProd" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
@@ -607,6 +616,14 @@ export default function ComparativoLivros() {
                           color: p.bu === "FOODS" ? "#4ade80" : "#a78bfa",
                           border: `1px solid ${p.bu === "FOODS" ? "#166534" : "#4c1d95"}`,
                         }}>{p.bu || "–"}</span>
+                      </td>
+                      <td style={{ padding: "10px 16px", whiteSpace: "nowrap" }}>
+                        <span style={{
+                          display: "inline-block", padding: "3px 10px", borderRadius: 6,
+                          fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+                          background: "#1e293b", color: "#e2e8f0",
+                          border: "1px solid #334155",
+                        }}>{p.categoria || "–"}</span>
                       </td>
                       <td style={{ padding: "10px 16px", fontFamily: "monospace", fontSize: 12, color: "#60a5fa", whiteSpace: "nowrap" }}>{p.seqProd}</td>
                       <td style={{ padding: "10px 16px", fontFamily: "monospace", fontSize: 12, color: "#94a3b8", textAlign: "center" }}>{p.familia || "–"}</td>
