@@ -465,6 +465,40 @@ export default function ComparativoLivros() {
             ))}
           </div>
 
+          {/* BU Selector */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+            <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase" }}>BU:</span>
+            <button
+              onClick={() => setSelectedBU("all")}
+              style={{
+                padding: "6px 14px", borderRadius: 99, border: "1px solid",
+                fontSize: 11, fontWeight: 700, cursor: "pointer",
+                background: selectedBU === "all" ? "#1e3a5f" : "#0f172a",
+                color: selectedBU === "all" ? "#60a5fa" : "#475569",
+                borderColor: selectedBU === "all" ? "#1d4ed8" : "#1e293b",
+                transition: "all .2s",
+              }}
+            >
+              Todas
+            </button>
+            {availableBUs.map((bu) => (
+              <button
+                key={bu}
+                onClick={() => setSelectedBU(bu)}
+                style={{
+                  padding: "6px 14px", borderRadius: 99, border: "1px solid",
+                  fontSize: 11, fontWeight: 700, cursor: "pointer",
+                  background: selectedBU === bu ? (bu === "FOODS" ? "#052e16" : "#1e1b4b") : "#0f172a",
+                  color: selectedBU === bu ? (bu === "FOODS" ? "#4ade80" : "#a78bfa") : "#475569",
+                  borderColor: selectedBU === bu ? (bu === "FOODS" ? "#166534" : "#4c1d95") : "#1e293b",
+                  transition: "all .2s",
+                }}
+              >
+                {bu}
+              </button>
+            ))}
+          </div>
+
           {/* Filters */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
             <div style={{ position: "relative", flex: "1 1 300px" }}>
