@@ -14,6 +14,7 @@ import AnaliseMargem from "./pages/AnaliseMargem";
 import AnalisePreco from "./pages/AnalisePreco";
 import AnaliseShelfLife from "./pages/AnaliseShelfLife";
 import UploadDados from "./pages/UploadDados";
+import TabelaST from "./pages/TabelaST";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/gerencial" element={<AnaliseGerencial />} />
             <Route path="/simulador" element={<Simulador />} />
             <Route path="/propostas" element={<SimuladorPropostas />} />
+            <Route path="/tabela-st" element={<TabelaST />} />
             <Route path="/estoque" element={<AnaliseEstoque />} />
             <Route path="/margem" element={<AnaliseMargem />} />
             <Route path="/preco" element={<AnalisePreco />} />

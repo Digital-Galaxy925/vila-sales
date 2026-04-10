@@ -10,6 +10,7 @@ import {
   SlidersHorizontal,
   FileText,
   BriefcaseBusiness,
+  Table,
 } from "lucide-react";
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
   { to: "/gerencial", label: "Análise Gerencial", icon: BriefcaseBusiness },
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
+  { to: "/tabela-st", label: "Tabela de ST", icon: Table },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
   { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
   { to: "/preco", label: "Análise de Preço", icon: DollarSign },
