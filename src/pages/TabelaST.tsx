@@ -77,8 +77,13 @@ export default function TabelaST() {
       compensacao = stSPNum < stMGNum ? "Compensa comprar por SP" : stMGNum < stSPNum ? "Compensa comprar por MG" : "Valores iguais";
     }
 
-    return { nome, descricao, categoria, familia, stMG, stSP, stMGNum, stSPNum, compensacao };
-  }, [searched, codigo, stData]);
+    // Cross-reference com livros para buscar Promocional
+    const codQuery = query.replace(/^0+/, "");
+    const livroMatch = livrosData.find((p) => p.seqProd === query || p.seqProd?.replace(/^0+/, "") === codQuery);
+    const promocional = livroMatch?.promoc ?? 0;
+
+    return { nome, descricao, categoria, familia, stMG, stSP, stMGNum, stSPNum, compensacao, promocional };
+  }, [searched, codigo, stData, livrosData]);
 
   // Simulador de ST
   const simulacao = useMemo(() => {
