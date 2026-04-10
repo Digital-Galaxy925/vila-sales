@@ -13,6 +13,7 @@ interface Product {
   atual: number;
   filial: string;
   bu: string;
+  promoc: number;
 }
 
 type DataMap = Record<string, Product[]>;
