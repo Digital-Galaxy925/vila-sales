@@ -169,11 +169,26 @@ export default function ComparativoLivros() {
     try {
       const rows = await readExcelAsRows(file);
       const codes = new Set<string>();
+      const buMap = new Map<string, string>();
       for (const row of rows) {
         const cod = findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO", "COD_PRODUTO"]);
-        if (cod) codes.add(String(cod).replace(/^0+/, "").trim());
+        const codNorm = String(cod).replace(/^0+/, "").trim();
+        if (codNorm) {
+          codes.add(codNorm);
+          // Read BU from the product file
+          let bu = "";
+          for (const [key, value] of Object.entries(row)) {
+            const nk = normalizeHeader(key);
+            if (nk === "BU" || nk === "B U") {
+              bu = String(value ?? "").trim().toUpperCase();
+              break;
+            }
+          }
+          if (bu) buMap.set(codNorm, bu);
+        }
       }
       setProdutoFilterCodes(codes.size > 0 ? codes : null);
+      setProdutoBUMap(buMap);
     } catch {
       setProdutoFilterCodes(null);
     }
