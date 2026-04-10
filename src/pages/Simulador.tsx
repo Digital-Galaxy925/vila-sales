@@ -403,6 +403,20 @@ export default function Simulador() {
                     />
                   </div>
 
+                  {/* Margem mínima desejada */}
+                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: 16 }}>
+                    <div>
+                      <label style={labelStyle}>Margem Mínima Desejada (%)</label>
+                      <input
+                        type="text"
+                        value={margemMinimaDesejada}
+                        onChange={(e) => setMargemMinimaDesejada(e.target.value)}
+                        placeholder="Ex: 17"
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+
                   {/* Investimento necessário */}
                   <div style={{ borderTop: "1px solid #1e293b", paddingTop: 16 }}>
                     <h3 style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>
