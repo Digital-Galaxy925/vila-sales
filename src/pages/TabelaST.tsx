@@ -135,8 +135,8 @@ export default function TabelaST() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
             {[
-              { label: "Produto", value: result.nome },
               { label: "Categoria", value: result.categoria },
+              { label: "Produto", value: result.nome },
               { label: "Código Família", value: result.familia },
               { label: "ST MG", value: result.stMG || "—" },
               { label: "ST SP", value: result.stSP || "—" },
