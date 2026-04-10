@@ -363,6 +363,38 @@ export default function ComparativoLivros() {
             )}
           </div>
         </div>
+
+        {/* Upload de produtos para filtro */}
+        <div style={{
+          background: "#111827", borderRadius: 14, padding: 24,
+          border: "2px dashed #334155", textAlign: "center", marginBottom: 32,
+        }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: "#34d399", marginBottom: 6 }}>
+            Filtro de Produtos (opcional)
+          </h3>
+          <p style={{ color: "#64748b", fontSize: 12, marginBottom: 14 }}>
+            Faça upload de uma planilha com os códigos dos produtos que deseja analisar. Se não enviar, todos os produtos serão comparados.
+          </p>
+          <label style={{
+            display: "inline-block", background: "#064e3b", color: "#34d399", border: "none",
+            borderRadius: 8, padding: "10px 24px", cursor: "pointer", fontWeight: 600, fontSize: 13,
+          }}>
+            Selecionar Planilha
+            <input type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }}
+              onChange={handleProdutoFilterFile} />
+          </label>
+          {produtoFilterFile && (
+            <div style={{ marginTop: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+              <span style={{ color: "#34d399", fontSize: 12 }}>📄 {produtoFilterFile.name}</span>
+              {produtoFilterCodes && (
+                <span style={{ color: "#94a3b8", fontSize: 11 }}>({produtoFilterCodes.size} códigos)</span>
+              )}
+              <button onClick={() => { setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
+                style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 14 }}>✕</button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Processar button */}
