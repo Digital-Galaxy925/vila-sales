@@ -228,7 +228,7 @@ export default function ComparativoLivros() {
     } finally {
       setProcessing(false);
     }
-  }, [anterioresFiles, atuaisFiles]);
+  }, [anterioresFiles, atuaisFiles, produtoFilterCodes]);
 
   const toggleSort = (col: string) => {
     if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
