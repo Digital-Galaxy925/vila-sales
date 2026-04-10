@@ -127,6 +127,8 @@ export default function ComparativoLivros() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const [selectedFilial, setSelectedFilial] = useState("all");
+  const [produtoFilterFile, setProdutoFilterFile] = useState<File | null>(null);
+  const [produtoFilterCodes, setProdutoFilterCodes] = useState<Set<string> | null>(null);
 
   const handleDrop = useCallback((e: React.DragEvent, type: "anterior" | "atual") => {
     e.preventDefault();
