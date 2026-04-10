@@ -217,7 +217,7 @@ export default function TabelaST() {
                   <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
                     {item.label}
                   </p>
-                  <p className={`text-sm font-medium ${item.highlight ? "text-primary" : "text-card-foreground"}`}>
+                  <p className={`text-sm font-medium ${item.highlight ? "text-primary" : item.promo ? "text-[#c084fc]" : "text-card-foreground"}`}>
                     {item.value || "—"}
                   </p>
                 </div>
