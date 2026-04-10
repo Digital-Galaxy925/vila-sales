@@ -45,6 +45,14 @@ export default function TabelaST() {
     }
   }, []);
 
+  const livrosData = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("vilasales_data") || "[]") as Array<{ seqProd: string; promoc: number; custoLiq: number; atual: number; descricao: string }>;
+    } catch {
+      return [];
+    }
+  }, []);
+
   const result = useMemo(() => {
     if (!searched || !codigo.trim()) return null;
     const query = codigo.trim();
