@@ -57,7 +57,7 @@ export default function TabelaST() {
       compensacao = stSPNum < stMGNum ? "Compensa comprar por SP" : stMGNum < stSPNum ? "Compensa comprar por MG" : "Valores iguais";
     }
 
-    return { nome, categoria, familia, stMG, stSP, compensacao };
+    return { nome, descricao, categoria, familia, stMG, stSP, compensacao };
   }, [searched, codigo, stData]);
 
   const handleSearch = () => {
