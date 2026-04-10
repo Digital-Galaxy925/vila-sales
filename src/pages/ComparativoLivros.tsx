@@ -129,6 +129,7 @@ export default function ComparativoLivros() {
   const [selectedFilial, setSelectedFilial] = useState("all");
   const [produtoFilterFile, setProdutoFilterFile] = useState<File | null>(null);
   const [produtoFilterCodes, setProdutoFilterCodes] = useState<Set<string> | null>(null);
+  const [selectedBU, setSelectedBU] = useState("all");
 
   const handleDrop = useCallback((e: React.DragEvent, type: "anterior" | "atual") => {
     e.preventDefault();
@@ -239,6 +240,7 @@ export default function ComparativoLivros() {
     if (!result) return [];
     let data = result;
     if (selectedFilial !== "all") data = data.filter((p) => p.filial === selectedFilial);
+    if (selectedBU !== "all") data = data.filter((p) => p.bu.toUpperCase() === selectedBU);
     if (filterStatus !== "all") data = data.filter((p) => p.status === filterStatus);
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -251,7 +253,7 @@ export default function ComparativoLivros() {
       return sortDir === "asc" ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
     });
     return data;
-  }, [result, selectedFilial, filterStatus, search, sortCol, sortDir]);
+  }, [result, selectedFilial, selectedBU, filterStatus, search, sortCol, sortDir]);
 
   const stats = useMemo(() => {
     if (!result) return { total: 0, aumentos: 0, reducoes: 0, iguais: 0, novos: 0, removidos: 0 };
@@ -263,6 +265,12 @@ export default function ComparativoLivros() {
       novos: result.filter((p) => p.status === "novo").length,
       removidos: result.filter((p) => p.status === "removido").length,
     };
+  }, [result]);
+
+  const availableBUs = useMemo(() => {
+    if (!result) return [];
+    const bus = new Set(result.map((p) => p.bu.toUpperCase()).filter(Boolean));
+    return Array.from(bus).sort();
   }, [result]);
 
   const thStyle = (col: string): React.CSSProperties => ({
@@ -457,6 +465,40 @@ export default function ComparativoLivros() {
             ))}
           </div>
 
+          {/* BU Selector */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+            <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase" }}>BU:</span>
+            <button
+              onClick={() => setSelectedBU("all")}
+              style={{
+                padding: "6px 14px", borderRadius: 99, border: "1px solid",
+                fontSize: 11, fontWeight: 700, cursor: "pointer",
+                background: selectedBU === "all" ? "#1e3a5f" : "#0f172a",
+                color: selectedBU === "all" ? "#60a5fa" : "#475569",
+                borderColor: selectedBU === "all" ? "#1d4ed8" : "#1e293b",
+                transition: "all .2s",
+              }}
+            >
+              Todas
+            </button>
+            {availableBUs.map((bu) => (
+              <button
+                key={bu}
+                onClick={() => setSelectedBU(bu)}
+                style={{
+                  padding: "6px 14px", borderRadius: 99, border: "1px solid",
+                  fontSize: 11, fontWeight: 700, cursor: "pointer",
+                  background: selectedBU === bu ? (bu === "FOODS" ? "#052e16" : "#1e1b4b") : "#0f172a",
+                  color: selectedBU === bu ? (bu === "FOODS" ? "#4ade80" : "#a78bfa") : "#475569",
+                  borderColor: selectedBU === bu ? (bu === "FOODS" ? "#166534" : "#4c1d95") : "#1e293b",
+                  transition: "all .2s",
+                }}
+              >
+                {bu}
+              </button>
+            ))}
+          </div>
+
           {/* Filters */}
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
             <div style={{ position: "relative", flex: "1 1 300px" }}>
@@ -485,7 +527,7 @@ export default function ComparativoLivros() {
             ))}
 
             <button
-              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
+              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setSelectedBU("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
               style={{
                 padding: "6px 14px", borderRadius: 99, border: "1px solid #7f1d1d",
                 fontSize: 11, fontWeight: 700, cursor: "pointer", background: "#450a0a", color: "#f87171",
