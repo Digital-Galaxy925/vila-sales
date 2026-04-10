@@ -432,7 +432,7 @@ export default function ComparativoLivros() {
               {produtoFilterCodes && (
                 <span style={{ color: "#94a3b8", fontSize: 11 }}>({produtoFilterCodes.size} códigos)</span>
               )}
-              <button onClick={() => { setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
+              <button onClick={() => { setProdutoFilterFile(null); setProdutoFilterCodes(null); setProdutoBUMap(new Map()); }}
                 style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 14 }}>✕</button>
             </div>
           )}
@@ -570,7 +570,7 @@ export default function ComparativoLivros() {
             ))}
 
             <button
-              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setSelectedBU("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
+              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setSelectedBU("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); setProdutoBUMap(new Map()); }}
               style={{
                 padding: "6px 14px", borderRadius: 99, border: "1px solid #7f1d1d",
                 fontSize: 11, fontWeight: 700, cursor: "pointer", background: "#450a0a", color: "#f87171",
