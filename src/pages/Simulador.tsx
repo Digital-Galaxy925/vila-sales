@@ -193,6 +193,7 @@ export default function Simulador() {
           >
             <span style={{ fontSize: 16 }}>📋</span>
             Tabela de ST
+          </button>
           {/* 4-8 - Remaining modules */}
           {sidebarModules.filter(m => m.id !== "cruzamento").map((m) => (
             <button
