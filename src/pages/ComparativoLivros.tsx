@@ -102,12 +102,21 @@ interface ParsedProduct {
 }
 
 function rowToSimple(row: Record<string, string>): ParsedProduct {
-  const pv = num(findCol(row, ["ATUAL", "PRECO_VENDA", "PV"]));
+  const pv = num(findCol(row, ["ATUAL", "PRECO_VENDA", "PV", "PRECO DE VENDA", "PRECO VENDA"]));
+  let bu = findCol(row, ["BU", "B.U", "B U", "CATEGORIA", "BUSINESS UNIT", "UNIDADE DE NEGOCIO", "UNIDADE NEGOCIO"]);
+  // Fallback: first column value if it looks like a BU (FOODS or HC)
+  if (!bu) {
+    const firstKey = Object.keys(row)[0];
+    if (firstKey) {
+      const val = String(row[firstKey] ?? "").trim().toUpperCase();
+      if (val === "FOODS" || val === "HC") bu = val;
+    }
+  }
   return {
-    bu: findCol(row, ["BU"]),
-    seqProd: findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD"]),
-    familia: findCol(row, ["FAMILIA"]),
-    descricao: findCol(row, ["DESCRICAO", "DESCRIÇÃO", "DESC"]),
+    bu: bu.toUpperCase(),
+    seqProd: findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO"]),
+    familia: findCol(row, ["FAMILIA", "COD FAMILIA", "COD.FAMILIA", "COD_FAMILIA"]),
+    descricao: findCol(row, ["DESCRICAO", "DESCRIÇÃO", "DESC", "NOME", "PRODUTO"]),
     preco: pv,
   };
 }
