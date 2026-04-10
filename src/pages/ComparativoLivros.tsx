@@ -617,6 +617,14 @@ export default function ComparativoLivros() {
                           border: `1px solid ${p.bu === "FOODS" ? "#166534" : "#4c1d95"}`,
                         }}>{p.bu || "–"}</span>
                       </td>
+                      <td style={{ padding: "10px 16px", whiteSpace: "nowrap" }}>
+                        <span style={{
+                          display: "inline-block", padding: "3px 10px", borderRadius: 6,
+                          fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+                          background: "#1e293b", color: "#e2e8f0",
+                          border: "1px solid #334155",
+                        }}>{p.categoria || "–"}</span>
+                      </td>
                       <td style={{ padding: "10px 16px", fontFamily: "monospace", fontSize: 12, color: "#60a5fa", whiteSpace: "nowrap" }}>{p.seqProd}</td>
                       <td style={{ padding: "10px 16px", fontFamily: "monospace", fontSize: 12, color: "#94a3b8", textAlign: "center" }}>{p.familia || "–"}</td>
                       <td style={{ padding: "10px 16px", maxWidth: 280 }}>
