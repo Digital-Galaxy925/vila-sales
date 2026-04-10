@@ -143,6 +143,7 @@ export default function ComparativoLivros() {
   const [selectedFilial, setSelectedFilial] = useState("all");
   const [produtoFilterFile, setProdutoFilterFile] = useState<File | null>(null);
   const [produtoFilterCodes, setProdutoFilterCodes] = useState<Set<string> | null>(null);
+  const [produtoBUMap, setProdutoBUMap] = useState<Map<string, string>>(new Map());
   const [selectedBU, setSelectedBU] = useState("all");
 
   const handleDrop = useCallback((e: React.DragEvent, type: "anterior" | "atual") => {
@@ -168,11 +169,26 @@ export default function ComparativoLivros() {
     try {
       const rows = await readExcelAsRows(file);
       const codes = new Set<string>();
+      const buMap = new Map<string, string>();
       for (const row of rows) {
         const cod = findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO", "COD_PRODUTO"]);
-        if (cod) codes.add(String(cod).replace(/^0+/, "").trim());
+        const codNorm = String(cod).replace(/^0+/, "").trim();
+        if (codNorm) {
+          codes.add(codNorm);
+          // Read BU from the product file
+          let bu = "";
+          for (const [key, value] of Object.entries(row)) {
+            const nk = normalizeHeader(key);
+            if (nk === "BU" || nk === "B U") {
+              bu = String(value ?? "").trim().toUpperCase();
+              break;
+            }
+          }
+          if (bu) buMap.set(codNorm, bu);
+        }
       }
       setProdutoFilterCodes(codes.size > 0 ? codes : null);
+      setProdutoBUMap(buMap);
     } catch {
       setProdutoFilterCodes(null);
     }
@@ -223,8 +239,11 @@ export default function ComparativoLivros() {
         else if (diff > 0.01) status = "aumento";
         else if (diff < -0.01) status = "reducao";
 
+        const seqProd = atu?.seqProd || ant?.seqProd || codOnly;
+        const buFromProducts = produtoBUMap.get(seqProd.replace(/^0+/, "")) || "";
+
         comparativo.push({
-          bu: atu?.bu || ant?.bu || "",
+          bu: buFromProducts || atu?.bu || ant?.bu || "",
           categoria: atu?.categoria || ant?.categoria || "",
           seqProd: atu?.seqProd || ant?.seqProd || key.split("_").pop() || "",
           familia: atu?.familia || ant?.familia || "",
@@ -244,7 +263,7 @@ export default function ComparativoLivros() {
     } finally {
       setProcessing(false);
     }
-  }, [anterioresFiles, atuaisFiles, produtoFilterCodes]);
+  }, [anterioresFiles, atuaisFiles, produtoFilterCodes, produtoBUMap]);
 
   const toggleSort = (col: string) => {
     if (sortCol === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -413,7 +432,7 @@ export default function ComparativoLivros() {
               {produtoFilterCodes && (
                 <span style={{ color: "#94a3b8", fontSize: 11 }}>({produtoFilterCodes.size} códigos)</span>
               )}
-              <button onClick={() => { setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
+              <button onClick={() => { setProdutoFilterFile(null); setProdutoFilterCodes(null); setProdutoBUMap(new Map()); }}
                 style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 14 }}>✕</button>
             </div>
           )}
@@ -551,7 +570,7 @@ export default function ComparativoLivros() {
             ))}
 
             <button
-              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setSelectedBU("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); }}
+              onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setSelectedBU("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); setProdutoBUMap(new Map()); }}
               style={{
                 padding: "6px 14px", borderRadius: 99, border: "1px solid #7f1d1d",
                 fontSize: 11, fontWeight: 700, cursor: "pointer", background: "#450a0a", color: "#f87171",
