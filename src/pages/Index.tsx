@@ -1061,17 +1061,21 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#080f1a" }}>
-              <th style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+              <th style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", position: "sticky", left: 0, zIndex: 3, background: "#080f1a" }}>
                 Filial
               </th>
-              <th style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+              <th style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", position: "sticky", left: 120, zIndex: 3, background: "#080f1a" }}>
                 BU
               </th>
-              <th style={{ padding: "11px 16px", textAlign: "center", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", position: "sticky", left: 190, zIndex: 3, background: "#080f1a" }}>
                 Cód. Família
               </th>
-              <ThBtn col="seqProd">Código</ThBtn>
-              <ThBtn col="descricao">Descrição</ThBtn>
+              <th onClick={() => handleSort("seqProd")} style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", cursor: "pointer", position: "sticky", left: 300, zIndex: 3, background: "#080f1a" }}>
+                Código {sortCol === "seqProd" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+              </th>
+              <th onClick={() => handleSort("descricao")} style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", cursor: "pointer", position: "sticky", left: 400, zIndex: 3, background: "#080f1a", borderRight: "2px solid #334155" }}>
+                Descrição {sortCol === "descricao" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+              </th>
               <th style={{ padding: "11px 16px", textAlign: "center", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
                 Unid/CX
               </th>
@@ -1116,7 +1120,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = rowBg)}
                 >
                   {/* Filial */}
-                  <td style={{ padding: "10px 16px", whiteSpace: "nowrap" }}>
+                  <td style={{ padding: "10px 16px", whiteSpace: "nowrap", position: "sticky", left: 0, zIndex: 1, background: rowBg }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                       <div style={{ width: 8, height: 8, borderRadius: "50%", background: FILIAL_INFO[p.filial]?.cor || "#64748b", flexShrink: 0 }} />
                       <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>
@@ -1126,7 +1130,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                   </td>
 
                   {/* BU */}
-                  <td style={{ padding: "10px 16px", whiteSpace: "nowrap" }}>
+                  <td style={{ padding: "10px 16px", whiteSpace: "nowrap", position: "sticky", left: 120, zIndex: 1, background: rowBg }}>
                     <span style={{
                       display: "inline-block", padding: "3px 10px", borderRadius: 6,
                       fontSize: 10, fontWeight: 800, letterSpacing: 0.5,
@@ -1139,19 +1143,19 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                   </td>
 
                   {/* Cód. Família */}
-                  <td style={{ padding: "10px 16px", textAlign: "center", whiteSpace: "nowrap" }}>
+                  <td style={{ padding: "10px 16px", textAlign: "center", whiteSpace: "nowrap", position: "sticky", left: 190, zIndex: 1, background: rowBg }}>
                     <span style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 600, color: "#94a3b8" }}>
                       {p.familia || "–"}
                     </span>
                   </td>
 
                   {/* Código */}
-                  <td style={{ padding: "10px 16px", fontFamily: "monospace", fontSize: 12, color: "#60a5fa", whiteSpace: "nowrap" }}>
+                  <td style={{ padding: "10px 16px", fontFamily: "monospace", fontSize: 12, color: "#60a5fa", whiteSpace: "nowrap", position: "sticky", left: 300, zIndex: 1, background: rowBg }}>
                     {p.seqProd}
                   </td>
 
                   {/* Descrição */}
-                  <td style={{ padding: "10px 16px", maxWidth: 260 }}>
+                  <td style={{ padding: "10px 16px", maxWidth: 260, position: "sticky", left: 400, zIndex: 1, background: rowBg, borderRight: "2px solid #1e293b" }}>
                     <div style={{ color: "#e2e8f0", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={p.descricao}>
                       {p.descricao}
                     </div>
