@@ -383,7 +383,7 @@ export default function ComparativoLivros() {
           </div>
 
           {/* Filial Selector */}
-          <div style={{ display: "flex", items: "center", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
             {FILIAIS.map((f) => (
               <button
                 key={f.id}
