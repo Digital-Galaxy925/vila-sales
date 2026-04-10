@@ -192,6 +192,9 @@ export default function ComparativoLivros() {
       const comparativo: ProdutoComparativo[] = [];
 
       for (const key of allKeys) {
+        const codOnly = key.split("_").pop() || "";
+        if (produtoFilterCodes && !produtoFilterCodes.has(codOnly)) continue;
+
         const ant = anteriorMap.get(key);
         const atu = atualMap.get(key);
         const precoAnt = ant?.preco ?? 0;
