@@ -146,6 +146,24 @@ export default function ComparativoLivros() {
     e.target.value = "";
   }, []);
 
+  const handleProdutoFilterFile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProdutoFilterFile(file);
+    try {
+      const rows = await readExcelAsRows(file);
+      const codes = new Set<string>();
+      for (const row of rows) {
+        const cod = findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO", "COD_PRODUTO"]);
+        if (cod) codes.add(String(cod).replace(/^0+/, "").trim());
+      }
+      setProdutoFilterCodes(codes.size > 0 ? codes : null);
+    } catch {
+      setProdutoFilterCodes(null);
+    }
+    e.target.value = "";
+  }, []);
+
   const processar = useCallback(async () => {
     setProcessing(true);
     try {
