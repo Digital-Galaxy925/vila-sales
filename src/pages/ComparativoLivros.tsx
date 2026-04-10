@@ -267,6 +267,12 @@ export default function ComparativoLivros() {
     };
   }, [result]);
 
+  const availableBUs = useMemo(() => {
+    if (!result) return [];
+    const bus = new Set(result.map((p) => p.bu.toUpperCase()).filter(Boolean));
+    return Array.from(bus).sort();
+  }, [result]);
+
   const thStyle = (col: string): React.CSSProperties => ({
     padding: "11px 16px", textAlign: "left" as const, color: "#64748b", fontSize: 11,
     letterSpacing: 0.5, textTransform: "uppercase" as const, borderBottom: "2px solid #1e293b",
