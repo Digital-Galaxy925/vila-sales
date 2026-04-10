@@ -124,6 +124,14 @@ export default function TabelaST() {
               Resultado da Consulta
             </h3>
           </div>
+          <div className="border-b border-border bg-card px-5 py-4">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
+              Descrição do Produto
+            </p>
+            <p className="text-sm font-medium text-card-foreground">
+              {result.descricao || "—"}
+            </p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
             {[
               { label: "Produto", value: result.nome },
