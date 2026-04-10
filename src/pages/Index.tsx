@@ -2372,7 +2372,12 @@ export default function Index() {
 
       // ── 4. Lê livro_10 (custo/preço para Poços) ──
       // Filial 01: estoque vem do livro_01, custo (CUSTO LIQ) e preço (ATUAL) vêm do livro_10
-      const map10 = await buildOverrideMap(files.livro_10, "livro_10");
+      // EXCEÇÃO: produtos sem ST usam custo/preço do próprio livro_01
+      const PRODUTOS_SEM_ST = new Set(["47646","58668","47645","78400","123834","78399","78401"]);
+      const map10Full = await buildOverrideMap(files.livro_10, "livro_10");
+      // Remove produtos sem ST do override do livro_10
+      const map10 = new Map(map10Full);
+      PRODUTOS_SEM_ST.forEach((cod) => map10.delete(cod));
 
       const newData: FilialData = {};
 
