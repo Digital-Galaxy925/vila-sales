@@ -58,8 +58,8 @@ export default function TabelaST() {
     const descricao = findCol(match, ["DESCRICAO", "DESC", "NOME_PRODUTO", "NOME PRODUTO", "DESCRIPTION"]);
     const categoria = findCol(match, ["CATEGORIA", "CAT", "GRUPO"]);
     const familia = findCol(match, ["FAMILIA", "FAM", "COD_FAMILIA", "CODIGO FAMILIA"]);
-    const stMG = findCol(match, ["ST_MG", "ST MG", "STMG", "MVA MG", "MVA_MG"]);
-    const stSP = findCol(match, ["ST_SP", "ST SP", "STSP", "MVA SP", "MVA_SP"]);
+    const stMG = findCol(match, ["ST_MG", "ST MG", "STMG", "MVA MG", "MVA_MG", "MVA ORIGINAL MG", "MVA INTERNA", "ALIQUOTA MG", "% MG", "%MG"]);
+    const stSP = findCol(match, ["ST_SP", "ST SP", "STSP", "MVA SP", "MVA_SP", "MVA AJUSTADA SP", "MVA AJUSTADA", "MVA INTERESTADUAL", "ALIQUOTA SP", "% SP", "%SP"]);
 
     const stMGNum = parseFloat(stMG.replace(",", ".").replace("%", "")) || 0;
     const stSPNum = parseFloat(stSP.replace(",", ".").replace("%", "")) || 0;
