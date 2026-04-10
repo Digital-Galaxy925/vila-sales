@@ -339,7 +339,7 @@ export default function Simulador() {
                 )}
 
                 {/* Margem mínima desejada */}
-                {produto && precoVenda > 0 && (
+                {produto && (
                   <div>
                     <label style={labelStyle}>Margem Mínima Desejada (%)</label>
                     <input
