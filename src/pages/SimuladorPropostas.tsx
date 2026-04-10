@@ -10,6 +10,7 @@ interface Product {
   embCmp: string;
   estoque: number;
   custoLiq: number;
+  sellout: number;
   atual: number;
   filial: string;
   bu: string;
