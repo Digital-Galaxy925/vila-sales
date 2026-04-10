@@ -239,8 +239,11 @@ export default function ComparativoLivros() {
         else if (diff > 0.01) status = "aumento";
         else if (diff < -0.01) status = "reducao";
 
+        const seqProd = atu?.seqProd || ant?.seqProd || codOnly;
+        const buFromProducts = produtoBUMap.get(seqProd.replace(/^0+/, "")) || "";
+
         comparativo.push({
-          bu: atu?.bu || ant?.bu || "",
+          bu: buFromProducts || atu?.bu || ant?.bu || "",
           categoria: atu?.categoria || ant?.categoria || "",
           seqProd: atu?.seqProd || ant?.seqProd || key.split("_").pop() || "",
           familia: atu?.familia || ant?.familia || "",
