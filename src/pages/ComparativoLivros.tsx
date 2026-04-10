@@ -143,6 +143,7 @@ export default function ComparativoLivros() {
   const [selectedFilial, setSelectedFilial] = useState("all");
   const [produtoFilterFile, setProdutoFilterFile] = useState<File | null>(null);
   const [produtoFilterCodes, setProdutoFilterCodes] = useState<Set<string> | null>(null);
+  const [produtoBUMap, setProdutoBUMap] = useState<Map<string, string>>(new Map());
   const [selectedBU, setSelectedBU] = useState("all");
 
   const handleDrop = useCallback((e: React.DragEvent, type: "anterior" | "atual") => {
