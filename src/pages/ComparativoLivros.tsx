@@ -126,6 +126,8 @@ export default function ComparativoLivros() {
   const [sortCol, setSortCol] = useState<string>("diffPct");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
+  const [selectedFilial, setSelectedFilial] = useState("all");
+
   const handleDrop = useCallback((e: React.DragEvent, type: "anterior" | "atual") => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files).filter((f) =>
@@ -145,31 +147,33 @@ export default function ComparativoLivros() {
   const processar = useCallback(async () => {
     setProcessing(true);
     try {
-      const anteriorMap = new Map<string, ParsedProduct>();
-      const atualMap = new Map<string, ParsedProduct>();
+      const anteriorMap = new Map<string, ParsedProduct & { filial: string }>();
+      const atualMap = new Map<string, ParsedProduct & { filial: string }>();
 
       for (const f of anterioresFiles) {
+        const filial = extractFilialFromFileName(f.name);
         const rows = await readExcelAsRows(f);
         for (const row of rows) {
           const p = rowToSimple(row);
-          if (p.seqProd) anteriorMap.set(p.seqProd.replace(/^0+/, ""), p);
+          if (p.seqProd) anteriorMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
         }
       }
 
       for (const f of atuaisFiles) {
+        const filial = extractFilialFromFileName(f.name);
         const rows = await readExcelAsRows(f);
         for (const row of rows) {
           const p = rowToSimple(row);
-          if (p.seqProd) atualMap.set(p.seqProd.replace(/^0+/, ""), p);
+          if (p.seqProd) atualMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
         }
       }
 
-      const allCodes = new Set([...anteriorMap.keys(), ...atualMap.keys()]);
+      const allKeys = new Set([...anteriorMap.keys(), ...atualMap.keys()]);
       const comparativo: ProdutoComparativo[] = [];
 
-      for (const cod of allCodes) {
-        const ant = anteriorMap.get(cod);
-        const atu = atualMap.get(cod);
+      for (const key of allKeys) {
+        const ant = anteriorMap.get(key);
+        const atu = atualMap.get(key);
         const precoAnt = ant?.preco ?? 0;
         const precoAtu = atu?.preco ?? 0;
         const diff = precoAtu - precoAnt;
@@ -183,9 +187,10 @@ export default function ComparativoLivros() {
 
         comparativo.push({
           bu: atu?.bu || ant?.bu || "",
-          seqProd: atu?.seqProd || ant?.seqProd || cod,
+          seqProd: atu?.seqProd || ant?.seqProd || key.split("_").pop() || "",
           familia: atu?.familia || ant?.familia || "",
           descricao: atu?.descricao || ant?.descricao || "",
+          filial: atu?.filial || ant?.filial || "",
           precoAnterior: precoAnt,
           precoAtual: precoAtu,
           diff,
