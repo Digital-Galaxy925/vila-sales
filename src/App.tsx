@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Simulador from "./pages/Simulador";
 import SimuladorPropostas from "./pages/SimuladorPropostas";
 import AnaliseGerencial from "./pages/AnaliseGerencial";
+import ComparativoLivros from "./pages/ComparativoLivros";
 
 import AnaliseEstoque from "./pages/AnaliseEstoque";
 import AnaliseMargem from "./pages/AnaliseMargem";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/simulador" element={<Simulador />} />
             <Route path="/propostas" element={<SimuladorPropostas />} />
             <Route path="/tabela-st" element={<TabelaST />} />
+            <Route path="/comparativo-livros" element={<ComparativoLivros />} />
             <Route path="/upload-st" element={<UploadST />} />
             <Route path="/estoque" element={<AnaliseEstoque />} />
             <Route path="/margem" element={<AnaliseMargem />} />
