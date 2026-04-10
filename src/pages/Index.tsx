@@ -1070,10 +1070,10 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <th style={{ padding: "11px 16px", textAlign: "center", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", position: "sticky", left: 190, zIndex: 3, background: "#080f1a" }}>
                 Cód. Família
               </th>
-              <th onClick={() => handleSort("seqProd")} style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", cursor: "pointer", position: "sticky", left: 300, zIndex: 3, background: "#080f1a" }}>
+              <th onClick={() => toggleSort("seqProd")} style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", cursor: "pointer", position: "sticky", left: 300, zIndex: 3, background: "#080f1a" }}>
                 Código {sortCol === "seqProd" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
               </th>
-              <th onClick={() => handleSort("descricao")} style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", cursor: "pointer", position: "sticky", left: 400, zIndex: 3, background: "#080f1a", borderRight: "2px solid #334155" }}>
+              <th onClick={() => toggleSort("descricao")} style={{ padding: "11px 16px", textAlign: "left", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap", cursor: "pointer", position: "sticky", left: 400, zIndex: 3, background: "#080f1a", borderRight: "2px solid #334155" }}>
                 Descrição {sortCol === "descricao" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
               </th>
               <th style={{ padding: "11px 16px", textAlign: "center", color: "#64748b", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #1e293b", whiteSpace: "nowrap" }}>
