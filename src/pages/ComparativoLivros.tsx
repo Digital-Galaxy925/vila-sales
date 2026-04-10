@@ -287,7 +287,7 @@ export default function ComparativoLivros() {
       </p>
 
       {/* Upload area */}
-      {!result && (
+      {!result && (<>
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 32 }}>
           {/* Anteriores */}
           <div
@@ -395,7 +395,7 @@ export default function ComparativoLivros() {
             </div>
           )}
         </div>
-      )}
+      </>)}
 
       {/* Processar button */}
       {!result && anterioresFiles.length > 0 && atuaisFiles.length > 0 && (
