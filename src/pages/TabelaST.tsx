@@ -45,6 +45,14 @@ export default function TabelaST() {
     }
   }, []);
 
+  const livrosData = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("vilasales_data") || "[]") as Array<{ seqProd: string; promoc: number; custoLiq: number; atual: number; descricao: string }>;
+    } catch {
+      return [];
+    }
+  }, []);
+
   const result = useMemo(() => {
     if (!searched || !codigo.trim()) return null;
     const query = codigo.trim();
@@ -69,8 +77,13 @@ export default function TabelaST() {
       compensacao = stSPNum < stMGNum ? "Compensa comprar por SP" : stMGNum < stSPNum ? "Compensa comprar por MG" : "Valores iguais";
     }
 
-    return { nome, descricao, categoria, familia, stMG, stSP, stMGNum, stSPNum, compensacao };
-  }, [searched, codigo, stData]);
+    // Cross-reference com livros para buscar Promocional
+    const codQuery = query.replace(/^0+/, "");
+    const livroMatch = livrosData.find((p) => p.seqProd === query || p.seqProd?.replace(/^0+/, "") === codQuery);
+    const promocional = livroMatch?.promoc ?? 0;
+
+    return { nome, descricao, categoria, familia, stMG, stSP, stMGNum, stSPNum, compensacao, promocional };
+  }, [searched, codigo, stData, livrosData]);
 
   // Simulador de ST
   const simulacao = useMemo(() => {
@@ -190,11 +203,12 @@ export default function TabelaST() {
                 {result.descricao || "—"}
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-border">
               {[
                 { label: "Categoria", value: result.categoria },
                 { label: "Produto", value: result.nome },
                 { label: "Código Família", value: result.familia },
+                { label: "Promocional", value: result.promocional ? fmt(result.promocional) : "—", promo: true },
                 { label: "ST MG (MVA)", value: result.stMG || "—" },
                 { label: "ST SP (MVA)", value: result.stSP || "—" },
                 { label: "Compensação", value: result.compensacao, highlight: true },
@@ -203,7 +217,7 @@ export default function TabelaST() {
                   <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">
                     {item.label}
                   </p>
-                  <p className={`text-sm font-medium ${item.highlight ? "text-primary" : "text-card-foreground"}`}>
+                  <p className={`text-sm font-medium ${item.highlight ? "text-primary" : item.promo ? "text-[#c084fc]" : "text-card-foreground"}`}>
                     {item.value || "—"}
                   </p>
                 </div>
