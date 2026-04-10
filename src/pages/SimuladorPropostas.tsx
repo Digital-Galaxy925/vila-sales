@@ -13,6 +13,7 @@ interface Product {
   atual: number;
   filial: string;
   bu: string;
+  promoc: number;
 }
 
 type DataMap = Record<string, Product[]>;
@@ -489,6 +490,7 @@ export default function SimuladorPropostas() {
                     <InfoCard label="Descrição" value={pc.found.descricao} span={2} />
                     <InfoCard label="Preço de Custo" value={fmt(pc.found.custoLiq)} />
                     <InfoCard label="Preço de Venda Atual" value={fmt(pc.found.atual)} />
+                    <InfoCard label="Promocional" value={pc.found.promoc ? fmt(pc.found.promoc) : "—"} color="#c084fc" />
                     <InfoCard label="Estoque (CX)" value={pc.found.estoque.toLocaleString("pt-BR")} />
                     <InfoCard label="Unid/CX" value={pc.found.embCmp} />
                   </div>
