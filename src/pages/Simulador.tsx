@@ -223,6 +223,12 @@ export default function Simulador() {
                     <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>Margem Mínima (%):</label>
                     <input type="text" value={margemMinimaDesejada} onChange={(e) => setMargemMinimaDesejada(e.target.value)} placeholder="17" style={{ ...inputStyle, width: 80 }} />
                   </div>
+                  {margemMinima > 0 && margemMinima < 1 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#0f1729", borderRadius: 8, padding: "6px 14px", border: "1px solid #1e293b" }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>Preço Sugerido:</span>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: "#60a5fa" }}>{fmt(custoUnitario / (1 - margemMinima))}</span>
+                    </div>
+                  )}
                 </div>
                 {margemReal >= margemMinima ? (
                   <div style={{
