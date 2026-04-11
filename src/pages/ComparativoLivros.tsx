@@ -695,6 +695,9 @@ export default function ComparativoLivros() {
                     <tr key={`${p.seqProd}-${i}`} style={{ borderBottom: "1px solid #111827", background: rowBg, transition: "background .15s" }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#0f1929")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = rowBg)}>
+                      <td style={{ padding: "10px 16px", whiteSpace: "nowrap", fontWeight: 600, color: "#94a3b8", fontSize: 12 }}>
+                        {FILIAIS.find((f) => f.id === p.filial)?.label || p.filial || "–"}
+                      </td>
                       <td style={{ padding: "10px 16px", whiteSpace: "nowrap" }}>
                         <span style={{
                           display: "inline-block", padding: "3px 10px", borderRadius: 6,
