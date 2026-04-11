@@ -510,13 +510,13 @@ export default function ComparativoLivros() {
                     padding: "8px 18px", borderRadius: 10, border: "2px solid", cursor: "pointer",
                     fontSize: 13, fontWeight: 700, transition: "all .2s",
                     background: selectedBU === key
-                      ? (key === "FOODS" ? "#052e16" : key === "HC" ? "#1e1b4b" : "#1e3a5f")
+                      ? (key === "FR" ? "#052e16" : key === "HC" ? "#1e1b4b" : "#1e3a5f")
                       : "#080f1a",
                     color: selectedBU === key
-                      ? (key === "FOODS" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
+                      ? (key === "FR" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
                       : "#475569",
                     borderColor: selectedBU === key
-                      ? (key === "FOODS" ? "#166534" : key === "HC" ? "#6d28d9" : "#1d4ed8")
+                      ? (key === "FR" ? "#166534" : key === "HC" ? "#6d28d9" : "#1d4ed8")
                       : "#1e293b",
                   }}
                 >
@@ -525,7 +525,7 @@ export default function ComparativoLivros() {
                     padding: "1px 8px", borderRadius: 99, fontSize: 11, fontWeight: 800, marginLeft: 8,
                     background: selectedBU === key ? "rgba(255,255,255,0.1)" : "#1e293b",
                     color: selectedBU === key
-                      ? (key === "FOODS" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
+                      ? (key === "FR" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
                       : "#64748b",
                   }}>
                     {count}
