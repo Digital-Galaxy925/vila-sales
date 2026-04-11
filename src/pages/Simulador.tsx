@@ -125,7 +125,7 @@ export default function Simulador() {
         <>
           {/* ─── Inputs: compact horizontal bar ─── */}
           <div style={{ background: "#111827", borderRadius: 12, padding: "16px 20px", border: "1px solid #1e293b", marginBottom: 16 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: 16, alignItems: "end" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, alignItems: "end" }}>
               <div>
                 <label style={labelStyle}>Código do Produto</label>
                 <input type="text" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ex: 125545" style={inputStyle} />
@@ -145,10 +145,6 @@ export default function Simulador() {
               <div>
                 <label style={labelStyle}>Preço Venda Desejado (R$)</label>
                 <input type="text" value={precoVendaDesejado} onChange={(e) => setPrecoVendaDesejado(e.target.value)} placeholder="Ex: 13,99" style={inputStyle} disabled={!produto} />
-              </div>
-              <div>
-                <label style={labelStyle}>Margem Mínima (%)</label>
-                <input type="text" value={margemMinimaDesejada} onChange={(e) => setMargemMinimaDesejada(e.target.value)} placeholder="17" style={inputStyle} />
               </div>
             </div>
           </div>
