@@ -47,7 +47,8 @@ export default function TabelaST() {
 
   const livrosData = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem("vilasales_data") || "[]") as Array<{ seqProd: string; promoc: number; custoLiq: number; atual: number; descricao: string }>;
+      const parsed = JSON.parse(localStorage.getItem("vilasales_data") || "[]");
+      return Array.isArray(parsed) ? parsed as Array<{ seqProd: string; promoc: number; custoLiq: number; atual: number; descricao: string }> : [];
     } catch {
       return [];
     }
