@@ -161,7 +161,7 @@ export default function Simulador() {
               borderRadius: 10, padding: "12px 20px", marginBottom: 16, fontSize: 13,
             }}>
               {produto ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                   <span style={{ color: "#4ade80", fontWeight: 700 }}>✅ {produto.descricao}</span>
                   <Chip label="Custo" value={fmt(custoUnitario)} color="#fbbf24" />
                   <Chip label="Unid/CX" value={String(qtdPorCaixa)} color="#e2e8f0" />
