@@ -210,27 +210,44 @@ export default function ComparativoLivros() {
       for (const f of anterioresFiles) {
         const filial = extractFilialFromFileName(f.name);
         const rows = await readExcelAsRows(f);
+        console.log(`[Anterior] Arquivo: ${f.name}, filial: ${filial}, linhas: ${rows.length}`);
+        if (rows.length > 0) console.log("[Anterior] Colunas:", Object.keys(rows[0]));
+        let matched = 0;
         for (const row of rows) {
           const p = rowToSimple(row);
-          if (p.seqProd) anteriorMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
+          if (p.seqProd) {
+            anteriorMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
+            matched++;
+          }
         }
+        console.log(`[Anterior] Produtos com código válido: ${matched}`);
       }
 
       for (const f of atuaisFiles) {
         const filial = extractFilialFromFileName(f.name);
         const rows = await readExcelAsRows(f);
+        console.log(`[Atual] Arquivo: ${f.name}, filial: ${filial}, linhas: ${rows.length}`);
+        if (rows.length > 0) console.log("[Atual] Colunas:", Object.keys(rows[0]));
+        let matched = 0;
         for (const row of rows) {
           const p = rowToSimple(row);
-          if (p.seqProd) atualMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
+          if (p.seqProd) {
+            atualMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
+            matched++;
+          }
         }
+        console.log(`[Atual] Produtos com código válido: ${matched}`);
       }
 
       const allKeys = new Set([...anteriorMap.keys(), ...atualMap.keys()]);
+      console.log(`[Comparativo] Total de chaves únicas: ${allKeys.size}, filtro de produtos: ${produtoFilterCodes ? produtoFilterCodes.size + " códigos" : "desativado"}`);
+      
       const comparativo: ProdutoComparativo[] = [];
+      let filtered_out = 0;
 
       for (const key of allKeys) {
         const codOnly = key.split("_").pop() || "";
-        if (produtoFilterCodes && !produtoFilterCodes.has(codOnly)) continue;
+        if (produtoFilterCodes && !produtoFilterCodes.has(codOnly)) { filtered_out++; continue; }
 
         const ant = anteriorMap.get(key);
         const atu = atualMap.get(key);
@@ -263,6 +280,7 @@ export default function ComparativoLivros() {
         });
       }
 
+      console.log(`[Comparativo] Resultado: ${comparativo.length} produtos, filtrados pelo produto filter: ${filtered_out}`);
       setResult(comparativo);
     } catch (err) {
       console.error(err);
