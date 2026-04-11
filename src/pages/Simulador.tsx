@@ -206,11 +206,17 @@ export default function Simulador() {
                 />
               </div>
 
-              {/* Row 3: Investment analysis */}
+              {/* Row 3: Margem Mínima + Investment analysis */}
               <div style={{ background: "#111827", borderRadius: 12, padding: "16px 20px", border: "1px solid #1e293b" }}>
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>
-                  💰 Análise de Investimento
-                </h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 14 }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", margin: 0 }}>
+                    💰 Análise de Investimento
+                  </h3>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>Margem Mínima (%):</label>
+                    <input type="text" value={margemMinimaDesejada} onChange={(e) => setMargemMinimaDesejada(e.target.value)} placeholder="17" style={{ ...inputStyle, width: 80 }} />
+                  </div>
+                </div>
                 {margemReal >= margemMinima ? (
                   <div style={{
                     background: "#0f2a1f", borderRadius: 10, padding: "14px 20px",
