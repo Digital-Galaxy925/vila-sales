@@ -100,12 +100,32 @@ export default function SimuladorPropostas() {
     }
   };
 
+  const normCod = (v: string): string => {
+    let s = v.trim();
+    s = s.replace(/\.0+$/, "");
+    s = s.replace(/^0+(\d)/, "$1");
+    return s;
+  };
+
+  const findProduct = (codigo: string, filialId: string) => {
+    const cod = normCod(codigo);
+    if (!cod) return null;
+    const searchIn = (fid: string) => {
+      const arr = data[fid];
+      if (!Array.isArray(arr)) return null;
+      return arr.find((p) => normCod(p.seqProd) === cod) ?? null;
+    };
+    const found = searchIn(filialId);
+    if (found) return found;
+    for (const key of Object.keys(data)) {
+      const f = searchIn(key);
+      if (f) return f;
+    }
+    return null;
+  };
+
   const produtosCalc = produtos.map((item) => {
-    const found = item.codigo.trim() && data[item.filial]
-      ? data[item.filial].find(
-          (p) => p.seqProd === item.codigo.trim() || p.seqProd === item.codigo.trim().padStart(6, "0")
-        ) ?? null
-      : null;
+    const found = item.codigo.trim() ? findProduct(item.codigo, item.filial) : null;
     const custoUnit = found?.custoLiq ?? 0;
     const qtdCaixa = found ? parseFloat(found.embCmp) || 1 : 1;
     const precoVD = parseBR(item.precoVenda);
