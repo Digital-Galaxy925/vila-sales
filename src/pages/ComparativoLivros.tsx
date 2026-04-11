@@ -654,6 +654,9 @@ export default function ComparativoLivros() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ background: "#080f1a" }}>
+                  <th onClick={() => toggleSort("filial")} style={thStyle("filial")}>
+                    Filial {sortCol === "filial" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                  </th>
                   <th onClick={() => toggleSort("bu")} style={thStyle("bu")}>
                     BU {sortCol === "bu" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
                   </th>
