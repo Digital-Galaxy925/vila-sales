@@ -19,13 +19,11 @@ interface ProdutoComparativo {
 const FILIAIS = [
   { id: "all", label: "Todas as Filiais" },
   { id: "01", label: "Filial 01 - Poços" },
-  { id: "10", label: "Filial 10" },
   { id: "11", label: "Filial 11 - Campinas" },
   { id: "12", label: "Filial 12 - Osasco" },
   { id: "14", label: "Filial 14 - Betim" },
   { id: "501", label: "Filial 501 - Focomix SP" },
   { id: "502", label: "Filial 502 - Focomix MG" },
-  { id: "510", label: "Filial 510" },
 ];
 
 function extractFilialFromFileName(name: string): string {
