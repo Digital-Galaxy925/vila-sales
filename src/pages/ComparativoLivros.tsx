@@ -176,12 +176,12 @@ export default function ComparativoLivros() {
       const rows = await readExcelAsRows(file);
       const codes = new Set<string>();
       const buMap = new Map<string, string>();
+      const buValues = new Set<string>();
       for (const row of rows) {
         const cod = findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO", "COD_PRODUTO"]);
         const codNorm = String(cod).replace(/^0+/, "").trim();
         if (codNorm) {
           codes.add(codNorm);
-          // Read BU from the product file
           let bu = "";
           for (const [key, value] of Object.entries(row)) {
             const nk = normalizeHeader(key);
@@ -190,9 +190,14 @@ export default function ComparativoLivros() {
               break;
             }
           }
-          if (bu) buMap.set(codNorm, bu);
+          if (bu) {
+            buValues.add(bu);
+            buMap.set(codNorm, bu);
+          }
         }
       }
+      console.log("[Produtos] Valores únicos de BU encontrados:", [...buValues]);
+      console.log("[Produtos] Colunas da planilha:", rows.length > 0 ? Object.keys(rows[0]) : "vazio");
       setProdutoFilterCodes(codes.size > 0 ? codes : null);
       setProdutoBUMap(buMap);
     } catch {
