@@ -503,16 +503,17 @@ export default function ComparativoLivros() {
           {/* KPIs */}
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
             {[
-              { label: "Total", value: stats.total, color: "#60a5fa", icon: "📊" },
-              { label: "Aumentos", value: stats.aumentos, color: "#f87171", icon: "📈" },
-              { label: "Reduções", value: stats.reducoes, color: "#4ade80", icon: "📉" },
-              { label: "Iguais", value: stats.iguais, color: "#94a3b8", icon: "=" },
-              { label: "Novos", value: stats.novos, color: "#a78bfa", icon: "🆕" },
-              { label: "Removidos", value: stats.removidos, color: "#f87171", icon: "❌" },
+              { label: "Total", value: stats.total, color: "#60a5fa", icon: "📊", statusKey: "all" },
+              { label: "Aumentos", value: stats.aumentos, color: "#f87171", icon: "📈", statusKey: "aumento" },
+              { label: "Reduções", value: stats.reducoes, color: "#4ade80", icon: "📉", statusKey: "reducao" },
+              { label: "Iguais", value: stats.iguais, color: "#94a3b8", icon: "=", statusKey: "igual" },
+              { label: "Novos", value: stats.novos, color: "#a78bfa", icon: "🆕", statusKey: "novo" },
+              { label: "Removidos", value: stats.removidos, color: "#f87171", icon: "❌", statusKey: "removido" },
             ].map((k) => (
-              <div key={k.label} style={{
-                flex: "1 1 140px", background: "#0f172a", borderRadius: 14, padding: "16px 20px",
-                border: `1px solid ${k.color}33`,
+              <div key={k.label} onClick={() => setFilterStatus(filterStatus === k.statusKey ? "all" : k.statusKey)} style={{
+                flex: "1 1 140px", background: filterStatus === k.statusKey ? `${k.color}15` : "#0f172a", borderRadius: 14, padding: "16px 20px",
+                border: filterStatus === k.statusKey ? `2px solid ${k.color}` : `1px solid ${k.color}33`,
+                cursor: "pointer", transition: "all 0.2s",
               }}>
                 <div style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: 1 }}>{k.label}</div>
                 <div style={{ fontSize: 24, fontWeight: 800, color: k.color, marginTop: 4 }}>{k.value}</div>
