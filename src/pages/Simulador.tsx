@@ -107,6 +107,7 @@ export default function Simulador() {
   const totalUnidades = volume * qtdPorCaixa;
   const investimentoPorUnidade = precoVenda > 0 ? custoUnitario - precoVenda * (1 - margemMinima) : 0;
   const investimentoTotal = investimentoPorUnidade > 0 ? investimentoPorUnidade * totalUnidades : 0;
+  const percentualInvestimento = totalSellOut > 0 ? investimentoTotal / totalSellOut : 0;
 
   // ─── Sidebar (matches Index.tsx style) ────────────────────────────────────
   const sidebarModules = [
@@ -503,6 +504,14 @@ export default function Simulador() {
                             color="#f87171"
                             large
                             subtitle={`${fmt(investimentoPorUnidade)} × ${totalUnidades.toLocaleString("pt-BR")} unidades`}
+                          />
+                        </div>
+                        <div style={{ marginTop: 12 }}>
+                          <ResultCard
+                            label="Percentual de Investimento"
+                            value={fmtPct(percentualInvestimento)}
+                            color="#fbbf24"
+                            subtitle={`${fmt(investimentoTotal)} / ${fmt(totalSellOut)}`}
                           />
                         </div>
                       </>
