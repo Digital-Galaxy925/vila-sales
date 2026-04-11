@@ -158,7 +158,7 @@ export default function Simulador() {
             <div style={{
               background: produto ? "#0d1f17" : "#1f1215",
               border: `1px solid ${produto ? "#166534" : "#7f1d1d"}`,
-              borderRadius: 10, padding: "12px 20px", marginBottom: 16, fontSize: 13,
+              borderRadius: 10, padding: "20px 24px", marginBottom: 16, fontSize: 13,
             }}>
               {produto ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
