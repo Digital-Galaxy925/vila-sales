@@ -165,6 +165,13 @@ export default function Simulador() {
                   <Chip label="Preço Atual" value={fmt(produto.atual)} color="#e2e8f0" />
                   <Chip label="Promocional" value={fmt(produto.promoc ?? 0)} color="#c084fc" />
                   <Chip label="Sell Out" value={fmt(produto.sellout ?? 0)} color="#38bdf8" />
+                  {(() => {
+                    const promo = produto.promoc ?? 0;
+                    const precoRef = promo > 0 ? promo : produto.atual;
+                    const margAtual = precoRef > 0 ? (precoRef - custoUnitario) / precoRef : 0;
+                    const corMarg = margAtual >= 0.17 ? "#4ade80" : margAtual >= 0.10 ? "#fbbf24" : "#f87171";
+                    return <Chip label="Margem Atual" value={fmtPct(margAtual)} color={corMarg} />;
+                  })()}
                 </div>
               ) : (
                 <span style={{ color: "#f87171" }}>❌ Produto não encontrado na filial {filial} – {FILIAIS.find(f => f.id === filial)?.nome}</span>
