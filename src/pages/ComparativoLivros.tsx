@@ -500,8 +500,8 @@ export default function ComparativoLivros() {
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               {[
                 { key: "all", label: "Todas", count: result.length },
-                { key: "HC", label: "HC", count: result.filter((p) => p.bu === "HC").length },
-                { key: "FOODS", label: "FR", count: result.filter((p) => p.bu === "FOODS").length },
+                { key: "HC", label: "HC", count: result.filter((p) => p.bu.toUpperCase() === "HC").length },
+                { key: "FR", label: "FR", count: result.filter((p) => { const b = p.bu.toUpperCase(); return b === "FR" || b === "FOODS" || b === "FOOD"; }).length },
               ].map(({ key, label, count }) => (
                 <button
                   key={key}
