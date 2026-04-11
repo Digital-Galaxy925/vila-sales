@@ -609,12 +609,12 @@ export default function ComparativoLivros() {
               onClick={() => {
                 const wb = XLSX.utils.book_new();
                 const data = filtered.map((r) => ({
+                  "Filial": FILIAIS.find((f) => f.id === r.filial)?.label || r.filial,
                   "BU": r.bu,
                   "Categoria": r.categoria,
                   "Cód. Produto": r.seqProd,
                   "Cód. Família": r.familia,
                   "Descrição": r.descricao,
-                  "Filial": r.filial,
                   "Preço Anterior": r.precoAnterior,
                   "Preço Atual": r.precoAtual,
                   "Diferença (R$)": r.diff,
@@ -622,7 +622,7 @@ export default function ComparativoLivros() {
                   "Status": r.status === "aumento" ? "Aumento" : r.status === "reducao" ? "Redução" : r.status === "igual" ? "Igual" : r.status === "novo" ? "Novo" : "Removido",
                 }));
                 const ws = XLSX.utils.json_to_sheet(data);
-                ws["!cols"] = [{ wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 10 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
+                ws["!cols"] = [{ wch: 22 }, { wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
                 XLSX.utils.book_append_sheet(wb, ws, "Comparativo");
                 XLSX.writeFile(wb, `Comparativo_Livros_${new Date().toISOString().slice(0, 10)}.xlsx`);
               }}
