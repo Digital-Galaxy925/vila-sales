@@ -571,6 +571,35 @@ export default function ComparativoLivros() {
             ))}
 
             <button
+              onClick={() => {
+                const wb = XLSX.utils.book_new();
+                const data = filtered.map((r) => ({
+                  "BU": r.bu,
+                  "Categoria": r.categoria,
+                  "Cód. Produto": r.seqProd,
+                  "Cód. Família": r.familia,
+                  "Descrição": r.descricao,
+                  "Filial": r.filial,
+                  "Preço Anterior": r.precoAnterior,
+                  "Preço Atual": r.precoAtual,
+                  "Diferença (R$)": r.diff,
+                  "Variação (%)": r.diffPct,
+                  "Status": r.status === "aumento" ? "Aumento" : r.status === "reducao" ? "Redução" : r.status === "igual" ? "Igual" : r.status === "novo" ? "Novo" : "Removido",
+                }));
+                const ws = XLSX.utils.json_to_sheet(data);
+                ws["!cols"] = [{ wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 10 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
+                XLSX.utils.book_append_sheet(wb, ws, "Comparativo");
+                XLSX.writeFile(wb, `Comparativo_Livros_${new Date().toISOString().slice(0, 10)}.xlsx`);
+              }}
+              style={{
+                padding: "6px 14px", borderRadius: 99, border: "1px solid #065f46",
+                fontSize: 11, fontWeight: 700, cursor: "pointer", background: "#052e16", color: "#34d399",
+              }}
+            >
+              📥 Exportar Excel
+            </button>
+
+            <button
               onClick={() => { setResult(null); setAnterioresFiles([]); setAtuaisFiles([]); setSearch(""); setFilterStatus("all"); setSelectedFilial("all"); setSelectedBU("all"); setProdutoFilterFile(null); setProdutoFilterCodes(null); setProdutoBUMap(new Map()); }}
               style={{
                 padding: "6px 14px", borderRadius: 99, border: "1px solid #7f1d1d",
