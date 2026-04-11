@@ -303,7 +303,13 @@ export default function ComparativoLivros() {
     if (!result) return [];
     let data = result;
     if (selectedFilial !== "all") data = data.filter((p) => p.filial === selectedFilial);
-    if (selectedBU !== "all") data = data.filter((p) => p.bu.toUpperCase() === selectedBU);
+    if (selectedBU !== "all") {
+      if (selectedBU === "FR") {
+        data = data.filter((p) => { const b = p.bu.toUpperCase(); return b === "FR" || b === "FOODS" || b === "FOOD"; });
+      } else {
+        data = data.filter((p) => p.bu.toUpperCase() === selectedBU);
+      }
+    }
     if (filterStatus !== "all") data = data.filter((p) => p.status === filterStatus);
     if (search.trim()) {
       const q = search.toLowerCase();
