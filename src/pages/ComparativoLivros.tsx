@@ -176,12 +176,12 @@ export default function ComparativoLivros() {
       const rows = await readExcelAsRows(file);
       const codes = new Set<string>();
       const buMap = new Map<string, string>();
+      const buValues = new Set<string>();
       for (const row of rows) {
         const cod = findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO", "COD_PRODUTO"]);
         const codNorm = String(cod).replace(/^0+/, "").trim();
         if (codNorm) {
           codes.add(codNorm);
-          // Read BU from the product file
           let bu = "";
           for (const [key, value] of Object.entries(row)) {
             const nk = normalizeHeader(key);
@@ -190,9 +190,14 @@ export default function ComparativoLivros() {
               break;
             }
           }
-          if (bu) buMap.set(codNorm, bu);
+          if (bu) {
+            buValues.add(bu);
+            buMap.set(codNorm, bu);
+          }
         }
       }
+      console.log("[Produtos] Valores únicos de BU encontrados:", [...buValues]);
+      console.log("[Produtos] Colunas da planilha:", rows.length > 0 ? Object.keys(rows[0]) : "vazio");
       setProdutoFilterCodes(codes.size > 0 ? codes : null);
       setProdutoBUMap(buMap);
     } catch {
@@ -298,7 +303,13 @@ export default function ComparativoLivros() {
     if (!result) return [];
     let data = result;
     if (selectedFilial !== "all") data = data.filter((p) => p.filial === selectedFilial);
-    if (selectedBU !== "all") data = data.filter((p) => p.bu.toUpperCase() === selectedBU);
+    if (selectedBU !== "all") {
+      if (selectedBU === "FR") {
+        data = data.filter((p) => { const b = p.bu.toUpperCase(); return b === "FR" || b === "FOODS" || b === "FOOD"; });
+      } else {
+        data = data.filter((p) => p.bu.toUpperCase() === selectedBU);
+      }
+    }
     if (filterStatus !== "all") data = data.filter((p) => p.status === filterStatus);
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -489,8 +500,8 @@ export default function ComparativoLivros() {
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               {[
                 { key: "all", label: "Todas", count: result.length },
-                { key: "HC", label: "HC", count: result.filter((p) => p.bu === "HC").length },
-                { key: "FOODS", label: "FR", count: result.filter((p) => p.bu === "FOODS").length },
+                { key: "HC", label: "HC", count: result.filter((p) => p.bu.toUpperCase() === "HC").length },
+                { key: "FR", label: "FR", count: result.filter((p) => { const b = p.bu.toUpperCase(); return b === "FR" || b === "FOODS" || b === "FOOD"; }).length },
               ].map(({ key, label, count }) => (
                 <button
                   key={key}
@@ -499,13 +510,13 @@ export default function ComparativoLivros() {
                     padding: "8px 18px", borderRadius: 10, border: "2px solid", cursor: "pointer",
                     fontSize: 13, fontWeight: 700, transition: "all .2s",
                     background: selectedBU === key
-                      ? (key === "FOODS" ? "#052e16" : key === "HC" ? "#1e1b4b" : "#1e3a5f")
+                      ? (key === "FR" ? "#052e16" : key === "HC" ? "#1e1b4b" : "#1e3a5f")
                       : "#080f1a",
                     color: selectedBU === key
-                      ? (key === "FOODS" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
+                      ? (key === "FR" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
                       : "#475569",
                     borderColor: selectedBU === key
-                      ? (key === "FOODS" ? "#166534" : key === "HC" ? "#6d28d9" : "#1d4ed8")
+                      ? (key === "FR" ? "#166534" : key === "HC" ? "#6d28d9" : "#1d4ed8")
                       : "#1e293b",
                   }}
                 >
@@ -514,7 +525,7 @@ export default function ComparativoLivros() {
                     padding: "1px 8px", borderRadius: 99, fontSize: 11, fontWeight: 800, marginLeft: 8,
                     background: selectedBU === key ? "rgba(255,255,255,0.1)" : "#1e293b",
                     color: selectedBU === key
-                      ? (key === "FOODS" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
+                      ? (key === "FR" ? "#4ade80" : key === "HC" ? "#a78bfa" : "#60a5fa")
                       : "#64748b",
                   }}>
                     {count}
