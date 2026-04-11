@@ -506,6 +506,14 @@ export default function Simulador() {
                             subtitle={`${fmt(investimentoPorUnidade)} × ${totalUnidades.toLocaleString("pt-BR")} unidades`}
                           />
                         </div>
+                        <div style={{ marginTop: 12 }}>
+                          <ResultCard
+                            label="Percentual de Investimento"
+                            value={fmtPct(percentualInvestimento)}
+                            color="#fbbf24"
+                            subtitle={`${fmt(investimentoTotal)} / ${fmt(totalSellOut)}`}
+                          />
+                        </div>
                       </>
                     )}
                   </div>
