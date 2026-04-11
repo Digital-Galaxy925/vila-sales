@@ -406,62 +406,56 @@ export default function Simulador() {
                   border: "1px solid #1e293b", flex: "1 1 340px", minWidth: 300,
                 }}
               >
-                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 20, color: "#e2e8f0" }}>
+                <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
                   Resultado da Simulação
                 </h2>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {/* Margem Real */}
+                {/* Row 1: 4 cards side by side */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 12 }}>
                   <ResultCard
                     label="Margem Real"
                     value={fmtPct(margemReal)}
                     color={margemReal >= 0.17 ? "#4ade80" : margemReal >= 0.10 ? "#fbbf24" : "#f87171"}
                     subtitle={`(${fmt(precoVenda)} - ${fmt(custoUnitario)}) / ${fmt(precoVenda)}`}
                   />
-
-                  {/* Preço de Custo */}
                   <ResultCard
                     label="Preço de Custo"
                     value={fmt(custoUnitario)}
                     color="#fbbf24"
                   />
-
-                  {/* Preço de Venda Desejado */}
                   <ResultCard
-                    label="Preço de Venda Desejado"
+                    label="Preço Venda Desejado"
                     value={fmt(precoVenda)}
                     color="#60a5fa"
                   />
-
-                  {/* Lucro por unidade */}
                   <ResultCard
                     label="Lucro por Unidade"
                     value={fmt(precoVenda - custoUnitario)}
                     color={precoVenda - custoUnitario > 0 ? "#4ade80" : "#f87171"}
                   />
+                </div>
 
-                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: 16 }}>
-                    <h3 style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>
-                      Projeção de Sell Out
-                    </h3>
-
-                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                      <MiniCard label="Volume (CX)" value={volume.toString()} />
-                      <MiniCard label="Unid/CX" value={qtdPorCaixa.toString()} />
-                      <MiniCard label="Total Unidades" value={(volume * qtdPorCaixa).toLocaleString("pt-BR")} />
-                    </div>
-
+                {/* Row 2: Sell Out */}
+                <div style={{ borderTop: "1px solid #1e293b", paddingTop: 12, marginBottom: 12 }}>
+                  <h3 style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", marginBottom: 8 }}>
+                    Projeção de Sell Out
+                  </h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+                    <MiniCard label="Volume (CX)" value={volume.toString()} />
+                    <MiniCard label="Unid/CX" value={qtdPorCaixa.toString()} />
+                    <MiniCard label="Total Unidades" value={(volume * qtdPorCaixa).toLocaleString("pt-BR")} />
                     <ResultCard
-                      label="Valor Total de Sell Out"
+                      label="Valor Total Sell Out"
                       value={fmt(totalSellOut)}
                       color="#a78bfa"
-                      large
                       subtitle={`${volume} cx × ${qtdPorCaixa} un/cx × ${fmt(precoVenda)}`}
                     />
                   </div>
+                </div>
 
-                  {/* Margem mínima desejada */}
-                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: 16 }}>
+                {/* Row 3: Margem mínima + Investimento */}
+                <div style={{ borderTop: "1px solid #1e293b", paddingTop: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 3fr", gap: 10 }}>
                     <div>
                       <label style={labelStyle}>Margem Mínima Desejada (%)</label>
                       <input
@@ -472,53 +466,45 @@ export default function Simulador() {
                         style={inputStyle}
                       />
                     </div>
-                  </div>
-
-                  {/* Investimento necessário */}
-                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: 16 }}>
-                    <h3 style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>
-                      Investimento Necessário
-                    </h3>
-                    {margemReal >= margemMinima ? (
-                      <div
-                        style={{
-                          background: "#0f2a1f", borderRadius: 10, padding: 16,
-                          border: "1px solid #166534", fontSize: 13, color: "#4ade80",
-                          fontWeight: 600,
-                        }}
-                      >
-                        ✅ A margem atual ({fmtPct(margemReal)}) já atende a margem mínima de {fmtPct(margemMinima)}. Nenhum investimento necessário.
-                      </div>
-                    ) : (
-                      <>
-                        <ResultCard
-                          label="Investimento por Unidade"
-                          value={fmt(investimentoPorUnidade)}
-                          color="#f87171"
-                          subtitle={`Custo (${fmt(custoUnitario)}) - Custo máximo permitido (${fmt(precoVenda * (1 - margemMinima))})`}
-                        />
-                        <div style={{ marginTop: 12 }}>
+                    <div>
+                      <h3 style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", marginBottom: 8 }}>
+                        Investimento Necessário
+                      </h3>
+                      {margemReal >= margemMinima ? (
+                        <div
+                          style={{
+                            background: "#0f2a1f", borderRadius: 10, padding: 14,
+                            border: "1px solid #166534", fontSize: 13, color: "#4ade80",
+                            fontWeight: 600,
+                          }}
+                        >
+                          ✅ Margem ({fmtPct(margemReal)}) já atende o mínimo de {fmtPct(margemMinima)}.
+                        </div>
+                      ) : (
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
                           <ResultCard
-                            label="Investimento Total Necessário"
+                            label="Investimento / Unidade"
+                            value={fmt(investimentoPorUnidade)}
+                            color="#f87171"
+                            subtitle={`Custo - Máx. permitido (${fmt(precoVenda * (1 - margemMinima))})`}
+                          />
+                          <ResultCard
+                            label="Investimento Total"
                             value={fmt(investimentoTotal)}
                             color="#f87171"
-                            large
-                            subtitle={`${fmt(investimentoPorUnidade)} × ${totalUnidades.toLocaleString("pt-BR")} unidades`}
+                            subtitle={`${fmt(investimentoPorUnidade)} × ${totalUnidades.toLocaleString("pt-BR")} un`}
                           />
-                        </div>
-                        <div style={{ marginTop: 12 }}>
                           <ResultCard
-                            label="Percentual de Investimento"
+                            label="% Investimento"
                             value={fmtPct(percentualInvestimento)}
                             color="#fbbf24"
                             subtitle={`${fmt(investimentoTotal)} / ${fmt(totalSellOut)}`}
                           />
                         </div>
-                      </>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
             )}
           </div>
         )}
