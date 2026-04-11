@@ -609,12 +609,12 @@ export default function ComparativoLivros() {
               onClick={() => {
                 const wb = XLSX.utils.book_new();
                 const data = filtered.map((r) => ({
+                  "Filial": FILIAIS.find((f) => f.id === r.filial)?.label || r.filial,
                   "BU": r.bu,
                   "Categoria": r.categoria,
                   "Cód. Produto": r.seqProd,
                   "Cód. Família": r.familia,
                   "Descrição": r.descricao,
-                  "Filial": r.filial,
                   "Preço Anterior": r.precoAnterior,
                   "Preço Atual": r.precoAtual,
                   "Diferença (R$)": r.diff,
@@ -622,7 +622,7 @@ export default function ComparativoLivros() {
                   "Status": r.status === "aumento" ? "Aumento" : r.status === "reducao" ? "Redução" : r.status === "igual" ? "Igual" : r.status === "novo" ? "Novo" : "Removido",
                 }));
                 const ws = XLSX.utils.json_to_sheet(data);
-                ws["!cols"] = [{ wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 10 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
+                ws["!cols"] = [{ wch: 22 }, { wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
                 XLSX.utils.book_append_sheet(wb, ws, "Comparativo");
                 XLSX.writeFile(wb, `Comparativo_Livros_${new Date().toISOString().slice(0, 10)}.xlsx`);
               }}
@@ -654,6 +654,9 @@ export default function ComparativoLivros() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ background: "#080f1a" }}>
+                  <th onClick={() => toggleSort("filial")} style={thStyle("filial")}>
+                    Filial {sortCol === "filial" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                  </th>
                   <th onClick={() => toggleSort("bu")} style={thStyle("bu")}>
                     BU {sortCol === "bu" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
                   </th>
@@ -692,6 +695,9 @@ export default function ComparativoLivros() {
                     <tr key={`${p.seqProd}-${i}`} style={{ borderBottom: "1px solid #111827", background: rowBg, transition: "background .15s" }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#0f1929")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = rowBg)}>
+                      <td style={{ padding: "10px 16px", whiteSpace: "nowrap", fontWeight: 600, color: "#94a3b8", fontSize: 12 }}>
+                        {FILIAIS.find((f) => f.id === p.filial)?.label || p.filial || "–"}
+                      </td>
                       <td style={{ padding: "10px 16px", whiteSpace: "nowrap" }}>
                         <span style={{
                           display: "inline-block", padding: "3px 10px", borderRadius: 6,
