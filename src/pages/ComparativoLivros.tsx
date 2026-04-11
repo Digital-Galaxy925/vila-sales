@@ -326,15 +326,24 @@ export default function ComparativoLivros() {
 
   const stats = useMemo(() => {
     if (!result) return { total: 0, aumentos: 0, reducoes: 0, iguais: 0, novos: 0, removidos: 0 };
+    let data = result;
+    if (selectedFilial !== "all") data = data.filter((p) => p.filial === selectedFilial);
+    if (selectedBU !== "all") {
+      if (selectedBU === "FR") {
+        data = data.filter((p) => { const b = p.bu.toUpperCase(); return b === "FR" || b === "FOODS" || b === "FOOD"; });
+      } else {
+        data = data.filter((p) => p.bu.toUpperCase() === selectedBU);
+      }
+    }
     return {
-      total: result.length,
-      aumentos: result.filter((p) => p.status === "aumento").length,
-      reducoes: result.filter((p) => p.status === "reducao").length,
-      iguais: result.filter((p) => p.status === "igual").length,
-      novos: result.filter((p) => p.status === "novo").length,
-      removidos: result.filter((p) => p.status === "removido").length,
+      total: data.length,
+      aumentos: data.filter((p) => p.status === "aumento").length,
+      reducoes: data.filter((p) => p.status === "reducao").length,
+      iguais: data.filter((p) => p.status === "igual").length,
+      novos: data.filter((p) => p.status === "novo").length,
+      removidos: data.filter((p) => p.status === "removido").length,
     };
-  }, [result]);
+  }, [result, selectedFilial, selectedBU]);
 
   const availableBUs = useMemo(() => {
     if (!result) return [];
