@@ -64,13 +64,34 @@ export default function Simulador() {
   const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
   const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
 
+  // ─── Normalize code (same logic as Index.tsx) ──────────────────────────────
+  const normCod = (v: string): string => {
+    let s = v.trim();
+    s = s.replace(/\.0+$/, "");
+    s = s.replace(/^0+(\d)/, "$1");
+    return s;
+  };
+
   // ─── Find product ─────────────────────────────────────────────────────────
   const produto = useMemo(() => {
-    if (!codigo.trim() || !data[filial]) return null;
-    const cod = codigo.trim();
-    return data[filial].find(
-      (p) => p.seqProd === cod || p.seqProd === cod.padStart(6, "0")
-    ) ?? null;
+    if (!codigo.trim()) return null;
+    const cod = normCod(codigo);
+    if (!cod) return null;
+    // Search across all filiais if current filial has no match
+    const searchInFilial = (fid: string) => {
+      const arr = data[fid];
+      if (!Array.isArray(arr)) return null;
+      return arr.find((p) => normCod(p.seqProd) === cod) ?? null;
+    };
+    // First try selected filial
+    const found = searchInFilial(filial);
+    if (found) return found;
+    // Fallback: search all filiais
+    for (const key of Object.keys(data)) {
+      const f = searchInFilial(key);
+      if (f) return f;
+    }
+    return null;
   }, [codigo, filial, data]);
 
   // ─── Calculations ─────────────────────────────────────────────────────────
