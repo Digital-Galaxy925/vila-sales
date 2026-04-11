@@ -59,9 +59,15 @@ function normalizeHeader(value: unknown): string {
 
 function findCol(row: Record<string, string>, candidates: string[]): string {
   const normalizedCandidates = candidates.map(normalizeHeader);
+  // 1st pass: exact match
   for (const [key, value] of Object.entries(row)) {
     const nk = normalizeHeader(key);
-    if (normalizedCandidates.some((c) => nk === c || nk.includes(c) || c.includes(nk)) && value !== undefined) return value;
+    if (normalizedCandidates.some((c) => nk === c) && value !== undefined) return value;
+  }
+  // 2nd pass: starts with candidate or candidate starts with key
+  for (const [key, value] of Object.entries(row)) {
+    const nk = normalizeHeader(key);
+    if (normalizedCandidates.some((c) => nk.startsWith(c) || c.startsWith(nk)) && value !== undefined) return value;
   }
   return "";
 }
