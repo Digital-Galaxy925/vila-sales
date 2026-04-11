@@ -367,7 +367,6 @@ export default function Simulador() {
               </div>
             )}
           </div>
-        )}
       </div>
     </div>
   );
