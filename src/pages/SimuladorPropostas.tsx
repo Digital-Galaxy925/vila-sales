@@ -761,7 +761,23 @@ export default function SimuladorPropostas() {
               )}
             </div>
 
-            {/* Export PDF */}
+            {/* Observação */}
+            <div style={cardStyle}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                📝 Observação
+              </h2>
+              <textarea
+                value={observacao}
+                onChange={(e) => setObservacao(e.target.value)}
+                placeholder="Digite aqui suas observações sobre a proposta..."
+                rows={4}
+                style={{
+                  width: "100%", padding: "12px 16px", borderRadius: 8,
+                  border: "1px solid #334155", background: "#0f172a", color: "#e2e8f0",
+                  fontSize: 13, fontFamily: "inherit", resize: "vertical",
+                  outline: "none",
+                }}
+              />
             <button
               onClick={exportPDF}
               style={{
