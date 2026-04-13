@@ -11,6 +11,7 @@ interface ProdutoComparativo {
   filial: string;
   precoAnterior: number;
   precoAtual: number;
+  promocional: number;
   diff: number;
   diffPct: number;
   status: "aumento" | "reducao" | "igual" | "novo" | "removido";
@@ -105,6 +106,7 @@ interface ParsedProduct {
   familia: string;
   descricao: string;
   preco: number;
+  promocional: number;
 }
 
 function findAtualCol(row: Record<string, string>): number {
@@ -119,7 +121,7 @@ function findAtualCol(row: Record<string, string>): number {
 
 function rowToSimple(row: Record<string, string>): ParsedProduct {
   const pv = findAtualCol(row);
-  // BU column specifically (HC / FOODS)
+  const promocional = num(findCol(row, ["PROMOC", "PROMOÇÃO", "PROMOCAO", "PROMO"]));
   let bu = "";
   for (const [key, value] of Object.entries(row)) {
     const nk = normalizeHeader(key);
@@ -128,7 +130,6 @@ function rowToSimple(row: Record<string, string>): ParsedProduct {
       break;
     }
   }
-  // Categoria/subcategoria column
   const categoria = findCol(row, ["CATEGORIA", "SUBCATEGORIA", "SUB CATEGORIA"]);
   return {
     bu,
@@ -137,6 +138,7 @@ function rowToSimple(row: Record<string, string>): ParsedProduct {
     familia: findCol(row, ["FAMILIA", "COD FAMILIA", "COD.FAMILIA", "COD_FAMILIA"]),
     descricao: findCol(row, ["DESCRICAO", "DESCRIÇÃO", "DESC", "NOME", "PRODUTO"]),
     preco: pv,
+    promocional,
   };
 }
 
@@ -296,6 +298,7 @@ export default function ComparativoLivros() {
           filial: atu?.filial || ant?.filial || "",
           precoAnterior: precoAnt,
           precoAtual: precoAtu,
+          promocional: atu?.promocional ?? ant?.promocional ?? 0,
           diff,
           diffPct,
           status,
@@ -644,12 +647,13 @@ export default function ComparativoLivros() {
                   "Descrição": r.descricao,
                   "Preço Anterior": r.precoAnterior,
                   "Preço Atual": r.precoAtual,
+                  "Promocional": r.promocional,
                   "Diferença (R$)": r.diff,
                   "Variação (%)": r.diffPct,
                   "Status": r.status === "aumento" ? "Aumento" : r.status === "reducao" ? "Redução" : r.status === "igual" ? "Igual" : r.status === "novo" ? "Novo" : "Removido",
                 }));
                 const ws = XLSX.utils.json_to_sheet(data);
-                ws["!cols"] = [{ wch: 22 }, { wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
+                ws["!cols"] = [{ wch: 22 }, { wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
                 XLSX.utils.book_append_sheet(wb, ws, "Comparativo");
                 XLSX.writeFile(wb, `Comparativo_Livros_${new Date().toISOString().slice(0, 10)}.xlsx`);
               }}
