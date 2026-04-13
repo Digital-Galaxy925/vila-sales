@@ -709,6 +709,9 @@ export default function ComparativoLivros() {
                   <th onClick={() => toggleSort("precoAtual")} style={{ ...thStyle("precoAtual"), textAlign: "right", color: "#60a5fa" }}>
                     Preço Atual {sortCol === "precoAtual" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
                   </th>
+                  <th onClick={() => toggleSort("promocional")} style={{ ...thStyle("promocional"), textAlign: "right", color: "#c084fc" }}>
+                    Promocional {sortCol === "promocional" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                  </th>
                   <th onClick={() => toggleSort("diff")} style={{ ...thStyle("diff"), textAlign: "right" }}>
                     Diferença (R$) {sortCol === "diff" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
                   </th>
@@ -753,6 +756,7 @@ export default function ComparativoLivros() {
                       </td>
                       <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: "#fbbf24" }}>{p.precoAnterior > 0 ? fmt(p.precoAnterior) : "–"}</td>
                       <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: "#60a5fa" }}>{p.precoAtual > 0 ? fmt(p.precoAtual) : "–"}</td>
+                      <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: "#c084fc" }}>{p.promocional > 0 ? fmt(p.promocional) : "–"}</td>
                       <td style={{
                         padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700,
                         color: p.diff > 0.01 ? "#f87171" : p.diff < -0.01 ? "#4ade80" : "#94a3b8",
