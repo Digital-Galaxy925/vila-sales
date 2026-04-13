@@ -279,7 +279,7 @@ export default function ComparativoLivros() {
         }
         let matched = 0;
         for (const row of rows) {
-          const p = rowToSimple(row);
+          const p = rowToSimple(row, "125949");
           if (p.seqProd) {
             anteriorMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
             matched++;
