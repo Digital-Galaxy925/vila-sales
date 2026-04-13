@@ -76,6 +76,7 @@ export default function SimuladorPropostas() {
   const [nomeGerente, setNomeGerente] = useState("");
   const [dataAnalise, setDataAnalise] = useState(() => new Date().toISOString().slice(0, 10));
   const [statusProposta, setStatusProposta] = useState<"" | "aprovada" | "rejeitada">("");
+  const [observacao, setObservacao] = useState("");
 
   const [produtos, setProdutos] = useState<ProdutoItem[]>([
     { id: 1, codigo: "", filial: "01", precoVenda: "", volumeCaixas: "" },
@@ -758,6 +759,25 @@ export default function SimuladorPropostas() {
                   Proposta marcada como: {statusProposta === "aprovada" ? "APROVADA" : "REJEITADA"}
                 </p>
               )}
+            </div>
+
+            {/* Observação */}
+            <div style={cardStyle}>
+              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
+                📝 Observação
+              </h2>
+              <textarea
+                value={observacao}
+                onChange={(e) => setObservacao(e.target.value)}
+                placeholder="Digite aqui suas observações sobre a proposta..."
+                rows={4}
+                style={{
+                  width: "100%", padding: "12px 16px", borderRadius: 8,
+                  border: "1px solid #334155", background: "#0f172a", color: "#e2e8f0",
+                  fontSize: 13, fontFamily: "inherit", resize: "vertical",
+                  outline: "none",
+                }}
+              />
             </div>
 
             {/* Export PDF */}
