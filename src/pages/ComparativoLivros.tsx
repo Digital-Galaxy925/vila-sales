@@ -285,8 +285,13 @@ export default function ComparativoLivros() {
         const atu = atualMap.get(key);
         const precoAnt = ant?.preco ?? 0;
         const precoAtu = atu?.preco ?? 0;
-        const diff = precoAtu - precoAnt;
-        const diffPct = precoAnt > 0 ? (diff / precoAnt) * 100 : 0;
+        const promAnt = ant?.promocional ?? 0;
+        const promAtu = atu?.promocional ?? 0;
+        // Use promotional prices for diff/var when both exist, otherwise use regular prices
+        const baseAnt = (promAnt > 0 && promAtu > 0) ? promAnt : precoAnt;
+        const baseAtu = (promAnt > 0 && promAtu > 0) ? promAtu : precoAtu;
+        const diff = baseAtu - baseAnt;
+        const diffPct = baseAnt > 0 ? (diff / baseAnt) * 100 : 0;
 
         let status: ProdutoComparativo["status"] = "igual";
         if (!ant) status = "novo";
