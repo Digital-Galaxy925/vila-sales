@@ -138,7 +138,12 @@ export default function ComparativoLivros() {
   const [anterioresFiles, setAnterioresFiles] = useState<File[]>([]);
   const [atuaisFiles, setAtuaisFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState<ProdutoComparativo[] | null>(null);
+  const [result, setResult] = useState<ProdutoComparativo[] | null>(() => {
+    try {
+      const saved = localStorage.getItem("vilasales_comparativo_result");
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [sortCol, setSortCol] = useState<string>("diffPct");
