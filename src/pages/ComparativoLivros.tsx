@@ -120,9 +120,28 @@ function findAtualCol(row: Record<string, string>): number {
   return num(findCol(row, ["PRECO_VENDA", "PV", "PRECO DE VENDA", "PRECO VENDA"]));
 }
 
-function rowToSimple(row: Record<string, string>): ParsedProduct {
+function findPromocCol(row: Record<string, string>): number {
+  // Direct search for PROMOC column - avoid matching "Data Final Promoc" etc.
+  for (const [key, value] of Object.entries(row)) {
+    const nk = normalizeHeader(key);
+    // Exact match for PROMOC or PROMOCAO
+    if ((nk === "PROMOC" || nk === "PROMOCAO" || nk === "PROMO") && value !== undefined) {
+      return num(value);
+    }
+  }
+  // Fallback: column that STARTS with PROMOC but is short (not "Data Final Promoc" etc.)
+  for (const [key, value] of Object.entries(row)) {
+    const nk = normalizeHeader(key);
+    if (nk.startsWith("PROMOC") && nk.length <= 10 && value !== undefined) {
+      return num(value);
+    }
+  }
+  return 0;
+}
+
+function rowToSimple(row: Record<string, string>, debugCode?: string): ParsedProduct {
   const pv = findAtualCol(row);
-  const promocional = num(findCol(row, ["PROMOC", "PROMOÇÃO", "PROMOCAO", "PROMO"]));
+  const promocional = findPromocCol(row);
   let bu = "";
   for (const [key, value] of Object.entries(row)) {
     const nk = normalizeHeader(key);
@@ -132,10 +151,24 @@ function rowToSimple(row: Record<string, string>): ParsedProduct {
     }
   }
   const categoria = findCol(row, ["CATEGORIA", "SUBCATEGORIA", "SUB CATEGORIA"]);
+  const seqProd = findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO"]);
+  
+  // Debug logging for specific items
+  if (debugCode && seqProd.replace(/^0+/, "") === debugCode) {
+    const promRaw = findCol(row, ["PROMOC", "PROMOÇÃO", "PROMOCAO", "PROMO"]);
+    console.log(`[DEBUG ${debugCode}] PROMOC raw="${promRaw}", parsed=${promocional}, preco=${pv}`);
+    // Log all column values that contain "PROMO"
+    for (const [key, value] of Object.entries(row)) {
+      if (normalizeHeader(key).includes("PROMO")) {
+        console.log(`[DEBUG ${debugCode}] Col "${key}" = "${value}"`);
+      }
+    }
+  }
+  
   return {
     bu,
     categoria,
-    seqProd: findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO"]),
+    seqProd,
     familia: findCol(row, ["FAMILIA", "COD FAMILIA", "COD.FAMILIA", "COD_FAMILIA"]),
     descricao: findCol(row, ["DESCRICAO", "DESCRIÇÃO", "DESC", "NOME", "PRODUTO"]),
     preco: pv,
@@ -246,7 +279,7 @@ export default function ComparativoLivros() {
         }
         let matched = 0;
         for (const row of rows) {
-          const p = rowToSimple(row);
+          const p = rowToSimple(row, "125949");
           if (p.seqProd) {
             anteriorMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
             matched++;
@@ -262,7 +295,7 @@ export default function ComparativoLivros() {
         if (rows.length > 0) console.log("[Atual] Colunas:", Object.keys(rows[0]));
         let matched = 0;
         for (const row of rows) {
-          const p = rowToSimple(row);
+          const p = rowToSimple(row, "125949");
           if (p.seqProd) {
             atualMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
             matched++;
