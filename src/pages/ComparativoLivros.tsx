@@ -154,7 +154,14 @@ export default function ComparativoLivros() {
   const [result, setResult] = useState<ProdutoComparativo[] | null>(() => {
     try {
       const saved = localStorage.getItem("vilasales_comparativo_result");
-      return saved ? JSON.parse(saved) : null;
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      // Invalidate cache if schema changed (missing new fields)
+      if (Array.isArray(parsed) && parsed.length > 0 && !("promocionalAnterior" in parsed[0])) {
+        localStorage.removeItem("vilasales_comparativo_result");
+        return null;
+      }
+      return parsed;
     } catch { return null; }
   });
   const [search, setSearch] = useState("");
