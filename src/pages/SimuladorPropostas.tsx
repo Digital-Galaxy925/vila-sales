@@ -778,6 +778,9 @@ export default function SimuladorPropostas() {
                   outline: "none",
                 }}
               />
+            </div>
+
+            {/* Export PDF */}
             <button
               onClick={exportPDF}
               style={{
