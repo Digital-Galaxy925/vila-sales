@@ -11,7 +11,8 @@ interface ProdutoComparativo {
   filial: string;
   precoAnterior: number;
   precoAtual: number;
-  promocional: number;
+  promocionalAnterior: number;
+  promocionalAtual: number;
   diff: number;
   diffPct: number;
   status: "aumento" | "reducao" | "igual" | "novo" | "removido";
@@ -298,7 +299,8 @@ export default function ComparativoLivros() {
           filial: atu?.filial || ant?.filial || "",
           precoAnterior: precoAnt,
           precoAtual: precoAtu,
-          promocional: atu?.promocional ?? ant?.promocional ?? 0,
+          promocionalAnterior: ant?.promocional ?? 0,
+          promocionalAtual: atu?.promocional ?? 0,
           diff,
           diffPct,
           status,
@@ -647,13 +649,14 @@ export default function ComparativoLivros() {
                   "Descrição": r.descricao,
                   "Preço Anterior": r.precoAnterior,
                   "Preço Atual": r.precoAtual,
-                  "Promocional": r.promocional,
+                  "Promocional Anterior": r.promocionalAnterior,
+                  "Promocional Atual": r.promocionalAtual,
                   "Diferença (R$)": r.diff,
                   "Variação (%)": r.diffPct,
                   "Status": r.status === "aumento" ? "Aumento" : r.status === "reducao" ? "Redução" : r.status === "igual" ? "Igual" : r.status === "novo" ? "Novo" : "Removido",
                 }));
                 const ws = XLSX.utils.json_to_sheet(data);
-                ws["!cols"] = [{ wch: 22 }, { wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
+                ws["!cols"] = [{ wch: 22 }, { wch: 8 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 40 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 14 }, { wch: 12 }];
                 XLSX.utils.book_append_sheet(wb, ws, "Comparativo");
                 XLSX.writeFile(wb, `Comparativo_Livros_${new Date().toISOString().slice(0, 10)}.xlsx`);
               }}
@@ -709,8 +712,11 @@ export default function ComparativoLivros() {
                   <th onClick={() => toggleSort("precoAtual")} style={{ ...thStyle("precoAtual"), textAlign: "right", color: "#60a5fa" }}>
                     Preço Atual {sortCol === "precoAtual" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
                   </th>
-                  <th onClick={() => toggleSort("promocional")} style={{ ...thStyle("promocional"), textAlign: "right", color: "#c084fc" }}>
-                    Promocional {sortCol === "promocional" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                  <th onClick={() => toggleSort("promocionalAnterior")} style={{ ...thStyle("promocionalAnterior"), textAlign: "right", color: "#c084fc" }}>
+                    Prom. Anterior {sortCol === "promocionalAnterior" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
+                  </th>
+                  <th onClick={() => toggleSort("promocionalAtual")} style={{ ...thStyle("promocionalAtual"), textAlign: "right", color: "#e879f9" }}>
+                    Prom. Atual {sortCol === "promocionalAtual" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
                   </th>
                   <th onClick={() => toggleSort("diff")} style={{ ...thStyle("diff"), textAlign: "right" }}>
                     Diferença (R$) {sortCol === "diff" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
@@ -756,7 +762,8 @@ export default function ComparativoLivros() {
                       </td>
                       <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: "#fbbf24" }}>{p.precoAnterior > 0 ? fmt(p.precoAnterior) : "–"}</td>
                       <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: "#60a5fa" }}>{p.precoAtual > 0 ? fmt(p.precoAtual) : "–"}</td>
-                      <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: "#c084fc" }}>{p.promocional > 0 ? fmt(p.promocional) : "–"}</td>
+                      <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: "#c084fc" }}>{p.promocionalAnterior > 0 ? fmt(p.promocionalAnterior) : "–"}</td>
+                      <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 600, color: "#e879f9" }}>{p.promocionalAtual > 0 ? fmt(p.promocionalAtual) : "–"}</td>
                       <td style={{
                         padding: "10px 16px", textAlign: "right", fontFamily: "monospace", fontWeight: 700,
                         color: p.diff > 0.01 ? "#f87171" : p.diff < -0.01 ? "#4ade80" : "#94a3b8",
