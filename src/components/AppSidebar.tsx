@@ -20,6 +20,7 @@ const navItems = [
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
   { to: "/comparativo-livros", label: "Comparativo de Livros", icon: GitCompareArrows },
+  { to: "/conta-corrente", label: "Conta Corrente", icon: FileText },
   { to: "/tabela-st", label: "Tabela de ST", icon: Table },
   { to: "/upload-st", label: "Upload ST", icon: Upload },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
