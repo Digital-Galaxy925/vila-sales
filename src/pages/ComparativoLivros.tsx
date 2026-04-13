@@ -28,18 +28,36 @@ const FILIAIS = [
   { id: "502", label: "Filial 502 - Focomix MG" },
 ];
 
+const COMPARATIVO_CACHE_KEY = "vilasales_comparativo_result_v2";
+
 // Map livro numbers to their logical filial
 const LIVRO_TO_FILIAL: Record<string, string> = {
-  "10": "01",   // livro_10 → Filial 01 (Poços)
-  "510": "502", // livro_510 → Filial 502 (Focomix MG)
+  "10": "01",
+  "510": "502",
 };
 
-function extractFilialFromFileName(name: string): string {
+const FILIAL_SOURCE_RULES: Record<string, { estoque: string; preco: string; custo: string; promocional: string }> = {
+  "01": { estoque: "01", preco: "10", custo: "10", promocional: "10" },
+  "11": { estoque: "11", preco: "11", custo: "11", promocional: "11" },
+  "12": { estoque: "12", preco: "12", custo: "12", promocional: "12" },
+  "14": { estoque: "14", preco: "14", custo: "14", promocional: "14" },
+  "501": { estoque: "501", preco: "501", custo: "501", promocional: "501" },
+  "502": { estoque: "502", preco: "510", custo: "510", promocional: "510" },
+};
+
+function extractSourceLivroFromFileName(name: string): string {
   const clean = name.replace(/^P_/i, "");
   const m = clean.match(/(?:livro)[_\s-]*(\d+)/i);
-  if (!m) return "";
-  const raw = m[1];
-  return LIVRO_TO_FILIAL[raw] || raw;
+  return m ? m[1] : "";
+}
+
+function extractFilialFromFileName(name: string): string {
+  const raw = extractSourceLivroFromFileName(name);
+  return raw ? LIVRO_TO_FILIAL[raw] || raw : "";
+}
+
+function normCod(value: unknown): string {
+  return String(value ?? "").replace(/^0+/, "").trim();
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -67,12 +85,10 @@ function normalizeHeader(value: unknown): string {
 
 function findCol(row: Record<string, string>, candidates: string[]): string {
   const normalizedCandidates = candidates.map(normalizeHeader);
-  // 1st pass: exact match
   for (const [key, value] of Object.entries(row)) {
     const nk = normalizeHeader(key);
     if (normalizedCandidates.some((c) => nk === c) && value !== undefined) return value;
   }
-  // 2nd pass: starts with candidate or candidate starts with key
   for (const [key, value] of Object.entries(row)) {
     const nk = normalizeHeader(key);
     if (normalizedCandidates.some((c) => nk.startsWith(c) || c.startsWith(nk)) && value !== undefined) return value;
@@ -118,26 +134,26 @@ interface ParsedProduct {
   promocional: number;
 }
 
+interface ParsedProductWithSource extends ParsedProduct {
+  filial: string;
+  sourceLivro: string;
+}
+
 function findAtualCol(row: Record<string, string>): number {
-  // Strict match for "ATUAL" column only — avoid fuzzy matches with other columns
   for (const [key, value] of Object.entries(row)) {
     const nk = normalizeHeader(key);
     if (nk === "ATUAL") return num(value);
   }
-  // Fallback: try other price column names
   return num(findCol(row, ["PRECO_VENDA", "PV", "PRECO DE VENDA", "PRECO VENDA"]));
 }
 
 function findPromocCol(row: Record<string, string>): number {
-  // Direct search for PROMOC column - avoid matching "Data Final Promoc" etc.
   for (const [key, value] of Object.entries(row)) {
     const nk = normalizeHeader(key);
-    // Exact match for PROMOC or PROMOCAO
     if ((nk === "PROMOC" || nk === "PROMOCAO" || nk === "PROMO") && value !== undefined) {
       return num(value);
     }
   }
-  // Fallback: column that STARTS with PROMOC but is short (not "Data Final Promoc" etc.)
   for (const [key, value] of Object.entries(row)) {
     const nk = normalizeHeader(key);
     if (nk.startsWith("PROMOC") && nk.length <= 10 && value !== undefined) {
@@ -160,19 +176,17 @@ function rowToSimple(row: Record<string, string>, debugCode?: string): ParsedPro
   }
   const categoria = findCol(row, ["CATEGORIA", "SUBCATEGORIA", "SUB CATEGORIA"]);
   const seqProd = findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO"]);
-  
-  // Debug logging for specific items
-  if (debugCode && seqProd.replace(/^0+/, "") === debugCode) {
+
+  if (debugCode && normCod(seqProd) === debugCode) {
     const promRaw = findCol(row, ["PROMOC", "PROMOÇÃO", "PROMOCAO", "PROMO"]);
     console.log(`[DEBUG ${debugCode}] PROMOC raw="${promRaw}", parsed=${promocional}, preco=${pv}`);
-    // Log all column values that contain "PROMO"
     for (const [key, value] of Object.entries(row)) {
       if (normalizeHeader(key).includes("PROMO")) {
         console.log(`[DEBUG ${debugCode}] Col "${key}" = "${value}"`);
       }
     }
   }
-  
+
   return {
     bu,
     categoria,
@@ -182,6 +196,60 @@ function rowToSimple(row: Record<string, string>, debugCode?: string): ParsedPro
     preco: pv,
     promocional,
   };
+}
+
+function pushParsedProduct(map: Map<string, ParsedProductWithSource[]>, key: string, item: ParsedProductWithSource) {
+  const current = map.get(key);
+  if (current) current.push(item);
+  else map.set(key, [item]);
+}
+
+function pickPreferredItem(items: ParsedProductWithSource[], preferredSource: string): ParsedProductWithSource | undefined {
+  for (let i = items.length - 1; i >= 0; i--) {
+    if (items[i].sourceLivro === preferredSource) return items[i];
+  }
+  return items[items.length - 1];
+}
+
+function pickFirstText(items: Array<ParsedProductWithSource | undefined>, selector: (item: ParsedProductWithSource) => string): string {
+  for (const item of items) {
+    const value = item ? selector(item) : "";
+    if (value) return value;
+  }
+  return "";
+}
+
+function resolveMergedProduct(items: ParsedProductWithSource[] | undefined, filial: string): ParsedProductWithSource | undefined {
+  if (!items?.length) return undefined;
+
+  const rule = FILIAL_SOURCE_RULES[filial] ?? { estoque: filial, preco: filial, custo: filial, promocional: filial };
+  const priceItem = pickPreferredItem(items, rule.preco);
+  const promoItem = pickPreferredItem(items, rule.promocional);
+  const fallbackItem = items[items.length - 1];
+  const orderedItems = [priceItem, promoItem, fallbackItem, ...items.filter((item) => item !== priceItem && item !== promoItem && item !== fallbackItem)];
+
+  const resolved: ParsedProductWithSource = {
+    ...(priceItem ?? promoItem ?? fallbackItem),
+    filial,
+    sourceLivro: (priceItem ?? promoItem ?? fallbackItem).sourceLivro,
+    bu: pickFirstText(orderedItems, (item) => item.bu),
+    categoria: pickFirstText(orderedItems, (item) => item.categoria),
+    seqProd: pickFirstText(orderedItems, (item) => item.seqProd),
+    familia: pickFirstText(orderedItems, (item) => item.familia),
+    descricao: pickFirstText(orderedItems, (item) => item.descricao),
+    preco: priceItem?.preco ?? 0,
+    promocional: promoItem?.promocional ?? 0,
+  };
+
+  if (normCod(resolved.seqProd) === "125949") {
+    console.log(
+      `[Resolve 125949] filial=${filial} regra.preco=${rule.preco} regra.promoc=${rule.promocional} fontes=${items
+        .map((item) => `${item.sourceLivro}: preco=${item.preco} promoc=${item.promocional}`)
+        .join(" | ")} => preco=${resolved.preco} promoc=${resolved.promocional}`
+    );
+  }
+
+  return resolved;
 }
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -194,16 +262,18 @@ export default function ComparativoLivros() {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<ProdutoComparativo[] | null>(() => {
     try {
-      const saved = localStorage.getItem("vilasales_comparativo_result");
+      localStorage.removeItem("vilasales_comparativo_result");
+      const saved = localStorage.getItem(COMPARATIVO_CACHE_KEY);
       if (!saved) return null;
       const parsed = JSON.parse(saved);
-      // Invalidate cache if schema changed (missing new fields)
       if (Array.isArray(parsed) && parsed.length > 0 && !("promocionalAnterior" in parsed[0])) {
-        localStorage.removeItem("vilasales_comparativo_result");
+        localStorage.removeItem(COMPARATIVO_CACHE_KEY);
         return null;
       }
       return parsed;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   });
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -243,7 +313,7 @@ export default function ComparativoLivros() {
       const buValues = new Set<string>();
       for (const row of rows) {
         const cod = findCol(row, ["SEQ.PROD", "SEQPROD", "SEQ_PROD", "COD", "CODIGO", "CÓDIGO", "COD PRODUTO", "COD_PRODUTO"]);
-        const codNorm = String(cod).replace(/^0+/, "").trim();
+        const codNorm = normCod(cod);
         if (codNorm) {
           codes.add(codNorm);
           let bu = "";
@@ -273,13 +343,14 @@ export default function ComparativoLivros() {
   const processar = useCallback(async () => {
     setProcessing(true);
     try {
-      const anteriorMap = new Map<string, ParsedProduct & { filial: string }>();
-      const atualMap = new Map<string, ParsedProduct & { filial: string }>();
+      const anteriorBuckets = new Map<string, ParsedProductWithSource[]>();
+      const atualBuckets = new Map<string, ParsedProductWithSource[]>();
 
       for (const f of anterioresFiles) {
         const filial = extractFilialFromFileName(f.name);
+        const sourceLivro = extractSourceLivroFromFileName(f.name);
         const rows = await readExcelAsRows(f);
-        console.log(`[Anterior] Arquivo: ${f.name}, filial: ${filial}, linhas: ${rows.length}`);
+        console.log(`[Anterior] Arquivo: ${f.name}, filial lógica: ${filial}, livro origem: ${sourceLivro}, linhas: ${rows.length}`);
         if (rows.length > 0) {
           console.log("[Anterior] Colunas:", Object.keys(rows[0]));
           const sample = rowToSimple(rows[0]);
@@ -288,8 +359,9 @@ export default function ComparativoLivros() {
         let matched = 0;
         for (const row of rows) {
           const p = rowToSimple(row, "125949");
-          if (p.seqProd) {
-            anteriorMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
+          const codNorm = normCod(p.seqProd);
+          if (codNorm) {
+            pushParsedProduct(anteriorBuckets, `${filial}_${codNorm}`, { ...p, filial, sourceLivro });
             matched++;
           }
         }
@@ -298,39 +370,43 @@ export default function ComparativoLivros() {
 
       for (const f of atuaisFiles) {
         const filial = extractFilialFromFileName(f.name);
+        const sourceLivro = extractSourceLivroFromFileName(f.name);
         const rows = await readExcelAsRows(f);
-        console.log(`[Atual] Arquivo: ${f.name}, filial: ${filial}, linhas: ${rows.length}`);
+        console.log(`[Atual] Arquivo: ${f.name}, filial lógica: ${filial}, livro origem: ${sourceLivro}, linhas: ${rows.length}`);
         if (rows.length > 0) console.log("[Atual] Colunas:", Object.keys(rows[0]));
         let matched = 0;
         for (const row of rows) {
           const p = rowToSimple(row, "125949");
-          if (p.seqProd) {
-            atualMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
+          const codNorm = normCod(p.seqProd);
+          if (codNorm) {
+            pushParsedProduct(atualBuckets, `${filial}_${codNorm}`, { ...p, filial, sourceLivro });
             matched++;
           }
         }
         console.log(`[Atual] Produtos com código válido: ${matched}`);
       }
 
-      const allKeys = new Set([...anteriorMap.keys(), ...atualMap.keys()]);
+      const allKeys = new Set([...anteriorBuckets.keys(), ...atualBuckets.keys()]);
       console.log(`[Comparativo] Total de chaves únicas: ${allKeys.size}, filtro de produtos: ${produtoFilterCodes ? produtoFilterCodes.size + " códigos" : "desativado"}`);
-      
+
       const comparativo: ProdutoComparativo[] = [];
       let filtered_out = 0;
 
       for (const key of allKeys) {
-        const codOnly = key.split("_").pop() || "";
-        if (produtoFilterCodes && !produtoFilterCodes.has(codOnly)) { filtered_out++; continue; }
+        const [filial, codOnly = ""] = key.split("_");
+        if (produtoFilterCodes && !produtoFilterCodes.has(codOnly)) {
+          filtered_out++;
+          continue;
+        }
 
-        const ant = anteriorMap.get(key);
-        const atu = atualMap.get(key);
+        const ant = resolveMergedProduct(anteriorBuckets.get(key), filial);
+        const atu = resolveMergedProduct(atualBuckets.get(key), filial);
         const precoAnt = ant?.preco ?? 0;
         const precoAtu = atu?.preco ?? 0;
         const promAnt = ant?.promocional ?? 0;
         const promAtu = atu?.promocional ?? 0;
-        // Use promotional prices for diff/var when both exist, otherwise use regular prices
-        const baseAnt = (promAnt > 0 && promAtu > 0) ? promAnt : precoAnt;
-        const baseAtu = (promAnt > 0 && promAtu > 0) ? promAtu : precoAtu;
+        const baseAnt = promAnt > 0 && promAtu > 0 ? promAnt : precoAnt;
+        const baseAtu = promAnt > 0 && promAtu > 0 ? promAtu : precoAtu;
         const diff = baseAtu - baseAnt;
         const diffPct = baseAnt > 0 ? (diff / baseAnt) * 100 : 0;
 
@@ -341,19 +417,19 @@ export default function ComparativoLivros() {
         else if (diff < -0.01) status = "reducao";
 
         const seqProd = atu?.seqProd || ant?.seqProd || codOnly;
-        const buFromProducts = produtoBUMap.get(seqProd.replace(/^0+/, "")) || "";
+        const buFromProducts = produtoBUMap.get(normCod(seqProd)) || "";
 
         comparativo.push({
           bu: buFromProducts || atu?.bu || ant?.bu || "",
           categoria: atu?.categoria || ant?.categoria || "",
-          seqProd: atu?.seqProd || ant?.seqProd || key.split("_").pop() || "",
+          seqProd: seqProd,
           familia: atu?.familia || ant?.familia || "",
           descricao: atu?.descricao || ant?.descricao || "",
-          filial: atu?.filial || ant?.filial || "",
+          filial: atu?.filial || ant?.filial || filial,
           precoAnterior: precoAnt,
           precoAtual: precoAtu,
-          promocionalAnterior: ant?.promocional ?? 0,
-          promocionalAtual: atu?.promocional ?? 0,
+          promocionalAnterior: promAnt,
+          promocionalAtual: promAtu,
           diff,
           diffPct,
           status,
@@ -362,7 +438,9 @@ export default function ComparativoLivros() {
 
       console.log(`[Comparativo] Resultado: ${comparativo.length} produtos, filtrados pelo produto filter: ${filtered_out}`);
       setResult(comparativo);
-      try { localStorage.setItem("vilasales_comparativo_result", JSON.stringify(comparativo)); } catch {}
+      try {
+        localStorage.setItem(COMPARATIVO_CACHE_KEY, JSON.stringify(comparativo));
+      } catch {}
     } catch (err) {
       console.error(err);
     } finally {
