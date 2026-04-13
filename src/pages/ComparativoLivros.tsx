@@ -28,10 +28,18 @@ const FILIAIS = [
   { id: "502", label: "Filial 502 - Focomix MG" },
 ];
 
+// Map livro numbers to their logical filial
+const LIVRO_TO_FILIAL: Record<string, string> = {
+  "10": "01",   // livro_10 → Filial 01 (Poços)
+  "510": "502", // livro_510 → Filial 502 (Focomix MG)
+};
+
 function extractFilialFromFileName(name: string): string {
   const clean = name.replace(/^P_/i, "");
   const m = clean.match(/(?:livro)[_\s-]*(\d+)/i);
-  return m ? m[1] : "";
+  if (!m) return "";
+  const raw = m[1];
+  return LIVRO_TO_FILIAL[raw] || raw;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
