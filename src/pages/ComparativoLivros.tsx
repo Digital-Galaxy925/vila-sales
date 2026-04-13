@@ -229,7 +229,11 @@ export default function ComparativoLivros() {
         const filial = extractFilialFromFileName(f.name);
         const rows = await readExcelAsRows(f);
         console.log(`[Anterior] Arquivo: ${f.name}, filial: ${filial}, linhas: ${rows.length}`);
-        if (rows.length > 0) console.log("[Anterior] Colunas:", Object.keys(rows[0]));
+        if (rows.length > 0) {
+          console.log("[Anterior] Colunas:", Object.keys(rows[0]));
+          const sample = rowToSimple(rows[0]);
+          console.log("[Anterior] Amostra 1º produto:", { cod: sample.seqProd, desc: sample.descricao, preco: sample.preco });
+        }
         let matched = 0;
         for (const row of rows) {
           const p = rowToSimple(row);
