@@ -107,8 +107,18 @@ interface ParsedProduct {
   preco: number;
 }
 
+function findAtualCol(row: Record<string, string>): number {
+  // Strict match for "ATUAL" column only — avoid fuzzy matches with other columns
+  for (const [key, value] of Object.entries(row)) {
+    const nk = normalizeHeader(key);
+    if (nk === "ATUAL") return num(value);
+  }
+  // Fallback: try other price column names
+  return num(findCol(row, ["PRECO_VENDA", "PV", "PRECO DE VENDA", "PRECO VENDA"]));
+}
+
 function rowToSimple(row: Record<string, string>): ParsedProduct {
-  const pv = num(findCol(row, ["ATUAL", "PRECO_VENDA", "PV", "PRECO DE VENDA", "PRECO VENDA"]));
+  const pv = findAtualCol(row);
   // BU column specifically (HC / FOODS)
   let bu = "";
   for (const [key, value] of Object.entries(row)) {
@@ -219,7 +229,11 @@ export default function ComparativoLivros() {
         const filial = extractFilialFromFileName(f.name);
         const rows = await readExcelAsRows(f);
         console.log(`[Anterior] Arquivo: ${f.name}, filial: ${filial}, linhas: ${rows.length}`);
-        if (rows.length > 0) console.log("[Anterior] Colunas:", Object.keys(rows[0]));
+        if (rows.length > 0) {
+          console.log("[Anterior] Colunas:", Object.keys(rows[0]));
+          const sample = rowToSimple(rows[0]);
+          console.log("[Anterior] Amostra 1º produto:", { cod: sample.seqProd, desc: sample.descricao, preco: sample.preco });
+        }
         let matched = 0;
         for (const row of rows) {
           const p = rowToSimple(row);
