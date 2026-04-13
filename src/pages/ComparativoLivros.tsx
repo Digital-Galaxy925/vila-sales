@@ -295,7 +295,7 @@ export default function ComparativoLivros() {
         if (rows.length > 0) console.log("[Atual] Colunas:", Object.keys(rows[0]));
         let matched = 0;
         for (const row of rows) {
-          const p = rowToSimple(row);
+          const p = rowToSimple(row, "125949");
           if (p.seqProd) {
             atualMap.set(`${filial}_${p.seqProd.replace(/^0+/, "")}`, { ...p, filial });
             matched++;
