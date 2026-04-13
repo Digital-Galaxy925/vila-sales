@@ -290,6 +290,7 @@ export default function ComparativoLivros() {
 
       console.log(`[Comparativo] Resultado: ${comparativo.length} produtos, filtrados pelo produto filter: ${filtered_out}`);
       setResult(comparativo);
+      try { localStorage.setItem("vilasales_comparativo_result", JSON.stringify(comparativo)); } catch {}
     } catch (err) {
       console.error(err);
     } finally {
