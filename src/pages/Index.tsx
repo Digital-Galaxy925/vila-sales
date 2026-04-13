@@ -2332,12 +2332,16 @@ export default function Index() {
 
           const baseEntry = baseMap.get(cod)!;
           const desc = baseEntry.desc || cols[finalColDesc] || rawCod;
-          const overrideRow = overridePrecos?.get(cod) ?? overrideEstoque?.get(cod);
-          const estoqueStr = chooseBestMetric(overrideEstoque?.get(cod)?.estoque, cols[finalColEstoque]);
-          const custoStr = chooseBestMetric(overrideRow?.custo, cols[finalColCusto]);
-          const precoStr = chooseBestMetric(overridePrecos?.get(cod)?.preco, cols[finalColPreco]);
-          const selloutStr = chooseBestMetric(overrideRow?.sellout, finalColSellout >= 0 ? cols[finalColSellout] : undefined);
-          const promocStr = chooseBestMetric(overrideRow?.promoc, finalColPromoc >= 0 ? cols[finalColPromoc] : undefined);
+          const overridePrecosRow = overridePrecos?.get(cod);
+          const overrideEstoqueRow = overrideEstoque?.get(cod);
+          const estoqueStr = overrideEstoqueRow?.estoque && num(overrideEstoqueRow.estoque) !== 0
+            ? overrideEstoqueRow.estoque
+            : cols[finalColEstoque] ?? "0";
+          // Custo e preço: se existe override de preços (livro_10/510), SEMPRE usar dele
+          const custoStr = overridePrecosRow?.custo ?? cols[finalColCusto] ?? "0";
+          const precoStr = overridePrecosRow?.preco ?? cols[finalColPreco] ?? "0";
+          const selloutStr = overridePrecosRow?.sellout ?? (finalColSellout >= 0 ? cols[finalColSellout] : undefined) ?? "0";
+          const promocStr = overridePrecosRow?.promoc ?? (finalColPromoc >= 0 ? cols[finalColPromoc] : undefined) ?? "0";
 
           const estoque = num(estoqueStr);
           const custoLiq = num(custoStr);
