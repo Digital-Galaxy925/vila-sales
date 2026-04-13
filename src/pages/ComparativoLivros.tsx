@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import * as XLSX from "xlsx";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -138,7 +138,12 @@ export default function ComparativoLivros() {
   const [anterioresFiles, setAnterioresFiles] = useState<File[]>([]);
   const [atuaisFiles, setAtuaisFiles] = useState<File[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState<ProdutoComparativo[] | null>(null);
+  const [result, setResult] = useState<ProdutoComparativo[] | null>(() => {
+    try {
+      const saved = localStorage.getItem("vilasales_comparativo_result");
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [sortCol, setSortCol] = useState<string>("diffPct");
@@ -285,6 +290,7 @@ export default function ComparativoLivros() {
 
       console.log(`[Comparativo] Resultado: ${comparativo.length} produtos, filtrados pelo produto filter: ${filtered_out}`);
       setResult(comparativo);
+      try { localStorage.setItem("vilasales_comparativo_result", JSON.stringify(comparativo)); } catch {}
     } catch (err) {
       console.error(err);
     } finally {
