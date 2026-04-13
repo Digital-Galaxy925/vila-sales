@@ -111,18 +111,9 @@ export default function SimuladorPropostas() {
   const findProduct = (codigo: string, filialId: string) => {
     const cod = normCod(codigo);
     if (!cod) return null;
-    const searchIn = (fid: string) => {
-      const arr = data[fid];
-      if (!Array.isArray(arr)) return null;
-      return arr.find((p) => normCod(p.seqProd) === cod) ?? null;
-    };
-    const found = searchIn(filialId);
-    if (found) return found;
-    for (const key of Object.keys(data)) {
-      const f = searchIn(key);
-      if (f) return f;
-    }
-    return null;
+    const arr = data[filialId];
+    if (!Array.isArray(arr)) return null;
+    return arr.find((p) => normCod(p.seqProd) === cod) ?? null;
   };
 
   const produtosCalc = produtos.map((item) => {
