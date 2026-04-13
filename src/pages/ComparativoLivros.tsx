@@ -107,8 +107,18 @@ interface ParsedProduct {
   preco: number;
 }
 
+function findAtualCol(row: Record<string, string>): number {
+  // Strict match for "ATUAL" column only — avoid fuzzy matches with other columns
+  for (const [key, value] of Object.entries(row)) {
+    const nk = normalizeHeader(key);
+    if (nk === "ATUAL") return num(value);
+  }
+  // Fallback: try other price column names
+  return num(findCol(row, ["PRECO_VENDA", "PV", "PRECO DE VENDA", "PRECO VENDA"]));
+}
+
 function rowToSimple(row: Record<string, string>): ParsedProduct {
-  const pv = num(findCol(row, ["ATUAL", "PRECO_VENDA", "PV", "PRECO DE VENDA", "PRECO VENDA"]));
+  const pv = findAtualCol(row);
   // BU column specifically (HC / FOODS)
   let bu = "";
   for (const [key, value] of Object.entries(row)) {
