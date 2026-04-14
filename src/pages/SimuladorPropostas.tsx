@@ -2,6 +2,8 @@ import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface Product {
   familia: string;
@@ -721,7 +723,10 @@ export default function SimuladorPropostas() {
               </h2>
               <div style={{ display: "flex", gap: 16 }}>
                 <button
-                  onClick={() => setStatusProposta("aprovada")}
+                  onClick={async () => {
+                    setStatusProposta("aprovada");
+                    await salvarPropostaAprovada();
+                  }}
                   style={{
                     flex: 1, padding: "14px 24px", borderRadius: 10, border: "2px solid",
                     borderColor: statusProposta === "aprovada" ? "#34d399" : "#1e293b",
