@@ -69,6 +69,37 @@ const parseNum = (s: string): number | null => {
   return isNaN(n) ? null : n;
 };
 
+// Cents-based money mask: user types digits, display formats as R$ X.XXX,XX
+const moneyMask = (cents: number): string => {
+  return (cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const handleMoneyInput = (raw: string): number | null => {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return null;
+  return parseInt(digits, 10) / 100;
+};
+
+const moneyDisplay = (v: number | null): string => {
+  if (v == null) return "";
+  return moneyMask(Math.round(v * 100));
+};
+
+// Percentage mask: user types digits, display formats as X,XX%
+const handlePercInput = (raw: string): number | null => {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return null;
+  return parseInt(digits, 10) / 10000; // stored as decimal (6% = 0.06)
+};
+
+const percDisplay = (v: number | null): string => {
+  if (v == null) return "";
+  const val = Math.round(v * 10000);
+  const int = Math.floor(val / 100);
+  const dec = (val % 100).toString().padStart(2, "0");
+  return `${int},${dec}%`;
+};
+
 const inputStyle =
   "w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
@@ -326,7 +357,7 @@ const ContaCorrente = () => {
             {form.tipo === "credito" ? (
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Valor (R$)</label>
-                <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
+                <input className={inputStyle} value={moneyDisplay(form.investimentoTotal)} onChange={(e) => setForm((f) => ({ ...f, investimentoTotal: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
               </div>
             ) : (
               <>
@@ -336,19 +367,19 @@ const ContaCorrente = () => {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Valor Pedido (R$)</label>
-                  <input className={inputStyle} value={form.valorPedido ?? ""} onChange={(e) => setField("valorPedido", e.target.value)} placeholder="0,00" />
+                  <input className={inputStyle} value={moneyDisplay(form.valorPedido)} onChange={(e) => setForm((f) => ({ ...f, valorPedido: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Valor Unitário (R$)</label>
-                  <input className={inputStyle} value={form.valorUnit ?? ""} onChange={(e) => setField("valorUnit", e.target.value)} placeholder="0,00" />
+                  <input className={inputStyle} value={moneyDisplay(form.valorUnit)} onChange={(e) => setForm((f) => ({ ...f, valorUnit: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Investimento Total (R$)</label>
-                  <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
+                  <input className={inputStyle} value={moneyDisplay(form.investimentoTotal)} onChange={(e) => setForm((f) => ({ ...f, investimentoTotal: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">% Investimento</label>
-                  <input className={inputStyle} value={form.percInvestimento != null ? (form.percInvestimento * 100).toString() : ""} onChange={(e) => { const v = e.target.value; setForm((f) => ({ ...f, percInvestimento: v === "" ? null : (parseFloat(v.replace(",", ".")) / 100) || null })); }} placeholder="Ex: 6.0" />
+                  <input className={inputStyle} value={percDisplay(form.percInvestimento)} onChange={(e) => setForm((f) => ({ ...f, percInvestimento: handlePercInput(e.target.value) }))} placeholder="0,00%" />
                 </div>
               </>
             )}
