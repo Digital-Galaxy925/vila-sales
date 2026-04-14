@@ -172,6 +172,14 @@ export default function Simulador() {
                     const corMarg = margAtual >= 0.17 ? "#4ade80" : margAtual >= 0.10 ? "#fbbf24" : "#f87171";
                     return <Chip label="Margem Atual" value={fmtPct(margAtual)} color={corMarg} />;
                   })()}
+                  {(() => {
+                    const pv = produto.atual;
+                    const pc = custoUnitario;
+                    const so = produto.sellout ?? 0;
+                    const margPromo = pv > 0 ? (pv - (pc - so)) / pv : 0;
+                    const corMargPromo = margPromo >= 0.17 ? "#4ade80" : margPromo >= 0.10 ? "#fbbf24" : "#f87171";
+                    return <Chip label="Margem Promocional" value={fmtPct(margPromo)} color={corMargPromo} />;
+                  })()}
                 </div>
               ) : (
                 <span style={{ color: "#f87171" }}>❌ Produto não encontrado na filial {filial} – {FILIAIS.find(f => f.id === filial)?.nome}</span>
