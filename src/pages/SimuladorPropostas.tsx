@@ -457,102 +457,42 @@ export default function SimuladorPropostas() {
           </div>
         </div>
 
-        <nav style={{ flex: 1, padding: "0 12px", overflowY: "auto" }}>
-          {/* 1 - Análise de Custos */}
-          <button
-            className="sidebar-nav-btn"
-            onClick={() => navigate("/")}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
-              marginBottom: 4, background: "transparent", color: "#475569",
-              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>🔗</span>
-            Análise de Custos
-          </button>
-          {/* 1.5 - Análise Gerencial */}
-          <button
-            className="sidebar-nav-btn"
-            onClick={() => navigate("/gerencial")}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
-              marginBottom: 4, background: "transparent", color: "#475569",
-              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>💼</span>
-            Análise Gerencial
-          </button>
-          {/* 2 - Simulador de Ofertas */}
-          <button
-            className="sidebar-nav-btn"
-            onClick={() => navigate("/simulador")}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
-              marginBottom: 4, background: "transparent", color: "#475569",
-              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>🎛️</span>
-            Simulador de Ofertas
-          </button>
-          {/* 3 - Simulador de Propostas (active) */}
-          <button
-            className="sidebar-nav-btn"
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
-              marginBottom: 4, background: "#1e3a5f", color: "#60a5fa",
-              fontWeight: 700, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>📝</span>
-            Simulador de Propostas
-          </button>
-          {/* Comparativo de Livros */}
-          <button
-            className="sidebar-nav-btn"
-            onClick={() => navigate("/comparativo-livros")}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 10,
-              padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
-              marginBottom: 4, background: "transparent", color: "#475569",
-              fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>📚</span>
-            Comparativo de Livros
-          </button>
-          {/* 4-8 - Remaining modules */}
-          {sidebarModules.filter(m => m.id !== "cruzamento").map((m) => (
+        <nav style={{ flex: 1, padding: "8px 12px", overflowY: "auto" }}>
+          {[
+            { label: "Análise de Custos", route: "/", icon: "📊" },
+            { label: "Análise Gerencial", route: "/gerencial", icon: "💼" },
+            { label: "Simulador de Ofertas", route: "/simulador", icon: "⚙️" },
+            { label: "Simulador de Propostas", route: null, icon: "📝", active: true },
+            { label: "Comparativo de Livros", route: "/comparativo-livros", icon: "📚" },
+            ...sidebarModules.filter(m => m.id !== "cruzamento").map(m => ({ label: m.label, route: "/", icon: m.icon, active: false })),
+          ].map((item, i) => (
             <button
+              key={i}
               className="sidebar-nav-btn"
-              key={m.id}
-              onClick={() => navigate("/")}
+              onClick={() => item.route && navigate(item.route)}
               style={{
                 width: "100%", display: "flex", alignItems: "center", gap: 10,
-                padding: "10px 12px", borderRadius: 10, border: "none", cursor: "pointer",
-                marginBottom: 4, background: "transparent", color: "#475569",
-                fontWeight: 400, fontSize: 13, textAlign: "left" as const, transition: "all .2s",
+                padding: "8px 12px", borderRadius: 8, border: "none", cursor: "pointer",
+                marginBottom: 2,
+                background: item.active ? "rgba(0,113,227,0.15)" : "transparent",
+                color: item.active ? "#fff" : "rgba(255,255,255,0.5)",
+                fontWeight: item.active ? 500 : 400, fontSize: 13,
+                textAlign: "left" as const, transition: "all .15s",
               }}
             >
-              <span style={{ fontSize: 16 }}>{m.icon}</span>
-              {m.label}
+              <span style={{ fontSize: 14 }}>{item.icon}</span>
+              {item.label}
             </button>
           ))}
         </nav>
       </div>
 
       {/* Main */}
-      <div style={{ flex: 1, padding: "32px 40px", overflowY: "auto" }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>
-          📝 Simulador de Propostas
+      <div style={{ flex: 1, padding: "28px 36px", overflowY: "auto" }}>
+        <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4, letterSpacing: "-0.02em", color: "#0f172a" }}>
+          Simulador de Propostas
         </h1>
-        <p style={{ color: "#64748b", fontSize: 13, marginBottom: 32 }}>
+        <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 28 }}>
           Simule a margem combinada de pedidos para um ou mais produtos.
         </p>
 
