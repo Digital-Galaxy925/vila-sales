@@ -119,10 +119,12 @@ const ContaCorrente = () => {
 
   const handleSave = () => {
     if (!form.negociacao.trim()) return;
+    const calcPerc = form.valorPedido && form.investimentoTotal ? form.investimentoTotal / form.valorPedido : form.percInvestimento;
+    const finalForm = { ...form, percInvestimento: calcPerc };
     if (editingId) {
-      persist(lancamentos.map((l) => (l.id === editingId ? { ...form, id: editingId } : l)));
+      persist(lancamentos.map((l) => (l.id === editingId ? { ...finalForm, id: editingId } : l)));
     } else {
-      persist([...lancamentos, { ...form, id: crypto.randomUUID() }]);
+      persist([...lancamentos, { ...finalForm, id: crypto.randomUUID() }]);
     }
     setForm(emptyForm());
     setEditingId(null);
@@ -379,7 +381,7 @@ const ContaCorrente = () => {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">% Investimento</label>
-                  <input className={inputStyle} value={percDisplay(form.percInvestimento)} onChange={(e) => setForm((f) => ({ ...f, percInvestimento: handlePercInput(e.target.value) }))} placeholder="0,00%" />
+                  <input className={cn(inputStyle, "bg-muted/50 cursor-not-allowed")} value={form.valorPedido && form.investimentoTotal ? percDisplay(form.investimentoTotal / form.valorPedido) : "0,00%"} readOnly placeholder="0,00%" />
                 </div>
               </>
             )}
