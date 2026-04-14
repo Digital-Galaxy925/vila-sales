@@ -372,7 +372,7 @@ const ContaCorrente = () => {
                   <input className={inputStyle} value={moneyDisplay(form.valorPedido)} onChange={(e) => setForm((f) => ({ ...f, valorPedido: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Valor Unitário (R$)</label>
+                  <label className="text-xs font-medium text-muted-foreground">Investimento Unit (R$)</label>
                   <input className={inputStyle} value={moneyDisplay(form.valorUnit)} onChange={(e) => setForm((f) => ({ ...f, valorUnit: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
                 </div>
                 <div className="space-y-1">
@@ -409,7 +409,7 @@ const ContaCorrente = () => {
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">Volume</th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">Valor Pedido</th>
               <th className="text-center px-4 py-3 font-medium text-muted-foreground">Data Aprovação</th>
-              <th className="text-right px-4 py-3 font-medium text-muted-foreground">Valor Unit</th>
+              <th className="text-right px-4 py-3 font-medium text-muted-foreground">Investimento Unit</th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">Investimento Total</th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">% Invest.</th>
               <th className="text-center px-4 py-3 font-medium text-muted-foreground">Ações</th>
