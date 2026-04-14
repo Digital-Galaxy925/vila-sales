@@ -267,12 +267,12 @@ const ContaCorrente = () => {
 
       {/* Filters + Actions */}
       <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Data Início</label>
+        <div className="space-y-0.5">
+          <label className="text-[10px] font-medium text-muted-foreground">Data Início</label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className={cn("w-[160px] justify-start text-left font-normal", !filterFrom && "text-muted-foreground")}>
-                <CalendarIcon className="mr-2 h-4 w-4" />
+              <Button variant="outline" size="sm" className={cn("w-[130px] h-8 justify-start text-left text-xs font-normal", !filterFrom && "text-muted-foreground")}>
+                <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
                 {filterFrom ? format(filterFrom, "dd/MM/yyyy") : "Selecionar"}
               </Button>
             </PopoverTrigger>
@@ -281,12 +281,12 @@ const ContaCorrente = () => {
             </PopoverContent>
           </Popover>
         </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Data Fim</label>
+        <div className="space-y-0.5">
+          <label className="text-[10px] font-medium text-muted-foreground">Data Fim</label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className={cn("w-[160px] justify-start text-left font-normal", !filterTo && "text-muted-foreground")}>
-                <CalendarIcon className="mr-2 h-4 w-4" />
+              <Button variant="outline" size="sm" className={cn("w-[130px] h-8 justify-start text-left text-xs font-normal", !filterTo && "text-muted-foreground")}>
+                <CalendarIcon className="mr-1.5 h-3.5 w-3.5" />
                 {filterTo ? format(filterTo, "dd/MM/yyyy") : "Selecionar"}
               </Button>
             </PopoverTrigger>
@@ -295,9 +295,9 @@ const ContaCorrente = () => {
             </PopoverContent>
           </Popover>
         </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">BU</label>
-          <select className={cn(inputStyle, "w-[140px]")} value={filterBu} onChange={(e) => setFilterBu(e.target.value)}>
+        <div className="space-y-0.5">
+          <label className="text-[10px] font-medium text-muted-foreground">BU</label>
+          <select className={cn(inputStyle, "w-[120px] h-8 text-xs py-1.5")} value={filterBu} onChange={(e) => setFilterBu(e.target.value)}>
             <option value="">Todos</option>
             {buOptions.map((bu) => (
               <option key={bu} value={bu}>{bu}</option>
