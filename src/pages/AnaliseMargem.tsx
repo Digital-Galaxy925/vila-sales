@@ -30,6 +30,7 @@ const AnaliseMargem = () => {
   const [filial, setFilial] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [minMargem, setMinMargem] = useState(17);
+  const [activeFilter, setActiveFilter] = useState<"all" | "abaixo" | "acima" | "minima">("all");
 
   const data: DataMap = useMemo(() => {
     try {
