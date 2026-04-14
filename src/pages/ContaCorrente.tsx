@@ -69,6 +69,37 @@ const parseNum = (s: string): number | null => {
   return isNaN(n) ? null : n;
 };
 
+// Cents-based money mask: user types digits, display formats as R$ X.XXX,XX
+const moneyMask = (cents: number): string => {
+  return (cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const handleMoneyInput = (raw: string): number | null => {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return null;
+  return parseInt(digits, 10) / 100;
+};
+
+const moneyDisplay = (v: number | null): string => {
+  if (v == null) return "";
+  return moneyMask(Math.round(v * 100));
+};
+
+// Percentage mask: user types digits, display formats as X,XX%
+const handlePercInput = (raw: string): number | null => {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return null;
+  return parseInt(digits, 10) / 10000; // stored as decimal (6% = 0.06)
+};
+
+const percDisplay = (v: number | null): string => {
+  if (v == null) return "";
+  const val = Math.round(v * 10000);
+  const int = Math.floor(val / 100);
+  const dec = (val % 100).toString().padStart(2, "0");
+  return `${int},${dec}%`;
+};
+
 const inputStyle =
   "w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
