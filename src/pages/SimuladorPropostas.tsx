@@ -427,68 +427,7 @@ export default function SimuladorPropostas() {
   };
 
   return (
-    <div
-      style={{
-      display: "flex", minHeight: "100vh", background: "#f8f9fa",
-      fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1f2937",
-      }}
-    >
-      {/* Sidebar */}
-      <div
-        style={{
-          width: 240, minWidth: 240, background: "#161b22",
-          display: "flex", flexDirection: "column", borderRight: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
-        <div style={{ padding: "20px 16px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: "#0071e3",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 14, fontWeight: 600, color: "#fff",
-              }}
-            >VS</div>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.9)" }}>Vila Sales</div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Gestão Comercial</div>
-            </div>
-          </div>
-        </div>
-
-        <nav style={{ flex: 1, padding: "8px 12px", overflowY: "auto" }}>
-          {([
-            { label: "Análise de Custos", route: "/", icon: "📊", active: false },
-            { label: "Análise Gerencial", route: "/gerencial", icon: "💼", active: false },
-            { label: "Simulador de Ofertas", route: "/simulador", icon: "⚙️", active: false },
-            { label: "Simulador de Propostas", route: "" as string, icon: "📝", active: true },
-            { label: "Comparativo de Livros", route: "/comparativo-livros", icon: "📚", active: false },
-            ...sidebarModules.filter(m => m.id !== "cruzamento").map(m => ({ label: m.label, route: "/", icon: m.icon, active: false })),
-          ] as const).map((item, i) => (
-            <button
-              key={i}
-              className="sidebar-nav-btn"
-              onClick={() => item.route && navigate(item.route)}
-              style={{
-                width: "100%", display: "flex", alignItems: "center", gap: 10,
-                padding: "8px 12px", borderRadius: 8, border: "none", cursor: "pointer",
-                marginBottom: 2,
-                background: item.active ? "rgba(0,113,227,0.15)" : "transparent",
-                color: item.active ? "#fff" : "rgba(255,255,255,0.5)",
-                fontWeight: item.active ? 500 : 400, fontSize: 13,
-                textAlign: "left" as const, transition: "all .15s",
-              }}
-            >
-              <span style={{ fontSize: 14 }}>{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Main */}
-      <div style={{ flex: 1, padding: "28px 36px", overflowY: "auto" }}>
+    <div style={{ padding: "28px 36px", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1f2937" }}>
         <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4, letterSpacing: "-0.02em", color: "#0f172a" }}>
           Simulador de Propostas
         </h1>
@@ -861,7 +800,6 @@ export default function SimuladorPropostas() {
             </button>
           </div>
         )}
-      </div>
     </div>
   );
 }
