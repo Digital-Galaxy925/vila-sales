@@ -1,10 +1,12 @@
-import { useEffect, useState, useCallback } from "react"; 
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Download, Search, Pencil, Trash2 } from "lucide-react";
+import { Download, Search, Pencil, Trash2, X, Save } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PropostaRow {
   id: string;
@@ -34,6 +36,12 @@ export default function PropostasAprovadas() {
   const [filtroDataFim, setFiltroDataFim] = useState("");
   const [filtroBU, setFiltroBU] = useState("");
 
+  // Edit state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editData, setEditData] = useState<PropostaRow | null>(null);
+  const [editForm, setEditForm] = useState({ nome_gerente: "", data_analise: "", bu: "", observacao: "" });
+  const [saving, setSaving] = useState(false);
+
   const fetchPropostas = useCallback(async () => {
     setLoading(true);
     let query = supabase
@@ -41,15 +49,9 @@ export default function PropostasAprovadas() {
       .select("*")
       .order("data_analise", { ascending: false });
 
-    if (filtroDataInicio) {
-      query = query.gte("data_analise", filtroDataInicio);
-    }
-    if (filtroDataFim) {
-      query = query.lte("data_analise", filtroDataFim);
-    }
-    if (filtroBU.trim()) {
-      query = query.ilike("bu", `%${filtroBU.trim()}%`);
-    }
+    if (filtroDataInicio) query = query.gte("data_analise", filtroDataInicio);
+    if (filtroDataFim) query = query.lte("data_analise", filtroDataFim);
+    if (filtroBU.trim()) query = query.ilike("bu", `%${filtroBU.trim()}%`);
 
     const { data, error } = await query;
     if (!error) {
@@ -68,13 +70,8 @@ export default function PropostasAprovadas() {
 
   const downloadPDF = async (pdfPath: string, nomeGerente: string) => {
     try {
-      const { data, error } = await supabase.storage
-        .from("propostas-pdfs")
-        .download(pdfPath);
-      if (error || !data) {
-        console.error("Erro ao baixar PDF:", error);
-        return;
-      }
+      const { data, error } = await supabase.storage.from("propostas-pdfs").download(pdfPath);
+      if (error || !data) return;
       const url = URL.createObjectURL(data);
       const a = document.createElement("a");
       a.href = url;
@@ -85,6 +82,40 @@ export default function PropostasAprovadas() {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Erro ao baixar PDF:", err);
+    }
+  };
+
+  const openEdit = (p: PropostaRow) => {
+    setEditData(p);
+    setEditForm({
+      nome_gerente: p.nome_gerente,
+      data_analise: p.data_analise,
+      bu: p.bu,
+      observacao: p.observacao || "",
+    });
+    setEditOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editData) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("propostas_aprovadas")
+      .update({
+        nome_gerente: editForm.nome_gerente.toUpperCase(),
+        data_analise: editForm.data_analise,
+        bu: editForm.bu.toUpperCase(),
+        observacao: editForm.observacao.toUpperCase(),
+      })
+      .eq("id", editData.id);
+
+    setSaving(false);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Proposta atualizada com sucesso!" });
+      setEditOpen(false);
+      fetchPropostas();
     }
   };
 
@@ -134,15 +165,11 @@ export default function PropostasAprovadas() {
             <tbody>
               {loading ? (
                 <tr>
-                   <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
-                    Carregando...
-                  </td>
+                  <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">Carregando...</td>
                 </tr>
               ) : propostas.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
-                    Nenhuma proposta aprovada encontrada.
-                  </td>
+                  <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">Nenhuma proposta aprovada encontrada.</td>
                 </tr>
               ) : (
                 propostas.map((p) => (
@@ -162,17 +189,10 @@ export default function PropostasAprovadas() {
                     <td className="px-4 py-3">{p.margem_total_rs != null ? fmt(p.margem_total_rs) : "-"}</td>
                     <td className="px-4 py-3">{p.volume_total_vendas != null ? fmt(p.volume_total_vendas) : "-"}</td>
                     <td className="px-4 py-3">{p.maior_pedido || "-"}</td>
-                    <td className="px-4 py-3 max-w-[200px] truncate" title={p.observacao || ""}>
-                      {p.observacao || "-"}
-                    </td>
+                    <td className="px-4 py-3 max-w-[200px] truncate" title={p.observacao || ""}>{p.observacao || "-"}</td>
                     <td className="px-4 py-3">
                       {p.pdf_path ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1"
-                          onClick={() => downloadPDF(p.pdf_path!, p.nome_gerente)}
-                        >
+                        <Button variant="outline" size="sm" className="gap-1" onClick={() => downloadPDF(p.pdf_path!, p.nome_gerente)}>
                           <Download className="w-3.5 h-3.5" /> PDF
                         </Button>
                       ) : (
@@ -185,9 +205,7 @@ export default function PropostasAprovadas() {
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
-                          onClick={() => {
-                            toast({ title: "Edição", description: "Funcionalidade de edição em desenvolvimento." });
-                          }}
+                          onClick={() => openEdit(p)}
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
@@ -216,6 +234,55 @@ export default function PropostasAprovadas() {
           </table>
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar Proposta</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome do Gerente</label>
+              <Input
+                value={editForm.nome_gerente}
+                onChange={(e) => setEditForm((f) => ({ ...f, nome_gerente: e.target.value.toUpperCase() }))}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Data da Análise</label>
+              <Input
+                type="date"
+                value={editForm.data_analise}
+                onChange={(e) => setEditForm((f) => ({ ...f, data_analise: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">BU</label>
+              <Input
+                value={editForm.bu}
+                onChange={(e) => setEditForm((f) => ({ ...f, bu: e.target.value.toUpperCase() }))}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Observação</label>
+              <Textarea
+                rows={3}
+                value={editForm.observacao}
+                onChange={(e) => setEditForm((f) => ({ ...f, observacao: e.target.value.toUpperCase() }))}
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => setEditOpen(false)} disabled={saving}>
+                <X className="w-4 h-4 mr-1" /> Cancelar
+              </Button>
+              <Button onClick={handleSaveEdit} disabled={saving}>
+                <Save className="w-4 h-4 mr-1" /> {saving ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
