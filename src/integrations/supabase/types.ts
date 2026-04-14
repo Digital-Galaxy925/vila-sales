@@ -62,6 +62,57 @@ export type Database = {
         }
         Relationships: []
       }
+      propostas_aprovadas: {
+        Row: {
+          bu: string
+          created_at: string
+          data_analise: string
+          id: string
+          maior_pedido: string | null
+          margem_ponderada: number | null
+          margem_total_rs: number | null
+          nome_gerente: string
+          observacao: string | null
+          pdf_path: string | null
+          pedidos: Json | null
+          produtos: Json | null
+          updated_at: string
+          volume_total_vendas: number | null
+        }
+        Insert: {
+          bu?: string
+          created_at?: string
+          data_analise?: string
+          id?: string
+          maior_pedido?: string | null
+          margem_ponderada?: number | null
+          margem_total_rs?: number | null
+          nome_gerente?: string
+          observacao?: string | null
+          pdf_path?: string | null
+          pedidos?: Json | null
+          produtos?: Json | null
+          updated_at?: string
+          volume_total_vendas?: number | null
+        }
+        Update: {
+          bu?: string
+          created_at?: string
+          data_analise?: string
+          id?: string
+          maior_pedido?: string | null
+          margem_ponderada?: number | null
+          margem_total_rs?: number | null
+          nome_gerente?: string
+          observacao?: string | null
+          pdf_path?: string | null
+          pedidos?: Json | null
+          produtos?: Json | null
+          updated_at?: string
+          volume_total_vendas?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
