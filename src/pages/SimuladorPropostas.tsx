@@ -516,8 +516,8 @@ export default function SimuladorPropostas() {
 
             {/* Gerente e Data */}
             <div style={cardStyle}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
-                👤 Informações da Proposta
+              <h2 style={{ fontSize: 15, fontWeight: 600, color: "#1f2937" }}>
+                Informações da Proposta
               </h2>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 <div>
@@ -544,8 +544,8 @@ export default function SimuladorPropostas() {
             {produtosCalc.map((pc, idx) => (
               <div key={pc.id} style={cardStyle}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>
-                    🔍 Produto {idx + 1}
+                  <h2 style={{ fontSize: 15, fontWeight: 600, color: "#1f2937" }}>
+                    Produto {idx + 1}
                   </h2>
                   <button
                     onClick={() => removeProduto(pc.id)}
@@ -590,8 +590,8 @@ export default function SimuladorPropostas() {
                     <InfoCard label="Descrição" value={pc.found.descricao} span={2} />
                     <InfoCard label="Preço de Custo" value={fmt(pc.found.custoLiq)} />
                     <InfoCard label="Preço de Venda Atual" value={fmt(pc.found.atual)} />
-                    <InfoCard label="Promocional" value={pc.found.promoc ? fmt(pc.found.promoc) : "—"} color="#c084fc" />
-                    <InfoCard label="Sell Out" value={pc.found.sellout ? fmt(pc.found.sellout) : "—"} color="#38bdf8" />
+                    <InfoCard label="Promocional" value={pc.found.promoc ? fmt(pc.found.promoc) : "—"} color="#7c3aed" />
+                    <InfoCard label="Sell Out" value={pc.found.sellout ? fmt(pc.found.sellout) : "—"} color="#0284c7" />
                     <InfoCard label="Estoque (CX)" value={pc.found.estoque.toLocaleString("pt-BR")} />
                     <InfoCard label="Unid/CX" value={pc.found.embCmp} />
                   </div>
@@ -630,7 +630,7 @@ export default function SimuladorPropostas() {
                       <InfoCard
                         label="Margem Simulada"
                         value={fmtPct(pc.margem)}
-                        color={pc.margem >= 0.15 ? "#34d399" : "#f87171"}
+                        color={pc.margem >= 0.15 ? "#16a34a" : "#dc2626"}
                       />
                       <InfoCard label="Valor Total" value={fmt(pc.valorTotal)} />
                       <InfoCard label="Total Unidades" value={pc.totalUnidades.toLocaleString("pt-BR")} />
@@ -644,9 +644,9 @@ export default function SimuladorPropostas() {
             <button
               onClick={addProduto}
               style={{
-                padding: "12px 24px", borderRadius: 10, border: "2px dashed #334155",
-                background: "transparent", color: "#60a5fa", fontSize: 14, fontWeight: 700,
-                cursor: "pointer", transition: "all .2s",
+                padding: "12px 24px", borderRadius: 10, border: "2px dashed #d1d5db",
+                background: "transparent", color: "#0071e3", fontSize: 14, fontWeight: 500,
+                cursor: "pointer", transition: "all .15s",
               }}
             >
               + Adicionar Produto à Proposta
@@ -654,13 +654,13 @@ export default function SimuladorPropostas() {
 
             {/* Orders Table */}
             <div style={cardStyle}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
-                📋 Entrada de Dados dos Pedidos
+              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "#1f2937" }}>
+                Entrada de Dados dos Pedidos
               </h2>
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                   <thead>
-                    <tr style={{ borderBottom: "1px solid #1e293b" }}>
+                    <tr style={{ borderBottom: "1px solid #e5e7eb" }}>
                       {["Pedido", "Valor Total (R$)", "Margem (%)", "Margem (R$)", "Participação", ""].map((h) => (
                         <th
                           key={h}
@@ -676,13 +676,13 @@ export default function SimuladorPropostas() {
                   </thead>
                   <tbody>
                     {calcRows.map((row, i) => (
-                      <tr key={i} style={{ borderBottom: "1px solid #1e293b22" }}>
-                        <td style={{ padding: "10px 12px", fontWeight: 600, color: "#cbd5e1" }}>
+                      <tr key={i} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                        <td style={{ padding: "10px 12px", fontWeight: 500, color: "#374151" }}>
                           {row.label}
                         </td>
                         <td style={{ padding: "10px 12px" }}>
                           <div style={{ position: "relative" }}>
-                            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#64748b", fontSize: 13 }}>R$</span>
+                            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#9ca3af", fontSize: 13 }}>R$</span>
                             <input
                               style={{ ...inputStyle, width: 180, paddingLeft: 40 }}
                               placeholder="0,00"
@@ -699,10 +699,10 @@ export default function SimuladorPropostas() {
                             onChange={(e) => updatePedido(i, "margem", e.target.value)}
                           />
                         </td>
-                        <td style={{ padding: "10px 12px", color: row.margemRS > 0 ? "#34d399" : "#94a3b8" }}>
+                        <td style={{ padding: "10px 12px", color: row.margemRS > 0 ? "#16a34a" : "#9ca3af" }}>
                           {fmt(row.margemRS)}
                         </td>
-                        <td style={{ padding: "10px 12px", color: "#94a3b8" }}>
+                        <td style={{ padding: "10px 12px", color: "#9ca3af" }}>
                           {fmtPct(participacoes[i])}
                         </td>
                         <td style={{ padding: "10px 8px" }}>
@@ -721,20 +721,20 @@ export default function SimuladorPropostas() {
                         </td>
                       </tr>
                     ))}
-                    <tr style={{ borderTop: "2px solid #334155", background: "#0f172a" }}>
-                      <td style={{ padding: "12px", fontWeight: 800, color: "#60a5fa" }}>
+                    <tr style={{ borderTop: "2px solid #d1d5db", background: "#f9fafb" }}>
+                      <td style={{ padding: "12px", fontWeight: 700, color: "#0071e3" }}>
                         TOTAL CONSOLIDADO
                       </td>
-                      <td style={{ padding: "12px", fontWeight: 700, color: "#e2e8f0" }}>
+                      <td style={{ padding: "12px", fontWeight: 600, color: "#1f2937" }}>
                         {fmt(totalValor)}
                       </td>
-                      <td style={{ padding: "12px", fontWeight: 700, color: margemPonderada >= 0.15 ? "#34d399" : "#f87171" }}>
+                      <td style={{ padding: "12px", fontWeight: 600, color: margemPonderada >= 0.15 ? "#16a34a" : "#dc2626" }}>
                         {fmtPct(margemPonderada)}
                       </td>
-                      <td style={{ padding: "12px", fontWeight: 700, color: totalMargemRS > 0 ? "#34d399" : "#94a3b8" }}>
+                      <td style={{ padding: "12px", fontWeight: 600, color: totalMargemRS > 0 ? "#16a34a" : "#9ca3af" }}>
                         {fmt(totalMargemRS)}
                       </td>
-                      <td style={{ padding: "12px", fontWeight: 700, color: "#94a3b8" }}>
+                      <td style={{ padding: "12px", fontWeight: 600, color: "#9ca3af" }}>
                         100,00%
                       </td>
                     </tr>
@@ -750,8 +750,8 @@ export default function SimuladorPropostas() {
                   ])
                 }
                 style={{
-                  marginTop: 12, padding: "8px 16px", borderRadius: 8, border: "1px solid #334155",
-                  background: "transparent", color: "#60a5fa", fontSize: 12, fontWeight: 600,
+                  marginTop: 12, padding: "8px 16px", borderRadius: 8, border: "1px solid #d1d5db",
+                  background: "transparent", color: "#0071e3", fontSize: 12, fontWeight: 500,
                   cursor: "pointer",
                 }}
               >
@@ -789,40 +789,40 @@ export default function SimuladorPropostas() {
 
             {/* Status da Proposta */}
             <div style={cardStyle}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
-                ✅ Status da Proposta
+              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "#1f2937" }}>
+                Status da Proposta
               </h2>
-              <div style={{ display: "flex", gap: 16 }}>
+              <div style={{ display: "flex", gap: 12 }}>
                 <button
                   onClick={async () => {
                     setStatusProposta("aprovada");
                     await salvarPropostaAprovada();
                   }}
                   style={{
-                    flex: 1, padding: "14px 24px", borderRadius: 10, border: "2px solid",
-                    borderColor: statusProposta === "aprovada" ? "#34d399" : "#1e293b",
-                    background: statusProposta === "aprovada" ? "#34d39920" : "transparent",
-                    color: statusProposta === "aprovada" ? "#34d399" : "#94a3b8",
-                    fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all .2s",
+                    flex: 1, padding: "12px 24px", borderRadius: 10, border: "2px solid",
+                    borderColor: statusProposta === "aprovada" ? "#16a34a" : "#d1d5db",
+                    background: statusProposta === "aprovada" ? "#f0fdf4" : "transparent",
+                    color: statusProposta === "aprovada" ? "#16a34a" : "#9ca3af",
+                    fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all .15s",
                   }}
                 >
-                  ✅ Aprovada
+                  ✓ Aprovada
                 </button>
                 <button
                   onClick={() => setStatusProposta("rejeitada")}
                   style={{
-                    flex: 1, padding: "14px 24px", borderRadius: 10, border: "2px solid",
-                    borderColor: statusProposta === "rejeitada" ? "#f87171" : "#1e293b",
-                    background: statusProposta === "rejeitada" ? "#f8717120" : "transparent",
-                    color: statusProposta === "rejeitada" ? "#f87171" : "#94a3b8",
-                    fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all .2s",
+                    flex: 1, padding: "12px 24px", borderRadius: 10, border: "2px solid",
+                    borderColor: statusProposta === "rejeitada" ? "#dc2626" : "#d1d5db",
+                    background: statusProposta === "rejeitada" ? "#fef2f2" : "transparent",
+                    color: statusProposta === "rejeitada" ? "#dc2626" : "#9ca3af",
+                    fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all .15s",
                   }}
                 >
-                  ❌ Rejeitada
+                  ✕ Rejeitada
                 </button>
               </div>
               {statusProposta && (
-                <p style={{ marginTop: 12, fontSize: 13, color: statusProposta === "aprovada" ? "#34d399" : "#f87171", fontWeight: 600 }}>
+                <p style={{ marginTop: 12, fontSize: 13, color: statusProposta === "aprovada" ? "#16a34a" : "#dc2626", fontWeight: 500 }}>
                   Proposta marcada como: {statusProposta === "aprovada" ? "APROVADA" : "REJEITADA"}
                 </p>
               )}
@@ -830,8 +830,8 @@ export default function SimuladorPropostas() {
 
             {/* Observação */}
             <div style={cardStyle}>
-              <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>
-                📝 Observação
+              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "#1f2937" }}>
+                Observação
               </h2>
               <textarea
                 value={observacao}
@@ -840,7 +840,7 @@ export default function SimuladorPropostas() {
                 rows={4}
                 style={{
                   width: "100%", padding: "12px 16px", borderRadius: 8,
-                  border: "1px solid #334155", background: "#0f172a", color: "#e2e8f0",
+                  border: "1px solid #d1d5db", background: "#fafafa", color: "#1f2937",
                   fontSize: 13, fontFamily: "inherit", resize: "vertical",
                   outline: "none",
                 }}
@@ -852,12 +852,12 @@ export default function SimuladorPropostas() {
               onClick={exportPDF}
               style={{
                 width: "100%", padding: "14px 24px", borderRadius: 10, border: "none",
-                background: "linear-gradient(135deg, #2563eb, #7c3aed)", color: "#fff",
-                fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all .2s",
+                background: "#0071e3", color: "#fff",
+                fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all .15s",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
               }}
             >
-              📄 Exportar Proposta em PDF
+              Exportar Proposta em PDF
             </button>
           </div>
         )}
@@ -870,15 +870,15 @@ function InfoCard({ label, value, span, color }: { label: string; value: string;
   return (
     <div
       style={{
-        background: "#0f172a", borderRadius: 10, padding: "12px 16px",
-        border: "1px solid #1e293b",
+        background: "#f9fafb", borderRadius: 10, padding: "12px 16px",
+        border: "1px solid #e5e7eb",
         gridColumn: span ? `span ${span}` : undefined,
       }}
     >
-      <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginBottom: 4, textTransform: "uppercase" }}>
+      <div style={{ fontSize: 10, color: "#6b7280", fontWeight: 500, marginBottom: 4, textTransform: "uppercase" }}>
         {label}
       </div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: color || "#e2e8f0" }}>{value}</div>
+      <div style={{ fontSize: 14, fontWeight: 600, color: color || "#1f2937" }}>{value}</div>
     </div>
   );
 }
@@ -887,15 +887,16 @@ function ResultCard({ label, value, color, subtitle }: { label: string; value: s
   return (
     <div
       style={{
-        background: "#111827", borderRadius: 14, border: "1px solid #1e293b",
+        background: "#fff", borderRadius: 14, border: "1px solid #e5e7eb",
         padding: 20, display: "flex", flexDirection: "column", gap: 4,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
       }}
     >
-      <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase" }}>
+      <div style={{ fontSize: 11, color: "#6b7280", fontWeight: 500, textTransform: "uppercase" }}>
         {label}
       </div>
-      <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
-      <div style={{ fontSize: 11, color: "#475569" }}>{subtitle}</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color, letterSpacing: "-0.02em" }}>{value}</div>
+      <div style={{ fontSize: 11, color: "#9ca3af" }}>{subtitle}</div>
     </div>
   );
 }
