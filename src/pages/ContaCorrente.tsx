@@ -357,7 +357,7 @@ const ContaCorrente = () => {
             {form.tipo === "credito" ? (
               <div className="space-y-1">
                 <label className="text-xs font-medium text-muted-foreground">Valor (R$)</label>
-                <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
+                <input className={inputStyle} value={moneyDisplay(form.investimentoTotal)} onChange={(e) => setForm((f) => ({ ...f, investimentoTotal: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
               </div>
             ) : (
               <>
@@ -367,19 +367,19 @@ const ContaCorrente = () => {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Valor Pedido (R$)</label>
-                  <input className={inputStyle} value={form.valorPedido ?? ""} onChange={(e) => setField("valorPedido", e.target.value)} placeholder="0,00" />
+                  <input className={inputStyle} value={moneyDisplay(form.valorPedido)} onChange={(e) => setForm((f) => ({ ...f, valorPedido: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Valor Unitário (R$)</label>
-                  <input className={inputStyle} value={form.valorUnit ?? ""} onChange={(e) => setField("valorUnit", e.target.value)} placeholder="0,00" />
+                  <input className={inputStyle} value={moneyDisplay(form.valorUnit)} onChange={(e) => setForm((f) => ({ ...f, valorUnit: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">Investimento Total (R$)</label>
-                  <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
+                  <input className={inputStyle} value={moneyDisplay(form.investimentoTotal)} onChange={(e) => setForm((f) => ({ ...f, investimentoTotal: handleMoneyInput(e.target.value) }))} placeholder="R$ 0,00" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-muted-foreground">% Investimento</label>
-                  <input className={inputStyle} value={form.percInvestimento != null ? (form.percInvestimento * 100).toString() : ""} onChange={(e) => { const v = e.target.value; setForm((f) => ({ ...f, percInvestimento: v === "" ? null : (parseFloat(v.replace(",", ".")) / 100) || null })); }} placeholder="Ex: 6.0" />
+                  <input className={inputStyle} value={percDisplay(form.percInvestimento)} onChange={(e) => setForm((f) => ({ ...f, percInvestimento: handlePercInput(e.target.value) }))} placeholder="0,00%" />
                 </div>
               </>
             )}
