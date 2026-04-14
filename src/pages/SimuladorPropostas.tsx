@@ -598,7 +598,7 @@ export default function SimuladorPropostas() {
                 )}
 
                 {pc.codigo.trim() && !pc.found && (
-                  <p style={{ marginTop: 12, color: "#f87171", fontSize: 13 }}>
+                  <p style={{ marginTop: 12, color: "#dc2626", fontSize: 13 }}>
                     Produto não encontrado na filial selecionada.
                   </p>
                 )}
@@ -666,7 +666,7 @@ export default function SimuladorPropostas() {
                           key={h}
                           style={{
                             padding: "10px 12px", textAlign: "left", fontSize: 11,
-                            fontWeight: 700, color: "#64748b", textTransform: "uppercase",
+                            fontWeight: 600, color: "#6b7280", textTransform: "uppercase",
                           }}
                         >
                           {h}
