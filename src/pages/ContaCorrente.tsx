@@ -111,6 +111,12 @@ const ContaCorrente = () => {
 
   const [filterFrom, setFilterFrom] = useState<Date | undefined>(undefined);
   const [filterTo, setFilterTo] = useState<Date | undefined>(undefined);
+  const [filterBu, setFilterBu] = useState<string>("");
+
+  const buOptions = useMemo(() => {
+    const set = new Set(lancamentos.map((l) => l.bu).filter(Boolean));
+    return Array.from(set).sort();
+  }, [lancamentos]);
 
   const persist = (data: Lancamento[]) => {
     setLancamentos(data);
@@ -152,9 +158,10 @@ const ContaCorrente = () => {
       const d = new Date(l.dataAprovacao + "T00:00:00");
       if (filterFrom && d < filterFrom) return false;
       if (filterTo && d > filterTo) return false;
+      if (filterBu && l.bu !== filterBu) return false;
       return true;
     });
-  }, [lancamentos, filterFrom, filterTo]);
+  }, [lancamentos, filterFrom, filterTo, filterBu]);
 
   const totalCredito = useMemo(() => filtered.filter((l) => l.tipo === "credito").reduce((s, l) => s + (l.investimentoTotal ?? 0), 0), [filtered]);
   const totalDebito = useMemo(() => filtered.filter((l) => l.tipo === "debito").reduce((s, l) => s + (l.investimentoTotal ?? 0), 0), [filtered]);
@@ -288,8 +295,17 @@ const ContaCorrente = () => {
             </PopoverContent>
           </Popover>
         </div>
-        {(filterFrom || filterTo) && (
-          <Button variant="ghost" size="sm" onClick={() => { setFilterFrom(undefined); setFilterTo(undefined); }}>
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">BU</label>
+          <select className={cn(inputStyle, "w-[140px]")} value={filterBu} onChange={(e) => setFilterBu(e.target.value)}>
+            <option value="">Todos</option>
+            {buOptions.map((bu) => (
+              <option key={bu} value={bu}>{bu}</option>
+            ))}
+          </select>
+        </div>
+        {(filterFrom || filterTo || filterBu) && (
+          <Button variant="ghost" size="sm" onClick={() => { setFilterFrom(undefined); setFilterTo(undefined); setFilterBu(""); }}>
             <X className="w-4 h-4 mr-1" /> Limpar filtros
           </Button>
         )}
