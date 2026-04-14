@@ -461,7 +461,7 @@ function UploadPanel({
         border: `1px solid ${step1Done ? "#bbf7d0" : "#e5e7eb"}`,
         borderRadius: 16,
         padding: 20,
-        background: step1Done ? "#020f08" : "#fafafa",
+        background: step1Done ? "#f0fdf4" : "#fafafa",
         transition: "all .3s",
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
@@ -497,7 +497,7 @@ function UploadPanel({
             return (
               <div key={key} style={{
                 display: "flex", alignItems: "center", gap: 8, padding: "8px 10px",
-                borderRadius: 8, background: loaded ? "#f0fdf4" : "#0a111e",
+                borderRadius: 8, background: loaded ? "#f0fdf4" : "#f0fdf4",
                 border: `1px solid ${loaded ? "#bbf7d0" : "#e5e7eb"}`, transition: "all .3s",
               }}>
                 <span style={{ fontSize: 14, flexShrink: 0 }}>{loaded ? "✅" : "⬜"}</span>
@@ -533,7 +533,7 @@ function UploadPanel({
         border: `1px solid ${!step1Done ? "#ffffff" : step2Done ? "#bbf7d0" : "rgba(0,113,227,0.12)"}`,
         borderRadius: 16,
         padding: 20,
-        background: !step1Done ? "#050a14" : step2Done ? "#020f08" : "#fafafa",
+        background: !step1Done ? "#fafafa" : step2Done ? "#f0fdf4" : "#fafafa",
         opacity: step1Done ? 1 : 0.45,
         transition: "all .3s",
         pointerEvents: step1Done ? "auto" : "none",
@@ -825,7 +825,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               onClick={() => specificFileRef.current?.click()}
               style={{
                 padding: "8px 18px", borderRadius: 8, border: "1px solid #1e40af",
-                background: "#172554", color: "#0071e3", cursor: "pointer",
+                background: "#dbeafe", color: "#0071e3", cursor: "pointer",
                 fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
               }}
             >
@@ -927,7 +927,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
             placeholder="ex: 20"
             style={{
               width: "100%", padding: "6px 28px 6px 12px",
-              background: "#1a1206", border: "1px solid #854d0e", borderRadius: 8,
+              background: "#fef9c3", border: "1px solid #854d0e", borderRadius: 8,
               color: "#fff", fontSize: 14, fontWeight: 700, outline: "none",
               textAlign: "center",
             }}
@@ -965,7 +965,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
             placeholder="ex: 10"
             style={{
               width: "100%", padding: "6px 28px 6px 12px",
-              background: "#1a0a2e", border: "1px solid #6d28d9", borderRadius: 8,
+              background: "#f3e8ff", border: "1px solid #6d28d9", borderRadius: 8,
               color: "#fff", fontSize: 14, fontWeight: 700, outline: "none",
               textAlign: "center",
             }}
@@ -1116,7 +1116,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                 <tr
                   key={`${p.filial}-${p.seqProd}-${i}`}
                   style={{ borderBottom: "1px solid #ffffff", background: rowBg, transition: "background .15s" }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#0f1929")}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#f3f4f6")}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = rowBg)}
                 >
                   {/* Filial */}
@@ -1509,11 +1509,11 @@ function PrecoAnalysis({ data }: { data: FilialData }) {
                 key={i}
                 style={{
                   borderBottom: "1px solid #e5e7eb",
-                  background: i % 2 === 0 ? "#fafafa" : "#0a1221",
+                  background: i % 2 === 0 ? "#fafafa" : "#f3f4f6",
                   transition: "background .15s",
                 }}
                 onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "#ffffff")}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? "#fafafa" : "#0a1221")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? "#fafafa" : "#f3f4f6")}
               >
                 <td style={{ padding: "8px 14px" }}>
                   <span
@@ -1815,10 +1815,10 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
                 const status =
                   p.ddv === 0 || p.estoque === 0 ? { label: "Sem Estoque", color: "#dc2626", bg: "#fef2f2" } :
                   p.ddv < 7 ? { label: "Estoque Baixo", color: "#fb923c", bg: "#431407" } :
-                  p.ddv > 40 ? { label: "Estoque Alto", color: "#0071e3", bg: "#172554" } :
+                  p.ddv > 40 ? { label: "Estoque Alto", color: "#0071e3", bg: "#dbeafe" } :
                   { label: "Estoque OK", color: "#16a34a", bg: "#f0fdf4" };
                 return (
-                  <tr key={i} style={{ borderBottom: "1px solid #e5e7eb", background: i % 2 === 0 ? "#fafafa" : "#0a1221" }}>
+                  <tr key={i} style={{ borderBottom: "1px solid #e5e7eb", background: i % 2 === 0 ? "#fafafa" : "#f3f4f6" }}>
                     <td style={{ padding: "8px 14px" }}>
                       <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: FILIAL_INFO[p.filial]?.cor || "#6b7280", marginRight: 6 }} />
                       <span style={{ color: "#9ca3af", fontSize: 11 }}>{FILIAL_INFO[p.filial]?.nome || p.filial}</span>
@@ -1914,7 +1914,7 @@ function MargemAnalysis({ data }: { data: FilialData }) {
             .sort((a, b) => a.marg - b.marg)
             .slice(0, 20)
             .map((p, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 12px", background: "#0a0a14", borderRadius: 10 }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 12px", background: "#f3f4f6", borderRadius: 10 }}>
                 <span style={{ width: 24, height: 24, borderRadius: "50%", background: "#fecaca", color: "#dc2626", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
                   {i + 1}
                 </span>
@@ -2091,7 +2091,7 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
                   p.ddv <= 90 ? { label: "Atenção", color: "#fb923c", bg: "#431407" } :
                   { label: "OK", color: "#16a34a", bg: "#f0fdf4" };
                 return (
-                  <tr key={i} style={{ borderBottom: "1px solid #e5e7eb", background: i % 2 === 0 ? "#fafafa" : "#0a1221" }}>
+                  <tr key={i} style={{ borderBottom: "1px solid #e5e7eb", background: i % 2 === 0 ? "#fafafa" : "#f3f4f6" }}>
                     <td style={{ padding: "8px 14px" }}>
                       <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: FILIAL_INFO[p.filial]?.cor || "#6b7280", marginRight: 6 }} />
                       <span style={{ color: "#9ca3af", fontSize: 11 }}>{FILIAL_INFO[p.filial]?.nome || p.filial}</span>
