@@ -790,7 +790,17 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
             }}
           >
-            🗑️ Limpar Tudo
+             🗑️ Limpar Tudo
+          </button>
+          <button
+            onClick={() => alert("Olá!")}
+            style={{
+              padding: "8px 18px", borderRadius: 8, border: "1px solid hsl(220, 60%, 50%)",
+              background: "hsl(220, 60%, 15%)", color: "hsl(220, 80%, 70%)", cursor: "pointer",
+              fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            👋 Ola
           </button>
           <button
             onClick={exportXLSX}
