@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      lancamentos: {
+        Row: {
+          bu: string
+          competencia: string
+          created_at: string
+          data_aprovacao: string | null
+          id: string
+          investimento_total: number | null
+          negociacao: string
+          perc_investimento: number | null
+          tipo: string
+          updated_at: string
+          valor_pedido: number | null
+          valor_unit: number | null
+          volume: number | null
+        }
+        Insert: {
+          bu?: string
+          competencia?: string
+          created_at?: string
+          data_aprovacao?: string | null
+          id?: string
+          investimento_total?: number | null
+          negociacao?: string
+          perc_investimento?: number | null
+          tipo: string
+          updated_at?: string
+          valor_pedido?: number | null
+          valor_unit?: number | null
+          volume?: number | null
+        }
+        Update: {
+          bu?: string
+          competencia?: string
+          created_at?: string
+          data_aprovacao?: string | null
+          id?: string
+          investimento_total?: number | null
+          negociacao?: string
+          perc_investimento?: number | null
+          tipo?: string
+          updated_at?: string
+          valor_pedido?: number | null
+          valor_unit?: number | null
+          volume?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
