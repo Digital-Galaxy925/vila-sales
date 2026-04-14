@@ -1089,6 +1089,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <th style={{ padding: "11px 16px", textAlign: "left", color: "#6b7280", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb" }}>
                 Status
               </th>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#0ea5e9", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
+                Margem com Sell Out
+              </th>
               <th style={{ padding: "11px 16px", textAlign: "center", color: "#16a34a", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
                 Adicionar Sell Out
               </th>
@@ -1233,6 +1236,21 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     }}>
                       {ok ? "✓ Saudável" : "✗ Crítico"}
                     </span>
+                  </td>
+
+                  {/* Margem com Sell Out */}
+                  <td style={{ padding: "10px 16px", textAlign: "center", fontFamily: "monospace", fontWeight: 700 }}>
+                    {(() => {
+                      const margSellout = p.sellout > 0
+                        ? ((p.atual - (p.custoLiq - p.sellout)) / p.atual) * 100
+                        : 0;
+                      if (margSellout === 0) return <span style={{ color: "#d1d5db" }}>—</span>;
+                      return (
+                        <span style={{ color: margSellout >= minMargin ? "#16a34a" : "#dc2626" }}>
+                          {margSellout.toFixed(2)}%
+                        </span>
+                      );
+                    })()}
                   </td>
 
                   {/* Adicionar Sell Out */}
