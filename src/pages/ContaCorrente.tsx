@@ -119,10 +119,12 @@ const ContaCorrente = () => {
 
   const handleSave = () => {
     if (!form.negociacao.trim()) return;
+    const calcPerc = form.valorPedido && form.investimentoTotal ? form.investimentoTotal / form.valorPedido : form.percInvestimento;
+    const finalForm = { ...form, percInvestimento: calcPerc };
     if (editingId) {
-      persist(lancamentos.map((l) => (l.id === editingId ? { ...form, id: editingId } : l)));
+      persist(lancamentos.map((l) => (l.id === editingId ? { ...finalForm, id: editingId } : l)));
     } else {
-      persist([...lancamentos, { ...form, id: crypto.randomUUID() }]);
+      persist([...lancamentos, { ...finalForm, id: crypto.randomUUID() }]);
     }
     setForm(emptyForm());
     setEditingId(null);
