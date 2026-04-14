@@ -282,7 +282,7 @@ const AnaliseMargem = () => {
                             className={`px-4 py-3 text-sm text-card-foreground text-${col.align || "left"}`}
                           >
                             {col.render
-                              ? col.render((row as any)[col.key], row)
+                              ? col.render((row as any)[col.key])
                               : (row as any)[col.key]}
                           </td>
                         ))}
