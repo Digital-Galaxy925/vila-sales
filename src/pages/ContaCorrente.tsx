@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -6,10 +6,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Plus, Pencil, Trash2, FileDown, FileText, X, Check, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle, Wallet } from "lucide-react";
+import { CalendarIcon, Plus, Pencil, Trash2, FileDown, FileText, X, Check, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 type TipoLancamento = "debito" | "credito";
 
@@ -26,21 +28,6 @@ interface Lancamento {
   investimentoTotal: number | null;
   percInvestimento: number | null;
 }
-
-const STORAGE_KEY = "vilasales_conta_corrente";
-
-const loadData = (): Lancamento[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return parsed.map((l: any) => ({ ...l, tipo: l.tipo || "debito", competencia: l.competencia || "" }));
-  } catch { return []; }
-};
-
-const saveData = (data: Lancamento[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-};
 
 const emptyForm = (): Omit<Lancamento, "id"> => ({
   tipo: "debito",
@@ -63,13 +50,6 @@ const fmtPerc = (v: number | null) =>
 
 const fmtNum = (v: number | null) => (v != null ? v.toLocaleString("pt-BR") : "—");
 
-const parseNum = (s: string): number | null => {
-  const cleaned = s.replace(/\./g, "").replace(",", ".");
-  const n = parseFloat(cleaned);
-  return isNaN(n) ? null : n;
-};
-
-// Cents-based money mask: user types digits, display formats as R$ X.XXX,XX
 const moneyMask = (cents: number): string => {
   return (cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
@@ -85,13 +65,6 @@ const moneyDisplay = (v: number | null): string => {
   return moneyMask(Math.round(v * 100));
 };
 
-// Percentage mask: user types digits, display formats as X,XX%
-const handlePercInput = (raw: string): number | null => {
-  const digits = raw.replace(/\D/g, "");
-  if (!digits) return null;
-  return parseInt(digits, 10) / 10000; // stored as decimal (6% = 0.06)
-};
-
 const percDisplay = (v: number | null): string => {
   if (v == null) return "";
   const val = Math.round(v * 10000);
@@ -103,38 +76,93 @@ const percDisplay = (v: number | null): string => {
 const inputStyle =
   "w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
+// Map DB row to frontend model
+const mapRow = (r: any): Lancamento => ({
+  id: r.id,
+  tipo: r.tipo as TipoLancamento,
+  bu: r.bu,
+  negociacao: r.negociacao,
+  competencia: r.competencia,
+  volume: r.volume,
+  valorPedido: r.valor_pedido,
+  dataAprovacao: r.data_aprovacao || "",
+  valorUnit: r.valor_unit,
+  investimentoTotal: r.investimento_total,
+  percInvestimento: r.perc_investimento,
+});
+
+// Map frontend model to DB insert/update
+const mapToDb = (f: Omit<Lancamento, "id">) => ({
+  tipo: f.tipo,
+  bu: f.bu,
+  negociacao: f.negociacao,
+  competencia: f.competencia,
+  volume: f.volume,
+  valor_pedido: f.valorPedido,
+  data_aprovacao: f.dataAprovacao || null,
+  valor_unit: f.valorUnit,
+  investimento_total: f.investimentoTotal,
+  perc_investimento: f.percInvestimento,
+});
+
 const ContaCorrente = () => {
-  const [lancamentos, setLancamentos] = useState<Lancamento[]>(loadData);
+  const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
   const [form, setForm] = useState(emptyForm());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   const [filterFrom, setFilterFrom] = useState<Date | undefined>(undefined);
   const [filterTo, setFilterTo] = useState<Date | undefined>(undefined);
   const [filterBu, setFilterBu] = useState<string>("");
+
+  const fetchLancamentos = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("lancamentos")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast({ title: "Erro ao carregar dados", description: error.message, variant: "destructive" });
+    } else {
+      setLancamentos((data || []).map(mapRow));
+    }
+    setLoading(false);
+  }, [toast]);
+
+  useEffect(() => {
+    fetchLancamentos();
+  }, [fetchLancamentos]);
 
   const buOptions = useMemo(() => {
     const set = new Set(lancamentos.map((l) => l.bu).filter(Boolean));
     return Array.from(set).sort();
   }, [lancamentos]);
 
-  const persist = (data: Lancamento[]) => {
-    setLancamentos(data);
-    saveData(data);
-  };
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.negociacao.trim()) return;
     const calcPerc = form.valorPedido && form.investimentoTotal ? form.investimentoTotal / form.valorPedido : form.percInvestimento;
     const finalForm = { ...form, percInvestimento: calcPerc };
+    const dbData = mapToDb(finalForm);
+
     if (editingId) {
-      persist(lancamentos.map((l) => (l.id === editingId ? { ...finalForm, id: editingId } : l)));
+      const { error } = await supabase.from("lancamentos").update(dbData).eq("id", editingId);
+      if (error) {
+        toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
+        return;
+      }
     } else {
-      persist([...lancamentos, { ...finalForm, id: crypto.randomUUID() }]);
+      const { error } = await supabase.from("lancamentos").insert(dbData);
+      if (error) {
+        toast({ title: "Erro ao inserir", description: error.message, variant: "destructive" });
+        return;
+      }
     }
     setForm(emptyForm());
     setEditingId(null);
     setShowForm(false);
+    fetchLancamentos();
   };
 
   const handleEdit = (l: Lancamento) => {
@@ -143,8 +171,13 @@ const ContaCorrente = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    persist(lancamentos.filter((l) => l.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("lancamentos").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+      return;
+    }
+    fetchLancamentos();
   };
 
   const handleCancel = () => {
@@ -155,6 +188,7 @@ const ContaCorrente = () => {
 
   const filtered = useMemo(() => {
     return lancamentos.filter((l) => {
+      if (!l.dataAprovacao) return !filterFrom && !filterTo && (!filterBu || l.bu === filterBu);
       const d = new Date(l.dataAprovacao + "T00:00:00");
       if (filterFrom && d < filterFrom) return false;
       if (filterTo && d > filterTo) return false;
@@ -224,17 +258,28 @@ const ContaCorrente = () => {
 
   const setField = (key: keyof Omit<Lancamento, "id">, value: string) => {
     if (["volume", "valorPedido", "valorUnit", "investimentoTotal", "percInvestimento"].includes(key)) {
-      setForm((f) => ({ ...f, [key]: value === "" ? null : parseNum(value) }));
+      const cleaned = value.replace(/\./g, "").replace(",", ".");
+      const n = parseFloat(cleaned);
+      setForm((f) => ({ ...f, [key]: isNaN(n) ? null : n }));
     } else {
       setForm((f) => ({ ...f, [key]: value.toUpperCase() }));
     }
   };
 
+  if (loading) {
+    return (
+      <div className="p-4 space-y-4">
+        <PageHeader title="Conta Corrente" description="Gestão de negociações e investimentos" />
+        <div className="text-center py-10 text-muted-foreground">Carregando...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 space-y-4">
       <PageHeader title="Conta Corrente" description="Gestão de negociações e investimentos" />
 
-      {/* Summary Cards - Crédito / Débito / Saldo */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-xl border border-border bg-card p-3.5 flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-success/15 flex items-center justify-center">
@@ -327,7 +372,6 @@ const ContaCorrente = () => {
         <div className="rounded-xl border border-border bg-card p-6 space-y-4 shadow-sm">
           <h3 className="text-sm font-semibold text-foreground">{editingId ? "Editar Lançamento" : "Novo Lançamento"}</h3>
           
-          {/* Tipo selector */}
           <div className="flex gap-2">
             <button
               type="button"
