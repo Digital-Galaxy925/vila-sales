@@ -413,49 +413,47 @@ export default function SimuladorPropostas() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "10px 14px", borderRadius: 8,
-    border: "1px solid #334155", background: "#0f172a", color: "#e2e8f0",
-    fontSize: 14, outline: "none",
+    border: "1px solid #d1d5db", background: "#fafafa", color: "#1f2937",
+    fontSize: 14, outline: "none", transition: "border-color 0.15s ease",
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 600, color: "#94a3b8", marginBottom: 6, display: "block",
+    fontSize: 12, fontWeight: 500, color: "#6b7280", marginBottom: 6, display: "block",
   };
 
   const cardStyle: React.CSSProperties = {
-    background: "#111827", borderRadius: 14, border: "1px solid #1e293b", padding: 24,
+    background: "#fff", borderRadius: 14, border: "1px solid #e5e7eb", padding: 24,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
   };
 
   return (
     <div
       style={{
-        display: "flex", minHeight: "100vh", background: "#0b1120",
-        fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", color: "#e2e8f0",
+      display: "flex", minHeight: "100vh", background: "#f8f9fa",
+      fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1f2937",
       }}
     >
       {/* Sidebar */}
       <div
         style={{
-          width: 240, minWidth: 240, background: "#0f1729",
-          display: "flex", flexDirection: "column", borderRight: "1px solid #1e293b",
+          width: 240, minWidth: 240, background: "#161b22",
+          display: "flex", flexDirection: "column", borderRight: "1px solid rgba(255,255,255,0.06)",
         }}
       >
-        <div style={{ padding: "20px 16px 12px", borderBottom: "1px solid #1e293b" }}>
+        <div style={{ padding: "20px 16px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div
               style={{
                 width: 36, height: 36, borderRadius: 10,
-                background: "linear-gradient(135deg,#0ea5e9,#6366f1)",
+                background: "#0071e3",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 16, fontWeight: 800, color: "#fff",
+                fontSize: 14, fontWeight: 600, color: "#fff",
               }}
-            >📊</div>
+            >VS</div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 14, color: "#e2e8f0" }}>Vila Sales</div>
-              <div style={{ fontSize: 10, color: "#64748b" }}>Gestão Comercial</div>
+              <div style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.9)" }}>Vila Sales</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Gestão Comercial</div>
             </div>
-          </div>
-          <div style={{ fontSize: 10, color: "#334155", marginTop: 8, paddingTop: 8, borderTop: "1px solid #1e293b" }}>
-            Unilever · {new Date().getFullYear()}
           </div>
         </div>
 
