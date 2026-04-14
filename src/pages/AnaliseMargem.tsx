@@ -263,16 +263,23 @@ const AnaliseMargem = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center justify-between flex-wrap gap-3">
               <h3 className="text-sm font-heading font-semibold text-card-foreground">
-                Produtos com Margem Baixa (&lt; {minMargem}%) — {lowMarginProducts.length} itens
+                {filterLabels[activeFilter]} — {filteredProducts.length} itens
               </h3>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar código ou descrição..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-8 w-[220px] text-xs"
-                />
+              <div className="flex items-center gap-2">
+                {activeFilter !== "all" && (
+                  <Button variant="ghost" size="sm" onClick={() => setActiveFilter("all")} className="text-xs h-7">
+                    Limpar filtro
+                  </Button>
+                )}
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Pesquisar código ou descrição..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 h-8 w-[220px] text-xs"
+                  />
+                </div>
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -290,14 +297,14 @@ const AnaliseMargem = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {lowMarginProducts.length === 0 ? (
+                  {filteredProducts.length === 0 ? (
                     <tr>
                       <td colSpan={columns.length} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                        Nenhum produto encontrado abaixo da meta.
+                        Nenhum produto encontrado.
                       </td>
                     </tr>
                   ) : (
-                    lowMarginProducts.map((row, i) => (
+                    filteredProducts.map((row, i) => (
                       <tr key={i} className="hover:bg-muted/30 transition-colors">
                         {columns.map((col) => (
                           <td
