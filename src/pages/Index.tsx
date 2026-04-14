@@ -1235,6 +1235,28 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     </span>
                   </td>
 
+                  {/* Adicionar Sell Out */}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="—"
+                      value={addedSellout[`${p.filial}-${p.seqProd}`] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.,]/g, "");
+                        setAddedSellout((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: val }));
+                      }}
+                      style={{
+                        width: 80, padding: "5px 8px", borderRadius: 6,
+                        background: "#ffffff", border: "1px solid #d1d5db", color: "#16a34a",
+                        fontSize: 13, fontFamily: "monospace", fontWeight: 700, textAlign: "center",
+                        outline: "none",
+                      }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#16a34a")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+                    />
+                  </td>
+
                   {/* Margem Desejada */}
                   <td style={{ padding: "10px 8px", textAlign: "center" }}>
                     <input
