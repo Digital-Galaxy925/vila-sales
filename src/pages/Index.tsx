@@ -970,7 +970,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               textAlign: "center",
             }}
           />
-          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#c4b5fd", fontSize: 13, pointerEvents: "none" }}>%</span>
+          <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#7c3aed", fontSize: 13, pointerEvents: "none" }}>%</span>
         </div>
         <button
           onClick={() => {
@@ -984,7 +984,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           }}
           style={{
             padding: "6px 16px", borderRadius: 8, border: "1px solid #6d28d9",
-            background: "#2e1065", color: "#c4b5fd", cursor: "pointer",
+            background: "#f3e8ff", color: "#7c3aed", cursor: "pointer",
             fontSize: 12, fontWeight: 700, whiteSpace: "nowrap",
           }}
         >
@@ -1111,7 +1111,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           <tbody>
             {filtered.slice(0, 500).map((p, i) => {
               const ok = p.marg >= minMargin;
-              const rowBg = p.marg < 10 ? "#0d0505" : p.marg < minMargin ? "#0a0808" : i % 2 === 0 ? "#fafafa" : "#060c14";
+              const rowBg = p.marg < 10 ? "#fef2f2" : p.marg < minMargin ? "#fff7ed" : i % 2 === 0 ? "#fafafa" : "#f9fafb";
               return (
                 <tr
                   key={`${p.filial}-${p.seqProd}-${i}`}
@@ -1134,7 +1134,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     <span style={{
                       display: "inline-block", padding: "3px 10px", borderRadius: 6,
                       fontSize: 10, fontWeight: 600, letterSpacing: 0.5,
-                      background: p.bu === "FOODS" ? "#f0fdf4" : "#1e1b4b",
+                      background: p.bu === "FOODS" ? "#f0fdf4" : "#eef2ff",
                       color:      p.bu === "FOODS" ? "#16a34a"  : "#a78bfa",
                       border: `1px solid ${p.bu === "FOODS" ? "#bbf7d0" : "#4c1d95"}`,
                     }}>
