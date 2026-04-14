@@ -268,6 +268,139 @@ export default function SimuladorPropostas() {
     doc.save(nomeArq);
   }, [nomeGerente, dataAnalise, statusProposta, produtosCalc, calcRows, totalValor, totalMargemRS, margemPonderada, participacoes, maiorPedidoIdx]);
 
+  const generatePDFBlob = useCallback((): Blob => {
+    const doc = new jsPDF();
+    const status = "APROVADA";
+    const dataFmt = dataAnalise.split("-").reverse().join("/");
+
+    doc.setFillColor(10, 15, 30);
+    doc.rect(0, 0, 210, 40, "F");
+    doc.setTextColor(226, 232, 240);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("Vila Sales - Simulador de Propostas", 14, 18);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Gerente: ${nomeGerente || "N/A"}    |    Data: ${dataFmt}    |    Status: ${status}`, 14, 30);
+
+    let y = 50;
+    produtosCalc.forEach((pc, idx) => {
+      if (!pc.found) return;
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Produto ${idx + 1}: ${pc.found.descricao}`, 14, y);
+      y += 8;
+      autoTable(doc, {
+        startY: y, theme: "grid",
+        headStyles: { fillColor: [30, 58, 95], textColor: [226, 232, 240], fontSize: 9 },
+        bodyStyles: { fontSize: 9 },
+        head: [["Código", "Filial", "Custo", "Preço Venda Atual", "Estoque", "Unid/CX", "Preço Desejado", "Margem Sim.", "Valor Total"]],
+        body: [[pc.found.seqProd, pc.filial, fmt(pc.found.custoLiq), fmt(pc.found.atual), pc.found.estoque.toLocaleString("pt-BR"), pc.found.embCmp, pc.precoVD > 0 ? fmt(pc.precoVD) : "-", pc.precoVD > 0 ? fmtPct(pc.margem) : "-", pc.valorTotal > 0 ? fmt(pc.valorTotal) : "-"]],
+      });
+      y = (doc as any).lastAutoTable.finalY + 10;
+    });
+
+    if (y > 240) { doc.addPage(); y = 20; }
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("Entrada de Dados dos Pedidos", 14, y);
+    y += 6;
+    const pedidoBody = calcRows.map((r, i) => [r.label, fmt(r.valorNum), fmtPct(r.margemNum), fmt(r.margemRS), fmtPct(participacoes[i])]);
+    pedidoBody.push(["TOTAL CONSOLIDADO", fmt(totalValor), fmtPct(margemPonderada), fmt(totalMargemRS), "100,00%"]);
+    autoTable(doc, {
+      startY: y, theme: "grid",
+      headStyles: { fillColor: [30, 58, 95], textColor: [226, 232, 240], fontSize: 9 },
+      bodyStyles: { fontSize: 9 },
+      head: [["Pedido", "Valor Total (R$)", "Margem (%)", "Margem (R$)", "Participação"]],
+      body: pedidoBody,
+      didParseCell: (data: any) => {
+        if (data.row.index === pedidoBody.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.fillColor = [15, 23, 42];
+          data.cell.styles.textColor = [96, 165, 250];
+        }
+      },
+    });
+    y = (doc as any).lastAutoTable.finalY + 12;
+    if (y > 250) { doc.addPage(); y = 20; }
+    doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(30, 41, 59);
+    doc.text("Resultado da Análise", 14, y); y += 8;
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    doc.text(`Margem Ponderada Real: ${fmtPct(margemPonderada)}`, 14, y); y += 6;
+    doc.text(`Margem R$ Total: ${fmt(totalMargemRS)}`, 14, y); y += 6;
+    doc.text(`Volume Total de Vendas: ${fmt(totalValor)}`, 14, y); y += 6;
+    doc.text(`Maior Pedido: ${calcRows[maiorPedidoIdx]?.label ?? "-"} (${fmtPct(participacoes[maiorPedidoIdx] ?? 0)})`, 14, y); y += 12;
+    doc.setFontSize(16); doc.setFont("helvetica", "bold");
+    doc.setTextColor(52, 211, 153);
+    doc.text("STATUS: APROVADA", 14, y);
+
+    return doc.output("blob");
+  }, [nomeGerente, dataAnalise, produtosCalc, calcRows, totalValor, totalMargemRS, margemPonderada, participacoes, maiorPedidoIdx]);
+
+  const salvarPropostaAprovada = useCallback(async () => {
+    try {
+      // Generate PDF blob
+      const pdfBlob = generatePDFBlob();
+      const fileName = `${(nomeGerente || "proposta").replace(/\s+/g, "_")}_${dataAnalise}_APROVADA.pdf`;
+      const filePath = `${Date.now()}_${fileName}`;
+
+      // Upload PDF to storage
+      const { error: uploadError } = await supabase.storage
+        .from("propostas-pdfs")
+        .upload(filePath, pdfBlob, { contentType: "application/pdf" });
+
+      if (uploadError) throw uploadError;
+
+      // Collect BU from products
+      const busUsed = [...new Set(produtosCalc.filter(p => p.found).map(p => p.found!.bu))];
+      const buStr = busUsed.join(", ");
+
+      // Save proposal data
+      const produtosData = produtosCalc.filter(p => p.found).map(pc => ({
+        codigo: pc.found!.seqProd,
+        descricao: pc.found!.descricao,
+        filial: pc.filial,
+        custo: pc.found!.custoLiq,
+        precoAtual: pc.found!.atual,
+        precoDesejado: pc.precoVD,
+        margem: pc.margem,
+        valorTotal: pc.valorTotal,
+        totalUnidades: pc.totalUnidades,
+      }));
+
+      const pedidosData = calcRows.map((r, i) => ({
+        label: r.label,
+        valor: r.valorNum,
+        margem: r.margemNum,
+        margemRS: r.margemRS,
+        participacao: participacoes[i],
+      }));
+
+      const { error: insertError } = await supabase.from("propostas_aprovadas").insert({
+        nome_gerente: nomeGerente.toUpperCase(),
+        data_analise: dataAnalise,
+        bu: buStr.toUpperCase(),
+        observacao: observacao.toUpperCase(),
+        margem_ponderada: margemPonderada,
+        margem_total_rs: totalMargemRS,
+        volume_total_vendas: totalValor,
+        maior_pedido: calcRows[maiorPedidoIdx]?.label ?? "",
+        produtos: produtosData as any,
+        pedidos: pedidosData as any,
+        pdf_path: filePath,
+      });
+
+      if (insertError) throw insertError;
+
+      toast({ title: "Proposta aprovada salva com sucesso!", description: "Os dados e o PDF foram armazenados." });
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: "Erro ao salvar proposta", description: err.message, variant: "destructive" });
+    }
+  }, [generatePDFBlob, nomeGerente, dataAnalise, observacao, produtosCalc, calcRows, totalValor, totalMargemRS, margemPonderada, participacoes, maiorPedidoIdx]);
+
   // Sidebar
   const sidebarModules = [
     { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
