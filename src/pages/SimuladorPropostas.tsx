@@ -800,7 +800,6 @@ export default function SimuladorPropostas() {
             </button>
           </div>
         )}
-      </div>
     </div>
   );
 }
