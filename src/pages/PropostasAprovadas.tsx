@@ -5,7 +5,7 @@ import PageHeader from "@/components/PageHeader";
 const PropostasAprovadas = () => {
   return (
     <div className="space-y-6">
-      <PageHeader title="Propostas Aprovadas" />
+      <PageHeader title="Propostas Aprovadas" description="Visualize todas as propostas aprovadas" />
       <div className="text-muted-foreground text-sm">
         Nenhuma proposta aprovada encontrada.
       </div>
