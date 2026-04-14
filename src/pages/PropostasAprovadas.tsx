@@ -65,10 +65,12 @@ export default function PropostasAprovadas() {
     fetchPropostas();
   }, [fetchPropostas]);
 
-  const downloadPDF = async (pdfPath: string, nomeGerente: string) => {
-    const { data } = supabase.storage.from("propostas-pdfs").getPublicUrl(pdfPath);
-    if (data?.publicUrl) {
-      window.open(data.publicUrl, "_blank");
+  const downloadPDF = async (pdfPath: string) => {
+    const { data, error } = await supabase.storage
+      .from("propostas-pdfs")
+      .createSignedUrl(pdfPath, 3600);
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, "_blank");
     }
   };
 
@@ -155,7 +157,7 @@ export default function PropostasAprovadas() {
                           variant="outline"
                           size="sm"
                           className="gap-1"
-                          onClick={() => downloadPDF(p.pdf_path!, p.nome_gerente)}
+                          onClick={() => downloadPDF(p.pdf_path!)}
                         >
                           <Download className="w-3.5 h-3.5" /> PDF
                         </Button>
