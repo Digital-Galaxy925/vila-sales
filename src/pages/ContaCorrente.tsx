@@ -132,6 +132,7 @@ const ContaCorrente = () => {
       Tipo: l.tipo === "credito" ? "Crédito" : "Débito",
       BU: l.bu,
       Negociação: l.negociacao,
+      Competência: l.competencia || "",
       Volume: l.volume ?? "",
       "Valor Pedido": l.valorPedido ?? "",
       "Data Aprovação": l.dataAprovacao ? format(new Date(l.dataAprovacao + "T00:00:00"), "dd/MM/yyyy") : "",
@@ -155,11 +156,12 @@ const ContaCorrente = () => {
     doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 24);
     doc.text(`Crédito: ${fmtMoney(totalCredito)}  |  Débito: ${fmtMoney(totalDebito)}  |  Saldo: ${fmtMoney(saldo)}`, 14, 30);
 
-    const head = [["Tipo", "BU", "Negociação", "Volume", "Valor Pedido", "Data Aprovação", "Valor Unit", "Investimento Total", "% Investimento"]];
+    const head = [["Tipo", "BU", "Negociação", "Competência", "Volume", "Valor Pedido", "Data Aprovação", "Valor Unit", "Investimento Total", "% Investimento"]];
     const body = filtered.map((l) => [
       l.tipo === "credito" ? "Crédito" : "Débito",
       l.bu,
       l.negociacao,
+      l.competencia || "—",
       fmtNum(l.volume),
       fmtMoney(l.valorPedido),
       l.dataAprovacao ? format(new Date(l.dataAprovacao + "T00:00:00"), "dd/MM/yyyy") : "—",
@@ -370,6 +372,7 @@ const ContaCorrente = () => {
               <th className="text-center px-4 py-3 font-medium text-muted-foreground">Tipo</th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">BU</th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">Negociação</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Competência</th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">Volume</th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">Valor Pedido</th>
               <th className="text-center px-4 py-3 font-medium text-muted-foreground">Data Aprovação</th>
@@ -381,7 +384,7 @@ const ContaCorrente = () => {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={10} className="text-center py-10 text-muted-foreground">Nenhum lançamento encontrado</td></tr>
+              <tr><td colSpan={11} className="text-center py-10 text-muted-foreground">Nenhum lançamento encontrado</td></tr>
             ) : (
               filtered.map((l) => (
                 <tr key={l.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
@@ -398,6 +401,7 @@ const ContaCorrente = () => {
                   </td>
                   <td className="px-4 py-3 font-medium">{l.bu || "—"}</td>
                   <td className="px-4 py-3">{l.negociacao}</td>
+                  <td className="px-4 py-3">{l.competencia || "—"}</td>
                   <td className="px-4 py-3 text-right">{fmtNum(l.volume)}</td>
                   <td className="px-4 py-3 text-right">{fmtMoney(l.valorPedido)}</td>
                   <td className="px-4 py-3 text-center">{l.dataAprovacao ? format(new Date(l.dataAprovacao + "T00:00:00"), "dd/MM/yyyy") : "—"}</td>
