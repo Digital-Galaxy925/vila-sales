@@ -19,6 +19,7 @@ const navItems = [
   { to: "/gerencial", label: "Análise Gerencial", icon: BriefcaseBusiness },
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
+  { to: "/propostas-aprovadas", label: "Propostas Aprovadas", icon: FileText },
   { to: "/comparativo-livros", label: "Comparativo de Livros", icon: GitCompareArrows },
   { to: "/conta-corrente", label: "Conta Corrente", icon: FileText },
   { to: "/tabela-st", label: "Tabela de ST", icon: Table },
