@@ -611,6 +611,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
   const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
+  const [addedSellout, setAddedSellout] = useState<Record<string, string>>({});
   const [specificList, setSpecificList] = useState<string[] | null>(null);
   const [specificFileName, setSpecificFileName] = useState("");
   const [specificNotFound, setSpecificNotFound] = useState<string[]>([]);
@@ -1088,6 +1089,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <th style={{ padding: "11px 16px", textAlign: "left", color: "#6b7280", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb" }}>
                 Status
               </th>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#16a34a", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
+                Adicionar Sell Out
+              </th>
               <th style={{ padding: "11px 16px", textAlign: "center", color: "#d97706", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
                 Margem Desejada
               </th>
@@ -1229,6 +1233,28 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     }}>
                       {ok ? "✓ Saudável" : "✗ Crítico"}
                     </span>
+                  </td>
+
+                  {/* Adicionar Sell Out */}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="—"
+                      value={addedSellout[`${p.filial}-${p.seqProd}`] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.,]/g, "");
+                        setAddedSellout((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: val }));
+                      }}
+                      style={{
+                        width: 80, padding: "5px 8px", borderRadius: 6,
+                        background: "#ffffff", border: "1px solid #d1d5db", color: "#16a34a",
+                        fontSize: 13, fontFamily: "monospace", fontWeight: 700, textAlign: "center",
+                        outline: "none",
+                      }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#16a34a")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+                    />
                   </td>
 
                   {/* Margem Desejada */}
