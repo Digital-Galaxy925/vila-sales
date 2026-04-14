@@ -203,6 +203,8 @@ const AnaliseMargem = () => {
               value={`${kpis.margemMedia.toFixed(1)}%`}
               icon={TrendingUp}
               variant={kpis.margemMedia >= minMargem ? "success" : "destructive"}
+              onClick={() => setActiveFilter(activeFilter === "all" ? "all" : "all")}
+              active={activeFilter === "all"}
             />
             <KpiCard
               title={`Abaixo de ${minMargem}%`}
@@ -210,6 +212,8 @@ const AnaliseMargem = () => {
               subtitle={`${kpis.percAbaixo.toFixed(1)}% do mix`}
               icon={AlertTriangle}
               variant="destructive"
+              onClick={() => setActiveFilter(activeFilter === "abaixo" ? "all" : "abaixo")}
+              active={activeFilter === "abaixo"}
             />
             <KpiCard
               title={`Acima de ${minMargem}%`}
@@ -217,6 +221,8 @@ const AnaliseMargem = () => {
               subtitle={`${kpis.percAcima.toFixed(1)}% do mix`}
               icon={TrendingUp}
               variant="success"
+              onClick={() => setActiveFilter(activeFilter === "acima" ? "all" : "acima")}
+              active={activeFilter === "acima"}
             />
             <KpiCard
               title="Margem Mínima"
@@ -224,6 +230,8 @@ const AnaliseMargem = () => {
               subtitle={`Cod: ${kpis.margemMinCod}`}
               icon={TrendingDown}
               variant="destructive"
+              onClick={() => setActiveFilter(activeFilter === "minima" ? "all" : "minima")}
+              active={activeFilter === "minima"}
             />
           </div>
 
