@@ -1089,6 +1089,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <th style={{ padding: "11px 16px", textAlign: "left", color: "#6b7280", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb" }}>
                 Status
               </th>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#16a34a", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
+                Adicionar Sell Out
+              </th>
               <th style={{ padding: "11px 16px", textAlign: "center", color: "#d97706", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
                 Margem Desejada
               </th>
