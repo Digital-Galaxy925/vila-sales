@@ -231,42 +231,42 @@ const ContaCorrente = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
       <PageHeader title="Conta Corrente" description="Gestão de negociações e investimentos" />
 
       {/* Summary Cards - Crédito / Débito / Saldo */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border bg-card p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-success/15 flex items-center justify-center">
-            <ArrowUpCircle className="w-6 h-6 text-success" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="rounded-xl border border-border bg-card p-3.5 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-success/15 flex items-center justify-center">
+            <ArrowUpCircle className="w-4.5 h-4.5 text-success" />
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Total Crédito</p>
-            <p className="text-2xl font-bold text-success">{fmtMoney(totalCredito)}</p>
+            <p className="text-[11px] font-medium text-muted-foreground">Total Crédito</p>
+            <p className="text-lg font-bold text-success">{fmtMoney(totalCredito)}</p>
           </div>
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-destructive/15 flex items-center justify-center">
-            <ArrowDownCircle className="w-6 h-6 text-destructive" />
+        <div className="rounded-xl border border-border bg-card p-3.5 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-destructive/15 flex items-center justify-center">
+            <ArrowDownCircle className="w-4.5 h-4.5 text-destructive" />
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Total Débito</p>
-            <p className="text-2xl font-bold text-destructive">{fmtMoney(totalDebito)}</p>
+            <p className="text-[11px] font-medium text-muted-foreground">Total Débito</p>
+            <p className="text-lg font-bold text-destructive">{fmtMoney(totalDebito)}</p>
           </div>
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 flex items-center gap-4">
-          <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", saldo >= 0 ? "bg-success/15" : "bg-destructive/15")}>
-            {saldo >= 0 ? <TrendingUp className="w-6 h-6 text-success" /> : <TrendingDown className="w-6 h-6 text-destructive" />}
+        <div className="rounded-xl border border-border bg-card p-3.5 flex items-center gap-3">
+          <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center", saldo >= 0 ? "bg-success/15" : "bg-destructive/15")}>
+            {saldo >= 0 ? <TrendingUp className="w-4.5 h-4.5 text-success" /> : <TrendingDown className="w-4.5 h-4.5 text-destructive" />}
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Saldo</p>
-            <p className={cn("text-2xl font-bold", saldo >= 0 ? "text-success" : "text-destructive")}>{fmtMoney(saldo)}</p>
+            <p className="text-[11px] font-medium text-muted-foreground">Saldo</p>
+            <p className={cn("text-lg font-bold", saldo >= 0 ? "text-success" : "text-destructive")}>{fmtMoney(saldo)}</p>
           </div>
         </div>
       </div>
 
       {/* Filters + Actions */}
-      <div className="flex flex-wrap items-end gap-4">
+      <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground">Data Início</label>
           <Popover>
