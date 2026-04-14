@@ -18,6 +18,7 @@ interface Lancamento {
   tipo: TipoLancamento;
   bu: string;
   negociacao: string;
+  competencia: string;
   volume: number | null;
   valorPedido: number | null;
   dataAprovacao: string;
@@ -33,7 +34,7 @@ const loadData = (): Lancamento[] => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return parsed.map((l: any) => ({ ...l, tipo: l.tipo || "debito" }));
+    return parsed.map((l: any) => ({ ...l, tipo: l.tipo || "debito", competencia: l.competencia || "" }));
   } catch { return []; }
 };
 
@@ -45,6 +46,7 @@ const emptyForm = (): Omit<Lancamento, "id"> => ({
   tipo: "debito",
   bu: "",
   negociacao: "",
+  competencia: "",
   volume: null,
   valorPedido: null,
   dataAprovacao: format(new Date(), "yyyy-MM-dd"),
@@ -97,7 +99,7 @@ const ContaCorrente = () => {
   };
 
   const handleEdit = (l: Lancamento) => {
-    setForm({ tipo: l.tipo, bu: l.bu, negociacao: l.negociacao, volume: l.volume, valorPedido: l.valorPedido, dataAprovacao: l.dataAprovacao, valorUnit: l.valorUnit, investimentoTotal: l.investimentoTotal, percInvestimento: l.percInvestimento });
+    setForm({ tipo: l.tipo, bu: l.bu, negociacao: l.negociacao, competencia: l.competencia, volume: l.volume, valorPedido: l.valorPedido, dataAprovacao: l.dataAprovacao, valorUnit: l.valorUnit, investimentoTotal: l.investimentoTotal, percInvestimento: l.percInvestimento });
     setEditingId(l.id);
     setShowForm(true);
   };
@@ -130,6 +132,7 @@ const ContaCorrente = () => {
       Tipo: l.tipo === "credito" ? "Crédito" : "Débito",
       BU: l.bu,
       Negociação: l.negociacao,
+      Competência: l.competencia || "",
       Volume: l.volume ?? "",
       "Valor Pedido": l.valorPedido ?? "",
       "Data Aprovação": l.dataAprovacao ? format(new Date(l.dataAprovacao + "T00:00:00"), "dd/MM/yyyy") : "",
@@ -153,11 +156,12 @@ const ContaCorrente = () => {
     doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 24);
     doc.text(`Crédito: ${fmtMoney(totalCredito)}  |  Débito: ${fmtMoney(totalDebito)}  |  Saldo: ${fmtMoney(saldo)}`, 14, 30);
 
-    const head = [["Tipo", "BU", "Negociação", "Volume", "Valor Pedido", "Data Aprovação", "Valor Unit", "Investimento Total", "% Investimento"]];
+    const head = [["Tipo", "BU", "Negociação", "Competência", "Volume", "Valor Pedido", "Data Aprovação", "Valor Unit", "Investimento Total", "% Investimento"]];
     const body = filtered.map((l) => [
       l.tipo === "credito" ? "Crédito" : "Débito",
       l.bu,
       l.negociacao,
+      l.competencia || "—",
       fmtNum(l.volume),
       fmtMoney(l.valorPedido),
       l.dataAprovacao ? format(new Date(l.dataAprovacao + "T00:00:00"), "dd/MM/yyyy") : "—",
@@ -307,34 +311,47 @@ const ContaCorrente = () => {
               <label className="text-xs font-medium text-muted-foreground">BU</label>
               <input className={inputStyle} value={form.bu} onChange={(e) => setField("bu", e.target.value)} placeholder="Ex: HC" />
             </div>
-            <div className="space-y-1 lg:col-span-2">
+            <div className={cn("space-y-1", form.tipo === "credito" ? "lg:col-span-1" : "lg:col-span-2")}>
               <label className="text-xs font-medium text-muted-foreground">Negociação</label>
               <input className={inputStyle} value={form.negociacao} onChange={(e) => setField("negociacao", e.target.value)} placeholder="Descrição da negociação" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Competência</label>
+              <input className={inputStyle} value={form.competencia} onChange={(e) => setField("competencia", e.target.value)} placeholder="Ex: Abril/2026" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Data Aprovação</label>
               <input type="date" className={inputStyle} value={form.dataAprovacao} onChange={(e) => setField("dataAprovacao", e.target.value)} />
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Volume</label>
-              <input className={inputStyle} value={form.volume ?? ""} onChange={(e) => setField("volume", e.target.value)} placeholder="0" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Valor Pedido (R$)</label>
-              <input className={inputStyle} value={form.valorPedido ?? ""} onChange={(e) => setField("valorPedido", e.target.value)} placeholder="0,00" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Valor Unitário (R$)</label>
-              <input className={inputStyle} value={form.valorUnit ?? ""} onChange={(e) => setField("valorUnit", e.target.value)} placeholder="0,00" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Investimento Total (R$)</label>
-              <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">% Investimento</label>
-              <input className={inputStyle} value={form.percInvestimento != null ? (form.percInvestimento * 100).toString() : ""} onChange={(e) => { const v = e.target.value; setForm((f) => ({ ...f, percInvestimento: v === "" ? null : (parseFloat(v.replace(",", ".")) / 100) || null })); }} placeholder="Ex: 6.0" />
-            </div>
+            {form.tipo === "credito" ? (
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Valor (R$)</label>
+                <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Volume</label>
+                  <input className={inputStyle} value={form.volume ?? ""} onChange={(e) => setField("volume", e.target.value)} placeholder="0" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Valor Pedido (R$)</label>
+                  <input className={inputStyle} value={form.valorPedido ?? ""} onChange={(e) => setField("valorPedido", e.target.value)} placeholder="0,00" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Valor Unitário (R$)</label>
+                  <input className={inputStyle} value={form.valorUnit ?? ""} onChange={(e) => setField("valorUnit", e.target.value)} placeholder="0,00" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Investimento Total (R$)</label>
+                  <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">% Investimento</label>
+                  <input className={inputStyle} value={form.percInvestimento != null ? (form.percInvestimento * 100).toString() : ""} onChange={(e) => { const v = e.target.value; setForm((f) => ({ ...f, percInvestimento: v === "" ? null : (parseFloat(v.replace(",", ".")) / 100) || null })); }} placeholder="Ex: 6.0" />
+                </div>
+              </>
+            )}
           </div>
           <div className="flex gap-2 pt-2">
             <Button size="sm" onClick={handleSave}>
@@ -355,6 +372,7 @@ const ContaCorrente = () => {
               <th className="text-center px-4 py-3 font-medium text-muted-foreground">Tipo</th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">BU</th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">Negociação</th>
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">Competência</th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">Volume</th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">Valor Pedido</th>
               <th className="text-center px-4 py-3 font-medium text-muted-foreground">Data Aprovação</th>
@@ -366,7 +384,7 @@ const ContaCorrente = () => {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={10} className="text-center py-10 text-muted-foreground">Nenhum lançamento encontrado</td></tr>
+              <tr><td colSpan={11} className="text-center py-10 text-muted-foreground">Nenhum lançamento encontrado</td></tr>
             ) : (
               filtered.map((l) => (
                 <tr key={l.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
@@ -383,6 +401,7 @@ const ContaCorrente = () => {
                   </td>
                   <td className="px-4 py-3 font-medium">{l.bu || "—"}</td>
                   <td className="px-4 py-3">{l.negociacao}</td>
+                  <td className="px-4 py-3">{l.competencia || "—"}</td>
                   <td className="px-4 py-3 text-right">{fmtNum(l.volume)}</td>
                   <td className="px-4 py-3 text-right">{fmtMoney(l.valorPedido)}</td>
                   <td className="px-4 py-3 text-center">{l.dataAprovacao ? format(new Date(l.dataAprovacao + "T00:00:00"), "dd/MM/yyyy") : "—"}</td>
