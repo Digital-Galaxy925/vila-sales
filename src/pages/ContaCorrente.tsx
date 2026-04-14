@@ -6,7 +6,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Plus, Pencil, Trash2, FileDown, FileText, X, Check, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { CalendarIcon, Plus, Pencil, Trash2, FileDown, FileText, X, Check, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -116,6 +117,7 @@ const ContaCorrente = () => {
   const [filterFrom, setFilterFrom] = useState<Date | undefined>(undefined);
   const [filterTo, setFilterTo] = useState<Date | undefined>(undefined);
   const [filterBu, setFilterBu] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const fetchLancamentos = useCallback(async () => {
     const { data, error } = await supabase
@@ -188,14 +190,24 @@ const ContaCorrente = () => {
 
   const filtered = useMemo(() => {
     return lancamentos.filter((l) => {
-      if (!l.dataAprovacao) return !filterFrom && !filterTo && (!filterBu || l.bu === filterBu);
-      const d = new Date(l.dataAprovacao + "T00:00:00");
-      if (filterFrom && d < filterFrom) return false;
-      if (filterTo && d > filterTo) return false;
+      if (!l.dataAprovacao) {
+        if (filterFrom || filterTo) return false;
+      } else {
+        const d = new Date(l.dataAprovacao + "T00:00:00");
+        if (filterFrom && d < filterFrom) return false;
+        if (filterTo && d > filterTo) return false;
+      }
       if (filterBu && l.bu !== filterBu) return false;
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        const match = [l.negociacao, l.bu, l.competencia, l.tipo].some(
+          (v) => v && v.toLowerCase().includes(term)
+        );
+        if (!match) return false;
+      }
       return true;
     });
-  }, [lancamentos, filterFrom, filterTo, filterBu]);
+  }, [lancamentos, filterFrom, filterTo, filterBu, searchTerm]);
 
   const totalCredito = useMemo(() => filtered.filter((l) => l.tipo === "credito").reduce((s, l) => s + (l.investimentoTotal ?? 0), 0), [filtered]);
   const totalDebito = useMemo(() => filtered.filter((l) => l.tipo === "debito").reduce((s, l) => s + (l.investimentoTotal ?? 0), 0), [filtered]);
@@ -349,8 +361,17 @@ const ContaCorrente = () => {
             ))}
           </select>
         </div>
-        {(filterFrom || filterTo || filterBu) && (
-          <Button variant="ghost" size="sm" onClick={() => { setFilterFrom(undefined); setFilterTo(undefined); setFilterBu(""); }}>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Pesquisar..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8 h-8 w-[180px] text-xs"
+          />
+        </div>
+        {(filterFrom || filterTo || filterBu || searchTerm) && (
+          <Button variant="ghost" size="sm" onClick={() => { setFilterFrom(undefined); setFilterTo(undefined); setFilterBu(""); setSearchTerm(""); }}>
             <X className="w-4 h-4 mr-1" /> Limpar filtros
           </Button>
         )}
