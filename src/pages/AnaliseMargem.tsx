@@ -129,13 +129,27 @@ const AnaliseMargem = () => {
   const criticalCount = useMemo(() => products.filter((p) => p.margemCalc < 10).length, [products]);
   const warningCount = useMemo(() => products.filter((p) => p.margemCalc >= 10 && p.margemCalc < minMargem).length, [products, minMargem]);
 
-  // Table: products below target
-  const lowMarginProducts = useMemo(() => {
-    return products
-      .filter((p) => p.margemCalc < minMargem)
-      .sort((a, b) => a.margemCalc - b.margemCalc)
-      .slice(0, 100);
-  }, [products, minMargem]);
+  // Table: filtered by active card
+  const filteredProducts = useMemo(() => {
+    let filtered = products;
+    if (activeFilter === "abaixo") {
+      filtered = products.filter((p) => p.margemCalc < minMargem);
+    } else if (activeFilter === "acima") {
+      filtered = products.filter((p) => p.margemCalc >= minMargem);
+    } else if (activeFilter === "minima") {
+      // Show bottom 20 worst margins
+      filtered = [...products].sort((a, b) => a.margemCalc - b.margemCalc).slice(0, 20);
+    }
+    // For "all", show all products
+    return filtered.sort((a, b) => a.margemCalc - b.margemCalc).slice(0, 200);
+  }, [products, minMargem, activeFilter]);
+
+  const filterLabels: Record<string, string> = {
+    all: "Todos os Produtos",
+    abaixo: `Produtos Abaixo de ${minMargem}%`,
+    acima: `Produtos Acima de ${minMargem}%`,
+    minima: "Produtos com Menor Margem",
+  };
 
   const columns: { key: string; label: string; align?: "left" | "center" | "right"; render?: (v: any) => React.ReactNode }[] = [
     { key: "seqProd", label: "Código" },
