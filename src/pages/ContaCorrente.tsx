@@ -18,6 +18,7 @@ interface Lancamento {
   tipo: TipoLancamento;
   bu: string;
   negociacao: string;
+  competencia: string;
   volume: number | null;
   valorPedido: number | null;
   dataAprovacao: string;
@@ -33,7 +34,7 @@ const loadData = (): Lancamento[] => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return parsed.map((l: any) => ({ ...l, tipo: l.tipo || "debito" }));
+    return parsed.map((l: any) => ({ ...l, tipo: l.tipo || "debito", competencia: l.competencia || "" }));
   } catch { return []; }
 };
 
@@ -45,6 +46,7 @@ const emptyForm = (): Omit<Lancamento, "id"> => ({
   tipo: "debito",
   bu: "",
   negociacao: "",
+  competencia: "",
   volume: null,
   valorPedido: null,
   dataAprovacao: format(new Date(), "yyyy-MM-dd"),
@@ -97,7 +99,7 @@ const ContaCorrente = () => {
   };
 
   const handleEdit = (l: Lancamento) => {
-    setForm({ tipo: l.tipo, bu: l.bu, negociacao: l.negociacao, volume: l.volume, valorPedido: l.valorPedido, dataAprovacao: l.dataAprovacao, valorUnit: l.valorUnit, investimentoTotal: l.investimentoTotal, percInvestimento: l.percInvestimento });
+    setForm({ tipo: l.tipo, bu: l.bu, negociacao: l.negociacao, competencia: l.competencia, volume: l.volume, valorPedido: l.valorPedido, dataAprovacao: l.dataAprovacao, valorUnit: l.valorUnit, investimentoTotal: l.investimentoTotal, percInvestimento: l.percInvestimento });
     setEditingId(l.id);
     setShowForm(true);
   };
@@ -307,34 +309,47 @@ const ContaCorrente = () => {
               <label className="text-xs font-medium text-muted-foreground">BU</label>
               <input className={inputStyle} value={form.bu} onChange={(e) => setField("bu", e.target.value)} placeholder="Ex: HC" />
             </div>
-            <div className="space-y-1 lg:col-span-2">
+            <div className={cn("space-y-1", form.tipo === "credito" ? "lg:col-span-1" : "lg:col-span-2")}>
               <label className="text-xs font-medium text-muted-foreground">Negociação</label>
               <input className={inputStyle} value={form.negociacao} onChange={(e) => setField("negociacao", e.target.value)} placeholder="Descrição da negociação" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Competência</label>
+              <input className={inputStyle} value={form.competencia} onChange={(e) => setField("competencia", e.target.value)} placeholder="Ex: Abril/2026" />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Data Aprovação</label>
               <input type="date" className={inputStyle} value={form.dataAprovacao} onChange={(e) => setField("dataAprovacao", e.target.value)} />
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Volume</label>
-              <input className={inputStyle} value={form.volume ?? ""} onChange={(e) => setField("volume", e.target.value)} placeholder="0" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Valor Pedido (R$)</label>
-              <input className={inputStyle} value={form.valorPedido ?? ""} onChange={(e) => setField("valorPedido", e.target.value)} placeholder="0,00" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Valor Unitário (R$)</label>
-              <input className={inputStyle} value={form.valorUnit ?? ""} onChange={(e) => setField("valorUnit", e.target.value)} placeholder="0,00" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Investimento Total (R$)</label>
-              <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">% Investimento</label>
-              <input className={inputStyle} value={form.percInvestimento != null ? (form.percInvestimento * 100).toString() : ""} onChange={(e) => { const v = e.target.value; setForm((f) => ({ ...f, percInvestimento: v === "" ? null : (parseFloat(v.replace(",", ".")) / 100) || null })); }} placeholder="Ex: 6.0" />
-            </div>
+            {form.tipo === "credito" ? (
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-muted-foreground">Valor (R$)</label>
+                <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Volume</label>
+                  <input className={inputStyle} value={form.volume ?? ""} onChange={(e) => setField("volume", e.target.value)} placeholder="0" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Valor Pedido (R$)</label>
+                  <input className={inputStyle} value={form.valorPedido ?? ""} onChange={(e) => setField("valorPedido", e.target.value)} placeholder="0,00" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Valor Unitário (R$)</label>
+                  <input className={inputStyle} value={form.valorUnit ?? ""} onChange={(e) => setField("valorUnit", e.target.value)} placeholder="0,00" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Investimento Total (R$)</label>
+                  <input className={inputStyle} value={form.investimentoTotal ?? ""} onChange={(e) => setField("investimentoTotal", e.target.value)} placeholder="0,00" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">% Investimento</label>
+                  <input className={inputStyle} value={form.percInvestimento != null ? (form.percInvestimento * 100).toString() : ""} onChange={(e) => { const v = e.target.value; setForm((f) => ({ ...f, percInvestimento: v === "" ? null : (parseFloat(v.replace(",", ".")) / 100) || null })); }} placeholder="Ex: 6.0" />
+                </div>
+              </>
+            )}
           </div>
           <div className="flex gap-2 pt-2">
             <Button size="sm" onClick={handleSave}>
