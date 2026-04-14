@@ -458,14 +458,14 @@ export default function SimuladorPropostas() {
         </div>
 
         <nav style={{ flex: 1, padding: "8px 12px", overflowY: "auto" }}>
-          {[
-            { label: "Análise de Custos", route: "/", icon: "📊" },
-            { label: "Análise Gerencial", route: "/gerencial", icon: "💼" },
-            { label: "Simulador de Ofertas", route: "/simulador", icon: "⚙️" },
-            { label: "Simulador de Propostas", route: null, icon: "📝", active: true },
-            { label: "Comparativo de Livros", route: "/comparativo-livros", icon: "📚" },
+          {([
+            { label: "Análise de Custos", route: "/", icon: "📊", active: false },
+            { label: "Análise Gerencial", route: "/gerencial", icon: "💼", active: false },
+            { label: "Simulador de Ofertas", route: "/simulador", icon: "⚙️", active: false },
+            { label: "Simulador de Propostas", route: "" as string, icon: "📝", active: true },
+            { label: "Comparativo de Livros", route: "/comparativo-livros", icon: "📚", active: false },
             ...sidebarModules.filter(m => m.id !== "cruzamento").map(m => ({ label: m.label, route: "/", icon: m.icon, active: false })),
-          ].map((item, i) => (
+          ] as const).map((item, i) => (
             <button
               key={i}
               className="sidebar-nav-btn"
