@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Download, Search } from "lucide-react";
+import { Download, Search, Pencil, Trash2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface PropostaRow {
   id: string;
@@ -123,7 +124,7 @@ export default function PropostasAprovadas() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                {["Data", "Gerente", "BU", "Margem Ponderada", "Margem R$", "Volume Vendas", "Maior Pedido", "Observação", "PDF"].map((h) => (
+                {["Data", "Gerente", "BU", "Margem Ponderada", "Margem R$", "Volume Vendas", "Maior Pedido", "Observação", "PDF", "Ações"].map((h) => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {h}
                   </th>
@@ -133,13 +134,13 @@ export default function PropostasAprovadas() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                   <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
                     Carregando...
                   </td>
                 </tr>
               ) : propostas.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
                     Nenhuma proposta aprovada encontrada.
                   </td>
                 </tr>
@@ -178,6 +179,35 @@ export default function PropostasAprovadas() {
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                          onClick={() => {
+                            toast({ title: "Edição", description: "Funcionalidade de edição em desenvolvimento." });
+                          }}
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                          onClick={async () => {
+                            if (!confirm("Deseja realmente excluir esta proposta?")) return;
+                            if (p.pdf_path) {
+                              await supabase.storage.from("propostas-pdfs").remove([p.pdf_path]);
+                            }
+                            await supabase.from("propostas_aprovadas").delete().eq("id", p.id);
+                            toast({ title: "Proposta excluída com sucesso!" });
+                            fetchPropostas();
+                          }}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                   </tr>
                 ))
               )}
