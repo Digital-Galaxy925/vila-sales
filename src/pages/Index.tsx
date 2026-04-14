@@ -285,9 +285,9 @@ function MargemBadge({ marg }: { marg: number }) {
 
 function ABCBadge({ abc }: { abc: string }) {
   const colors: Record<string, [string, string]> = {
-    A: ["rgba(0,113,227,0.12)", "#0071e3"],
-    B: ["#1a2e1a", "#16a34a"],
-    C: ["#3b1f00", "#fb923c"],
+    A: ["rgba(0,113,227,0.1)", "#0071e3"],
+    B: ["rgba(22,163,74,0.1)", "#16a34a"],
+    C: ["rgba(217,119,6,0.1)", "#d97706"],
   };
   const letter = abc?.trim().toUpperCase() || "–";
   const [bg, fg] = colors[letter] || ["#e5e7eb", "#9ca3af"];
