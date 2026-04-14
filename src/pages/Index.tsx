@@ -2497,7 +2497,7 @@ export default function Index() {
                 width: 36,
                 height: 36,
                 borderRadius: 10,
-                background: "linear-gradient(135deg, #1d4ed8, #7c3aed)",
+                background: "#0071e3",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -2713,7 +2713,7 @@ export default function Index() {
               border: "none",
               background: loading || !canGenerate
                 ? "#e5e7eb"
-                : "linear-gradient(135deg, #1d4ed8, #7c3aed)",
+                : "#0071e3",
               color: loading || !canGenerate ? "#6b7280" : "#fff",
               cursor: loading || !canGenerate ? "not-allowed" : "pointer",
               fontSize: 14,
