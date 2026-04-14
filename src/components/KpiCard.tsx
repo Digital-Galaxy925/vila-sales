@@ -15,16 +15,16 @@ interface KpiCardProps {
 
 const variantStyles = {
   default: "border-border",
-  success: "border-l-4 border-l-success border-t-0 border-r-0 border-b-0",
-  warning: "border-l-4 border-l-warning border-t-0 border-r-0 border-b-0",
-  destructive: "border-l-4 border-l-destructive border-t-0 border-r-0 border-b-0",
+  success: "border-l-[3px] border-l-success border-t-0 border-r-0 border-b-0",
+  warning: "border-l-[3px] border-l-warning border-t-0 border-r-0 border-b-0",
+  destructive: "border-l-[3px] border-l-destructive border-t-0 border-r-0 border-b-0",
 };
 
 const iconBgStyles = {
-  default: "bg-primary/10 text-primary",
-  success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning",
-  destructive: "bg-destructive/10 text-destructive",
+  default: "bg-primary/8 text-primary",
+  success: "bg-success/8 text-success",
+  warning: "bg-warning/8 text-warning",
+  destructive: "bg-destructive/8 text-destructive",
 };
 
 const KpiCard = ({
@@ -40,23 +40,23 @@ const KpiCard = ({
 }: KpiCardProps) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       onClick={onClick}
-      className={`bg-card rounded-xl p-5 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-300 ${variantStyles[variant]} ${onClick ? "cursor-pointer" : ""} ${active ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]" : ""}`}
+      className={`bg-card rounded-xl p-4 shadow-card hover:shadow-card-hover transition-all duration-200 border ${variantStyles[variant]} ${onClick ? "cursor-pointer" : ""} ${active ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : ""}`}
     >
       <div className="flex items-start justify-between mb-3">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconBgStyles[variant]}`}>
-          <Icon className="w-5 h-5" />
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${iconBgStyles[variant]}`}>
+          <Icon className="w-[18px] h-[18px]" />
         </div>
         {trend && trendValue && (
           <div
-            className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
+            className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${
               trend === "up"
-                ? "bg-success/10 text-success"
+                ? "bg-success/8 text-success"
                 : trend === "down"
-                ? "bg-destructive/10 text-destructive"
+                ? "bg-destructive/8 text-destructive"
                 : "bg-muted text-muted-foreground"
             }`}
           >
@@ -69,14 +69,14 @@ const KpiCard = ({
           </div>
         )}
       </div>
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
         {title}
       </p>
-      <p className="text-2xl font-heading font-bold text-card-foreground">
+      <p className="text-xl font-semibold text-card-foreground tracking-[-0.02em]">
         {value}
       </p>
       {subtitle && (
-        <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+        <p className="text-[11px] text-muted-foreground mt-1">{subtitle}</p>
       )}
     </motion.div>
   );
