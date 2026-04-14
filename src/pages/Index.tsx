@@ -1238,6 +1238,21 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     </span>
                   </td>
 
+                  {/* Margem com Sell Out */}
+                  <td style={{ padding: "10px 16px", textAlign: "center", fontFamily: "monospace", fontWeight: 700 }}>
+                    {(() => {
+                      const margSellout = p.sellout > 0
+                        ? ((p.atual - (p.custoLiq - p.sellout)) / p.atual) * 100
+                        : 0;
+                      if (margSellout === 0) return <span style={{ color: "#d1d5db" }}>—</span>;
+                      return (
+                        <span style={{ color: margSellout >= minMargin ? "#16a34a" : "#dc2626" }}>
+                          {margSellout.toFixed(2)}%
+                        </span>
+                      );
+                    })()}
+                  </td>
+
                   {/* Adicionar Sell Out */}
                   <td style={{ padding: "10px 8px", textAlign: "center" }}>
                     <input
