@@ -6,13 +6,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Plus, Pencil, Trash2, FileDown, FileText, X, Check } from "lucide-react";
+import { CalendarIcon, Plus, Pencil, Trash2, FileDown, FileText, X, Check, TrendingUp, TrendingDown, ArrowUpCircle, ArrowDownCircle, Wallet } from "lucide-react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+type TipoLancamento = "debito" | "credito";
+
 interface Lancamento {
   id: string;
+  tipo: TipoLancamento;
   bu: string;
   negociacao: string;
   volume: number | null;
@@ -28,7 +31,9 @@ const STORAGE_KEY = "vilasales_conta_corrente";
 const loadData = (): Lancamento[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return parsed.map((l: any) => ({ ...l, tipo: l.tipo || "debito" }));
   } catch { return []; }
 };
 
@@ -37,6 +42,7 @@ const saveData = (data: Lancamento[]) => {
 };
 
 const emptyForm = (): Omit<Lancamento, "id"> => ({
+  tipo: "debito",
   bu: "",
   negociacao: "",
   volume: null,
@@ -91,7 +97,7 @@ const ContaCorrente = () => {
   };
 
   const handleEdit = (l: Lancamento) => {
-    setForm({ bu: l.bu, negociacao: l.negociacao, volume: l.volume, valorPedido: l.valorPedido, dataAprovacao: l.dataAprovacao, valorUnit: l.valorUnit, investimentoTotal: l.investimentoTotal, percInvestimento: l.percInvestimento });
+    setForm({ tipo: l.tipo, bu: l.bu, negociacao: l.negociacao, volume: l.volume, valorPedido: l.valorPedido, dataAprovacao: l.dataAprovacao, valorUnit: l.valorUnit, investimentoTotal: l.investimentoTotal, percInvestimento: l.percInvestimento });
     setEditingId(l.id);
     setShowForm(true);
   };
@@ -115,8 +121,13 @@ const ContaCorrente = () => {
     });
   }, [lancamentos, filterFrom, filterTo]);
 
+  const totalCredito = useMemo(() => filtered.filter((l) => l.tipo === "credito").reduce((s, l) => s + (l.investimentoTotal ?? 0), 0), [filtered]);
+  const totalDebito = useMemo(() => filtered.filter((l) => l.tipo === "debito").reduce((s, l) => s + (l.investimentoTotal ?? 0), 0), [filtered]);
+  const saldo = totalCredito - totalDebito;
+
   const exportExcel = () => {
     const rows = filtered.map((l) => ({
+      Tipo: l.tipo === "credito" ? "Crédito" : "Débito",
       BU: l.bu,
       Negociação: l.negociacao,
       Volume: l.volume ?? "",
@@ -140,9 +151,11 @@ const ContaCorrente = () => {
     doc.text("Conta Corrente", 14, 18);
     doc.setFontSize(9);
     doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 24);
+    doc.text(`Crédito: ${fmtMoney(totalCredito)}  |  Débito: ${fmtMoney(totalDebito)}  |  Saldo: ${fmtMoney(saldo)}`, 14, 30);
 
-    const head = [["BU", "Negociação", "Volume", "Valor Pedido", "Data Aprovação", "Valor Unit", "Investimento Total", "% Investimento"]];
+    const head = [["Tipo", "BU", "Negociação", "Volume", "Valor Pedido", "Data Aprovação", "Valor Unit", "Investimento Total", "% Investimento"]];
     const body = filtered.map((l) => [
+      l.tipo === "credito" ? "Crédito" : "Débito",
       l.bu,
       l.negociacao,
       fmtNum(l.volume),
@@ -154,7 +167,7 @@ const ContaCorrente = () => {
     ]);
 
     autoTable(doc, {
-      startY: 30,
+      startY: 36,
       head,
       body,
       styles: { fontSize: 8, cellPadding: 3 },
@@ -173,12 +186,40 @@ const ContaCorrente = () => {
     }
   };
 
-  const totalInvestimento = useMemo(() => filtered.reduce((s, l) => s + (l.investimentoTotal ?? 0), 0), [filtered]);
-  const totalValorPedido = useMemo(() => filtered.reduce((s, l) => s + (l.valorPedido ?? 0), 0), [filtered]);
-
   return (
     <div className="p-6 space-y-6">
       <PageHeader title="Conta Corrente" description="Gestão de negociações e investimentos" />
+
+      {/* Summary Cards - Crédito / Débito / Saldo */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="rounded-xl border border-border bg-card p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-success/15 flex items-center justify-center">
+            <ArrowUpCircle className="w-6 h-6 text-success" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground">Total Crédito</p>
+            <p className="text-2xl font-bold text-success">{fmtMoney(totalCredito)}</p>
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-destructive/15 flex items-center justify-center">
+            <ArrowDownCircle className="w-6 h-6 text-destructive" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground">Total Débito</p>
+            <p className="text-2xl font-bold text-destructive">{fmtMoney(totalDebito)}</p>
+          </div>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-5 flex items-center gap-4">
+          <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", saldo >= 0 ? "bg-success/15" : "bg-destructive/15")}>
+            {saldo >= 0 ? <TrendingUp className="w-6 h-6 text-success" /> : <TrendingDown className="w-6 h-6 text-destructive" />}
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground">Saldo</p>
+            <p className={cn("text-2xl font-bold", saldo >= 0 ? "text-success" : "text-destructive")}>{fmtMoney(saldo)}</p>
+          </div>
+        </div>
+      </div>
 
       {/* Filters + Actions */}
       <div className="flex flex-wrap items-end gap-4">
@@ -223,7 +264,7 @@ const ContaCorrente = () => {
             <FileText className="w-4 h-4 mr-1" /> PDF
           </Button>
           <Button size="sm" onClick={() => { setShowForm(true); setEditingId(null); setForm(emptyForm()); }}>
-            <Plus className="w-4 h-4 mr-1" /> Nova Negociação
+            <Plus className="w-4 h-4 mr-1" /> Novo Lançamento
           </Button>
         </div>
       </div>
@@ -231,7 +272,36 @@ const ContaCorrente = () => {
       {/* Form */}
       {showForm && (
         <div className="rounded-xl border border-border bg-card p-6 space-y-4 shadow-sm">
-          <h3 className="text-sm font-semibold text-foreground">{editingId ? "Editar Negociação" : "Nova Negociação"}</h3>
+          <h3 className="text-sm font-semibold text-foreground">{editingId ? "Editar Lançamento" : "Novo Lançamento"}</h3>
+          
+          {/* Tipo selector */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, tipo: "credito" }))}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all",
+                form.tipo === "credito"
+                  ? "border-success bg-success/10 text-success"
+                  : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+              )}
+            >
+              <ArrowUpCircle className="w-4 h-4" /> Crédito
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, tipo: "debito" }))}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all",
+                form.tipo === "debito"
+                  ? "border-destructive bg-destructive/10 text-destructive"
+                  : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+              )}
+            >
+              <ArrowDownCircle className="w-4 h-4" /> Débito
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">BU</label>
@@ -277,27 +347,12 @@ const ContaCorrente = () => {
         </div>
       )}
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Total Lançamentos</p>
-          <p className="text-2xl font-bold text-foreground">{filtered.length}</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Total Valor Pedido</p>
-          <p className="text-2xl font-bold text-foreground">{fmtMoney(totalValorPedido)}</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Total Investimento</p>
-          <p className="text-2xl font-bold text-foreground">{fmtMoney(totalInvestimento)}</p>
-        </div>
-      </div>
-
       {/* Table */}
       <div className="rounded-xl border border-border bg-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
+              <th className="text-center px-4 py-3 font-medium text-muted-foreground">Tipo</th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">BU</th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">Negociação</th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">Volume</th>
@@ -311,10 +366,21 @@ const ContaCorrente = () => {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={9} className="text-center py-10 text-muted-foreground">Nenhum lançamento encontrado</td></tr>
+              <tr><td colSpan={10} className="text-center py-10 text-muted-foreground">Nenhum lançamento encontrado</td></tr>
             ) : (
               filtered.map((l) => (
                 <tr key={l.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                  <td className="px-4 py-3 text-center">
+                    {l.tipo === "credito" ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-success bg-success/10 px-2 py-1 rounded-full">
+                        <ArrowUpCircle className="w-3 h-3" /> Crédito
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-destructive bg-destructive/10 px-2 py-1 rounded-full">
+                        <ArrowDownCircle className="w-3 h-3" /> Débito
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-medium">{l.bu || "—"}</td>
                   <td className="px-4 py-3">{l.negociacao}</td>
                   <td className="px-4 py-3 text-right">{fmtNum(l.volume)}</td>
