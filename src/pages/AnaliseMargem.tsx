@@ -136,7 +136,7 @@ const AnaliseMargem = () => {
       .slice(0, 100);
   }, [products, minMargem]);
 
-  const columns = [
+  const columns: { key: string; label: string; align?: "left" | "center" | "right"; render?: (v: any) => React.ReactNode }[] = [
     { key: "seqProd", label: "Código" },
     { key: "descricao", label: "Descrição" },
     { key: "custoLiq", label: "Custo", align: "right" as const, render: (v: number) => `R$ ${v.toFixed(2)}` },
