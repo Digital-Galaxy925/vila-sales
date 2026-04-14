@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Space+Grotesk:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,64 +6,65 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 30% 12%;
+    --background: 0 0% 97.5%;
+    --foreground: 220 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 12%;
+    --card-foreground: 220 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 12%;
+    --popover-foreground: 220 15% 15%;
 
-    --primary: 192 85% 40%;
+    --primary: 211 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 94%;
-    --secondary-foreground: 220 30% 12%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 15% 25%;
 
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 192 85% 40%;
+    --accent: 211 100% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 60% 42%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --info: 217 91% 60%;
+    --info: 211 100% 50%;
     --info-foreground: 0 0% 100%;
 
-    --sidebar-bg: 222 47% 11%;
-    --sidebar-fg: 220 20% 80%;
-    --sidebar-active: 192 85% 40%;
-    --sidebar-hover: 222 30% 18%;
+    --sidebar-bg: 220 20% 10%;
+    --sidebar-fg: 220 14% 72%;
+    --sidebar-active: 211 100% 50%;
+    --sidebar-hover: 220 16% 16%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 192 85% 40%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 211 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.625rem;
 
-    --font-heading: 'Space Grotesk', sans-serif;
-    --font-body: 'DM Sans', sans-serif;
+    --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
-    --shadow-card-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02);
+    --shadow-card-hover: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -2px rgba(0, 0, 0, 0.04);
+    --shadow-elevated: 0 8px 30px -4px rgba(0, 0, 0, 0.1), 0 4px 10px -4px rgba(0, 0, 0, 0.04);
 
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 220 20% 80%;
-    --sidebar-primary: 192 85% 40%;
+    --sidebar-background: 220 20% 10%;
+    --sidebar-foreground: 220 14% 72%;
+    --sidebar-primary: 211 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 30% 18%;
-    --sidebar-accent-foreground: 220 20% 95%;
-    --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 192 85% 40%;
+    --sidebar-accent: 220 16% 16%;
+    --sidebar-accent-foreground: 220 14% 92%;
+    --sidebar-border: 220 16% 16%;
+    --sidebar-ring: 211 100% 50%;
   }
 }
 
@@ -73,21 +74,51 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+    letter-spacing: -0.015em;
   }
 }
 
+/* Sidebar nav transitions */
+.sidebar-nav-btn {
+  transition: all 0.15s ease;
+}
 .sidebar-nav-btn:hover {
-  background: rgba(30, 58, 95, 0.5) !important;
-  color: #94a3b8 !important;
-  transform: translateX(4px);
+  background: hsl(220 16% 16%) !important;
+  color: hsl(220 14% 92%) !important;
+  transform: translateX(2px);
 }
 
-.sidebar-nav-btn {
-  transition: all 0.2s ease !important;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(220 13% 85%);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(220 13% 75%);
+}
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid hsl(211 100% 50%);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: hsl(211 100% 50% / 0.15);
 }

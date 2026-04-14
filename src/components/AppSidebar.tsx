@@ -37,50 +37,53 @@ const AppSidebar = () => {
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-sidebar-bg flex flex-col z-50">
-      <div className="p-6 border-b border-sidebar-hover">
+      {/* Brand */}
+      <div className="px-5 py-5 border-b border-white/[0.06]">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-primary-foreground" />
+          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+            <BarChart3 className="w-[18px] h-[18px] text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-heading text-sm font-bold text-white tracking-tight">
+            <h1 className="text-[13px] font-semibold text-white tracking-[-0.01em]">
               Vila Sales
             </h1>
-            <p className="text-xs text-sidebar-fg opacity-60">
+            <p className="text-[11px] text-white/40">
               Gestão Comercial
             </p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
           return (
             <NavLink
               key={item.to}
               to={item.to}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] transition-all duration-150 ${
                 isActive
-                  ? "bg-primary/15 text-sidebar-active"
-                  : "text-sidebar-fg hover:bg-sidebar-hover hover:text-white hover:translate-x-1"
+                  ? "bg-primary/15 text-white font-medium"
+                  : "text-white/50 hover:bg-white/[0.06] hover:text-white/80"
               }`}
             >
-              <item.icon className={`w-4.5 h-4.5 ${isActive ? "text-sidebar-active" : ""}`} />
-              {item.label}
+              <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-primary" : "text-white/40"}`} />
+              <span className="truncate">{item.label}</span>
             </NavLink>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-hover">
-        <div className="flex items-center gap-3 px-3 py-2">
-          <div className="w-8 h-8 rounded-full bg-sidebar-hover flex items-center justify-center text-xs font-bold text-sidebar-fg">
+      {/* Footer */}
+      <div className="px-4 py-3 border-t border-white/[0.06]">
+        <div className="flex items-center gap-2.5 px-2 py-1.5">
+          <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-[11px] font-semibold text-primary">
             FP
           </div>
           <div>
-            <p className="text-xs font-medium text-white">Fábio</p>
-            <p className="text-[10px] text-sidebar-fg opacity-60">Compras</p>
+            <p className="text-[12px] font-medium text-white/80">Fábio</p>
+            <p className="text-[10px] text-white/30">Compras</p>
           </div>
         </div>
       </div>

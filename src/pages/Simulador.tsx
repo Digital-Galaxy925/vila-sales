@@ -103,28 +103,30 @@ export default function Simulador() {
   const showResults = produto && precoVenda > 0;
 
   return (
-    <div style={{ padding: "24px 32px", minHeight: "100vh", background: "#0b1120", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", color: "#e2e8f0" }}>
-      <h1 style={{ fontSize: 20, fontWeight: 800, marginBottom: 2 }}>🎛️ Simulador de Ofertas</h1>
-      <p style={{ color: "#64748b", fontSize: 12, marginBottom: 20 }}>
+    <div style={{ padding: "28px 36px", minHeight: "100vh", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1a1a2e" }}>
+      <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4, letterSpacing: "-0.02em", color: "#0f172a" }}>
+        Simulador de Ofertas
+      </h1>
+      <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>
         Simule preços, margens e sell out de um produto específico por filial.
       </p>
 
       {!hasData ? (
-        <div style={{ background: "#1e293b", borderRadius: 12, padding: 32, textAlign: "center", border: "1px solid #334155" }}>
-          <p style={{ color: "#94a3b8", fontSize: 14, marginBottom: 16 }}>
+        <div style={{ background: "#fff", borderRadius: 12, padding: 40, textAlign: "center", border: "1px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+          <p style={{ color: "#6b7280", fontSize: 14, marginBottom: 16 }}>
             Nenhum dado carregado. Faça o upload dos arquivos na tela principal primeiro.
           </p>
           <button
             onClick={() => navigate("/")}
-            style={{ background: "#3b82f6", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", cursor: "pointer", fontWeight: 600, fontSize: 13 }}
+            style={{ background: "#0071e3", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", cursor: "pointer", fontWeight: 500, fontSize: 13 }}
           >
             Ir para Upload
           </button>
         </div>
       ) : (
         <>
-          {/* ─── Inputs: compact horizontal bar ─── */}
-          <div style={{ background: "#111827", borderRadius: 12, padding: "16px 20px", border: "1px solid #1e293b", marginBottom: 16 }}>
+          {/* ─── Inputs ─── */}
+          <div style={{ background: "#fff", borderRadius: 12, padding: "18px 22px", border: "1px solid #e5e7eb", marginBottom: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, alignItems: "end" }}>
               <div>
                 <label style={labelStyle}>Código do Produto</label>
@@ -152,24 +154,24 @@ export default function Simulador() {
           {/* ─── Product info bar ─── */}
           {codigo.trim() && (
             <div style={{
-              background: produto ? "#0d1f17" : "#1f1215",
-              border: `1px solid ${produto ? "#166534" : "#7f1d1d"}`,
-              borderRadius: 10, padding: "20px 24px", marginBottom: 16, fontSize: 13,
+              background: produto ? "#f0fdf4" : "#fef2f2",
+              border: `1px solid ${produto ? "#bbf7d0" : "#fecaca"}`,
+              borderRadius: 10, padding: "16px 20px", marginBottom: 16, fontSize: 13,
             }}>
               {produto ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                  <span style={{ color: "#4ade80", fontWeight: 700 }}>✅ {produto.descricao}</span>
-                  <Chip label="Custo" value={fmt(custoUnitario)} color="#fbbf24" />
-                  <Chip label="Unid/CX" value={String(qtdPorCaixa)} color="#e2e8f0" />
-                  <Chip label="Estoque" value={String(produto.estoque)} color="#e2e8f0" />
-                  <Chip label="Preço Atual" value={fmt(produto.atual)} color="#e2e8f0" />
-                  <Chip label="Promocional" value={fmt(produto.promoc ?? 0)} color="#c084fc" />
-                  <Chip label="Sell Out" value={fmt(produto.sellout ?? 0)} color="#38bdf8" />
+                  <span style={{ color: "#16a34a", fontWeight: 600 }}>✓ {produto.descricao}</span>
+                  <Chip label="Custo" value={fmt(custoUnitario)} color="#d97706" />
+                  <Chip label="Unid/CX" value={String(qtdPorCaixa)} color="#374151" />
+                  <Chip label="Estoque" value={String(produto.estoque)} color="#374151" />
+                  <Chip label="Preço Atual" value={fmt(produto.atual)} color="#374151" />
+                  <Chip label="Promocional" value={fmt(produto.promoc ?? 0)} color="#7c3aed" />
+                  <Chip label="Sell Out" value={fmt(produto.sellout ?? 0)} color="#0284c7" />
                   {(() => {
                     const promo = produto.promoc ?? 0;
                     const precoRef = promo > 0 ? promo : produto.atual;
                     const margAtual = precoRef > 0 ? (precoRef - custoUnitario) / precoRef : 0;
-                    const corMarg = margAtual >= 0.17 ? "#4ade80" : margAtual >= 0.10 ? "#fbbf24" : "#f87171";
+                    const corMarg = margAtual >= 0.17 ? "#16a34a" : margAtual >= 0.10 ? "#d97706" : "#dc2626";
                     return <Chip label="Margem Atual" value={fmtPct(margAtual)} color={corMarg} />;
                   })()}
                   {(() => {
@@ -179,12 +181,12 @@ export default function Simulador() {
                     const pc = custoUnitario;
                     const so = produto.sellout ?? 0;
                     const margPromo = precoRef > 0 ? (precoRef - (pc - so)) / precoRef : 0;
-                    const corMargPromo = margPromo >= 0.17 ? "#4ade80" : margPromo >= 0.10 ? "#fbbf24" : "#f87171";
+                    const corMargPromo = margPromo >= 0.17 ? "#16a34a" : margPromo >= 0.10 ? "#d97706" : "#dc2626";
                     return <Chip label="Margem Promocional" value={fmtPct(margPromo)} color={corMargPromo} />;
                   })()}
                 </div>
               ) : (
-                <span style={{ color: "#f87171" }}>❌ Produto não encontrado na filial {filial} – {FILIAIS.find(f => f.id === filial)?.nome}</span>
+                <span style={{ color: "#dc2626" }}>Produto não encontrado na filial {filial} – {FILIAIS.find(f => f.id === filial)?.nome}</span>
               )}
             </div>
           )}
@@ -192,80 +194,78 @@ export default function Simulador() {
           {/* ─── Results Dashboard ─── */}
           {showResults && (
             <>
-              {/* Row 1: Key metrics */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 12 }}>
-                <KpiCard
+                <SimKpiCard
                   label="Margem Real"
                   value={fmtPct(margemReal)}
-                  color={margemReal >= 0.17 ? "#4ade80" : margemReal >= 0.10 ? "#fbbf24" : "#f87171"}
+                  color={margemReal >= 0.17 ? "#16a34a" : margemReal >= 0.10 ? "#d97706" : "#dc2626"}
                   sub={`(${fmt(precoVenda)} − ${fmt(custoUnitario)}) / ${fmt(precoVenda)}`}
                 />
-                <KpiCard label="Preço de Custo" value={fmt(custoUnitario)} color="#fbbf24" />
-                <KpiCard label="Preço Venda Desejado" value={fmt(precoVenda)} color="#60a5fa" />
-                <KpiCard
+                <SimKpiCard label="Preço de Custo" value={fmt(custoUnitario)} color="#d97706" />
+                <SimKpiCard label="Preço Venda Desejado" value={fmt(precoVenda)} color="#0071e3" />
+                <SimKpiCard
                   label="Lucro por Unidade"
                   value={fmt(precoVenda - custoUnitario)}
-                  color={precoVenda - custoUnitario > 0 ? "#4ade80" : "#f87171"}
+                  color={precoVenda - custoUnitario > 0 ? "#16a34a" : "#dc2626"}
                 />
               </div>
 
-              {/* Row 2: Sell Out projection */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 12 }}>
                 <MiniKpi label="Volume (CX)" value={volume.toLocaleString("pt-BR")} />
                 <MiniKpi label="Unid/CX" value={String(qtdPorCaixa)} />
                 <MiniKpi label="Total Unidades" value={totalUnidades.toLocaleString("pt-BR")} />
-                <KpiCard
+                <SimKpiCard
                   label="Valor Total Sell Out"
                   value={fmt(totalSellOut)}
-                  color="#a78bfa"
+                  color="#7c3aed"
                   sub={`${volume} cx × ${qtdPorCaixa} un × ${fmt(precoVenda)}`}
                   highlight
                 />
               </div>
 
-              {/* Row 3: Margem Mínima + Investment analysis */}
-              <div style={{ background: "#111827", borderRadius: 12, padding: "16px 20px", border: "1px solid #1e293b" }}>
+              {/* Investment analysis */}
+              <div style={{ background: "#fff", borderRadius: 12, padding: "18px 22px", border: "1px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 14 }}>
-                  <h3 style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", margin: 0 }}>
-                    💰 Análise de Investimento
+                  <h3 style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: 0 }}>
+                    Análise de Investimento
                   </h3>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>Margem Mínima (%):</label>
+                    <label style={{ fontSize: 11, fontWeight: 500, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Margem Mínima (%):</label>
                     <input type="text" value={margemMinimaDesejada} onChange={(e) => setMargemMinimaDesejada(e.target.value)} placeholder="17" style={{ ...inputStyle, width: 80 }} />
                   </div>
                   {margemMinima > 0 && margemMinima < 1 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#0f1729", borderRadius: 8, padding: "6px 14px", border: "1px solid #1e293b" }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>Preço Sugerido:</span>
-                      <span style={{ fontSize: 15, fontWeight: 800, color: "#60a5fa" }}>{fmt(custoUnitario / (1 - margemMinima))}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f0f9ff", borderRadius: 8, padding: "6px 14px", border: "1px solid #bae6fd" }}>
+                      <span style={{ fontSize: 11, fontWeight: 500, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Preço Sugerido:</span>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: "#0071e3" }}>{fmt(custoUnitario / (1 - margemMinima))}</span>
                     </div>
                   )}
                 </div>
                 {margemReal >= margemMinima ? (
                   <div style={{
-                    background: "#0f2a1f", borderRadius: 10, padding: "14px 20px",
-                    border: "1px solid #166534", fontSize: 13, color: "#4ade80", fontWeight: 600,
+                    background: "#f0fdf4", borderRadius: 10, padding: "14px 20px",
+                    border: "1px solid #bbf7d0", fontSize: 13, color: "#16a34a", fontWeight: 500,
                   }}>
-                    ✅ A margem atual ({fmtPct(margemReal)}) já atende a margem mínima de {fmtPct(margemMinima)}. Nenhum investimento necessário.
+                    ✓ A margem atual ({fmtPct(margemReal)}) já atende a margem mínima de {fmtPct(margemMinima)}. Nenhum investimento necessário.
                   </div>
                 ) : (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
-                    <KpiCard
+                    <SimKpiCard
                       label="Investimento / Unidade"
                       value={fmt(investimentoPorUnidade)}
-                      color="#f87171"
+                      color="#dc2626"
                       sub={`Custo ${fmt(custoUnitario)} − Máx. permitido ${fmt(precoVenda * (1 - margemMinima))}`}
                     />
-                    <KpiCard
+                    <SimKpiCard
                       label="Investimento Total"
                       value={fmt(investimentoTotal)}
-                      color="#f87171"
+                      color="#dc2626"
                       sub={`${fmt(investimentoPorUnidade)} × ${totalUnidades.toLocaleString("pt-BR")} unidades`}
                       highlight
                     />
-                    <KpiCard
+                    <SimKpiCard
                       label="% de Investimento"
                       value={fmtPct(percentualInvestimento)}
-                      color="#fbbf24"
+                      color="#d97706"
                       sub={`${fmt(investimentoTotal)} / ${fmt(totalSellOut)}`}
                     />
                   </div>
@@ -281,40 +281,42 @@ export default function Simulador() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const labelStyle: React.CSSProperties = {
-  display: "block", fontSize: 11, fontWeight: 600, color: "#64748b",
-  marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5,
+  display: "block", fontSize: 11, fontWeight: 500, color: "#6b7280",
+  marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.4,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "9px 12px", borderRadius: 8,
-  border: "1px solid #334155", background: "#0b1120", color: "#e2e8f0",
+  border: "1px solid #d1d5db", background: "#fafafa", color: "#1f2937",
   fontSize: 13, outline: "none", boxSizing: "border-box",
+  transition: "border-color 0.15s ease",
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function Chip({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <span style={{ color: "#94a3b8", fontSize: 12 }}>
-      {label}: <strong style={{ color }}>{value}</strong>
+    <span style={{ color: "#6b7280", fontSize: 12 }}>
+      {label}: <strong style={{ color, fontWeight: 600 }}>{value}</strong>
     </span>
   );
 }
 
-function KpiCard({ label, value, color, sub, highlight }: {
+function SimKpiCard({ label, value, color, sub, highlight }: {
   label: string; value: string; color: string; sub?: string; highlight?: boolean;
 }) {
   return (
     <div style={{
-      background: highlight ? "#111827" : "#0f1729", borderRadius: 10,
-      padding: "14px 16px", border: `1px solid ${highlight ? "#334155" : "#1e293b"}`,
+      background: "#fff", borderRadius: 10,
+      padding: "14px 16px", border: `1px solid ${highlight ? "#d1d5db" : "#e5e7eb"}`,
+      boxShadow: highlight ? "0 2px 8px rgba(0,0,0,0.06)" : "0 1px 3px rgba(0,0,0,0.04)",
     }}>
-      <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+      <div style={{ fontSize: 10, color: "#6b7280", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>
         {label}
       </div>
-      <div style={{ fontSize: highlight ? 22 : 18, fontWeight: 800, color }}>
+      <div style={{ fontSize: highlight ? 22 : 18, fontWeight: 700, color, letterSpacing: "-0.02em" }}>
         {value}
       </div>
-      {sub && <div style={{ fontSize: 10, color: "#475569", marginTop: 4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 4 }}>{sub}</div>}
     </div>
   );
 }
@@ -322,13 +324,14 @@ function KpiCard({ label, value, color, sub, highlight }: {
 function MiniKpi({ label, value }: { label: string; value: string }) {
   return (
     <div style={{
-      background: "#0f1729", borderRadius: 10, padding: "14px 16px",
-      border: "1px solid #1e293b", textAlign: "center",
+      background: "#fff", borderRadius: 10, padding: "14px 16px",
+      border: "1px solid #e5e7eb", textAlign: "center",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
     }}>
-      <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+      <div style={{ fontSize: 10, color: "#6b7280", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>
         {label}
       </div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0" }}>{value}</div>
+      <div style={{ fontSize: 18, fontWeight: 600, color: "#1f2937" }}>{value}</div>
     </div>
   );
 }

@@ -3,9 +3,9 @@ import AppSidebar from "./AppSidebar";
 
 const AppLayout = () => {
   return (
-    <div className="min-h-screen" style={{ background: "#0b1120" }}>
+    <div className="min-h-screen bg-background">
       <AppSidebar />
-      <main className="ml-64" style={{ background: "#0b1120" }}>
+      <main className="ml-64 bg-background min-h-screen">
         <Outlet />
       </main>
     </div>
