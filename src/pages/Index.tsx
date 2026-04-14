@@ -2337,11 +2337,19 @@ export default function Index() {
           const estoqueStr = overrideEstoqueRow?.estoque && num(overrideEstoqueRow.estoque) !== 0
             ? overrideEstoqueRow.estoque
             : cols[finalColEstoque] ?? "0";
-          // Custo e preço: se existe override de preços (livro_10/510), SEMPRE usar dele
-          const custoStr = overridePrecosRow?.custo ?? cols[finalColCusto] ?? "0";
-          const precoStr = overridePrecosRow?.preco ?? cols[finalColPreco] ?? "0";
-          const selloutStr = overridePrecosRow?.sellout ?? (finalColSellout >= 0 ? cols[finalColSellout] : undefined) ?? "0";
-          const promocStr = overridePrecosRow?.promoc ?? (finalColPromoc >= 0 ? cols[finalColPromoc] : undefined) ?? "0";
+          // Custo e preço: se existe override de preços (livro_10/510), SEMPRE usar dele — sem fallback para o arquivo base
+          const custoStr = overridePrecos
+            ? (overridePrecosRow?.custo ?? "0")
+            : (cols[finalColCusto] ?? "0");
+          const precoStr = overridePrecos
+            ? (overridePrecosRow?.preco ?? "0")
+            : (cols[finalColPreco] ?? "0");
+          const selloutStr = overridePrecos
+            ? (overridePrecosRow?.sellout ?? "0")
+            : ((finalColSellout >= 0 ? cols[finalColSellout] : undefined) ?? "0");
+          const promocStr = overridePrecos
+            ? (overridePrecosRow?.promoc ?? "0")
+            : ((finalColPromoc >= 0 ? cols[finalColPromoc] : undefined) ?? "0");
 
           const estoque = num(estoqueStr);
           const custoLiq = num(custoStr);
