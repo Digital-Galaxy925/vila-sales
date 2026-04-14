@@ -226,7 +226,7 @@ const ContaCorrente = () => {
     if (["volume", "valorPedido", "valorUnit", "investimentoTotal", "percInvestimento"].includes(key)) {
       setForm((f) => ({ ...f, [key]: value === "" ? null : parseNum(value) }));
     } else {
-      setForm((f) => ({ ...f, [key]: value }));
+      setForm((f) => ({ ...f, [key]: value.toUpperCase() }));
     }
   };
 
