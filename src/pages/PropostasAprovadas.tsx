@@ -157,7 +157,7 @@ export default function PropostasAprovadas() {
                           variant="outline"
                           size="sm"
                           className="gap-1"
-                          onClick={() => downloadPDF(p.pdf_path!, p.nome_gerente)}
+                          onClick={() => downloadPDF(p.pdf_path!)}
                         >
                           <Download className="w-3.5 h-3.5" /> PDF
                         </Button>
