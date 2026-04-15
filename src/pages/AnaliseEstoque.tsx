@@ -52,6 +52,7 @@ const filialNames: Record<string, string> = {
 
 const columns = [
   { key: "filialNome", label: "CD" },
+  { key: "bu", label: "BU", align: "center" as const },
   { key: "seqProd", label: "Código" },
   { key: "descricao", label: "Descrição" },
   { key: "embCmp", label: "Unid/CX", align: "center" as const },
@@ -190,6 +191,7 @@ const AnaliseEstoque = () => {
   const exportToExcel = useCallback(() => {
     const rows = filtered.map((p: any) => ({
       "CD": p.filialNome,
+      "BU": p.bu || "",
       "Código": p.seqProd,
       "Descrição": p.descricao,
       "Unid/CX": p.embCmp,
