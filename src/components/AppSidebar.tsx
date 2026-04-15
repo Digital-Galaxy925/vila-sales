@@ -17,6 +17,7 @@ import {
 const navItems = [
   { to: "/manual", label: "Análise de Custos", icon: BarChart3 },
   { to: "/gerencial", label: "Análise Gerencial", icon: BriefcaseBusiness },
+  { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
   { to: "/propostas-aprovadas", label: "Propostas Aprovadas", icon: FileText },
@@ -25,7 +26,6 @@ const navItems = [
   { to: "/tabela-st", label: "Tabela de ST", icon: Table },
   { to: "/upload-st", label: "Upload ST", icon: Upload },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
-  { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
   { to: "/preco", label: "Análise de Preço", icon: DollarSign },
   { to: "/shelf-life", label: "Análise de Shelf Life", icon: Clock },
   { to: "/", label: "Análise Geral", icon: LayoutDashboard },
