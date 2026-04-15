@@ -19,6 +19,7 @@ import UploadDados from "./pages/UploadDados";
 import TabelaST from "./pages/TabelaST";
 import UploadST from "./pages/UploadST";
 import PropostasAprovadas from "./pages/PropostasAprovadas";
+import AnaliseGeral from "./pages/AnaliseGeral";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,7 +32,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<AnaliseGeral />} />
             <Route path="/manual" element={<Index />} />
             <Route path="/gerencial" element={<AnaliseGerencial />} />
             <Route path="/simulador" element={<Simulador />} />
