@@ -1261,26 +1261,21 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     />
                   </td>
 
-                  {/* Adicionar Sell Out */}
-                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      placeholder="—"
-                      value={addedSellout[`${p.filial}-${p.seqProd}`] || ""}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9.,]/g, "");
-                        setAddedSellout((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: val }));
-                      }}
-                      style={{
-                        width: 80, padding: "5px 8px", borderRadius: 6,
-                        background: "#ffffff", border: "1px solid #d1d5db", color: "#16a34a",
-                        fontSize: 13, fontFamily: "monospace", fontWeight: 700, textAlign: "center",
-                        outline: "none",
-                      }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = "#16a34a")}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-                    />
+                  {/* Adicionar Sell Out (calculado) */}
+                  <td style={{ padding: "10px 8px", textAlign: "center", fontFamily: "monospace", fontWeight: 700, fontSize: 13, whiteSpace: "nowrap" }}>
+                    {(() => {
+                      const key = `${p.filial}-${p.seqProd}`;
+                      const margInput = margSelloutInput[key];
+                      if (!margInput) return <span style={{ color: "#9ca3af" }}>—</span>;
+                      const margDesejada = num(margInput);
+                      if (margDesejada <= 0 || margDesejada >= 100) return <span style={{ color: "#9ca3af" }}>—</span>;
+                      const precoAlvo = p.promoc > 0 ? p.promoc : p.atual;
+                      if (precoAlvo <= 0) return <span style={{ color: "#9ca3af" }}>—</span>;
+                      const custoMaximo = precoAlvo * (1 - margDesejada / 100);
+                      const selloutNecessario = p.custoLiq - custoMaximo;
+                      if (selloutNecessario <= 0) return <span style={{ color: "#16a34a" }}>—</span>;
+                      return <span style={{ color: "#16a34a" }}>R$ {selloutNecessario.toFixed(2)}</span>;
+                    })()}
                   </td>
 
                   {/* Margem Desejada */}
