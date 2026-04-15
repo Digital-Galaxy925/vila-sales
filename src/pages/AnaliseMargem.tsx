@@ -1,7 +1,10 @@
-import { useState, useMemo } from "react";
-import { TrendingUp, TrendingDown, AlertTriangle, Target, Search } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { TrendingUp, TrendingDown, AlertTriangle, Target, Search, Download, FileText } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { motion } from "framer-motion";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
@@ -177,6 +180,51 @@ const AnaliseMargem = () => {
     { key: "margemCalc", label: "Margem", align: "center" as const, render: (v: number) => <MarginBadge value={v} /> },
   ];
 
+  const exportToExcel = useCallback(() => {
+    const rows = filteredProducts.map((p: any) => ({
+      "CD": p.filialNome || "",
+      "BU": p.bu || "",
+      "Código": p.seqProd,
+      "Descrição": p.descricao,
+      "Custo": p.custoLiq,
+      "Venda": p.atual,
+      "Promocional": p.promoc || 0,
+      "Margem (%)": parseFloat(p.margemCalc.toFixed(2)),
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = Object.keys(rows[0] || {}).map((k) => ({ wch: Math.max(k.length, 15) }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Margem");
+    XLSX.writeFile(wb, "analise_margem.xlsx");
+  }, [filteredProducts]);
+
+  const exportToPdf = useCallback(() => {
+    const doc = new jsPDF({ orientation: "landscape" });
+    doc.setFontSize(16);
+    doc.text("Análise de Margem", 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Meta mínima: ${minMargem}% | ${filteredProducts.length} produtos`, 14, 22);
+
+    autoTable(doc, {
+      startY: 28,
+      head: [["CD", "BU", "Código", "Descrição", "Custo", "Venda", "Promocional", "Margem (%)"]],
+      body: filteredProducts.map((p: any) => [
+        p.filialNome || "",
+        p.bu || "",
+        p.seqProd,
+        p.descricao,
+        `R$ ${p.custoLiq.toFixed(2)}`,
+        `R$ ${p.atual.toFixed(2)}`,
+        p.promoc > 0 ? `R$ ${p.promoc.toFixed(2)}` : "—",
+        `${p.margemCalc.toFixed(1)}%`,
+      ]),
+      styles: { fontSize: 7, cellPadding: 2 },
+      headStyles: { fillColor: [37, 99, 235] },
+    });
+
+    doc.save("analise_margem.pdf");
+  }, [filteredProducts, minMargem]);
+
   return (
     <div>
       <PageHeader
@@ -184,6 +232,14 @@ const AnaliseMargem = () => {
         description={`Margem = (Preço Venda − Preço Custo) / Preço Venda · Meta: ≥ ${minMargem}%`}
         actions={
           <div className="flex items-center gap-3">
+            <Button onClick={exportToExcel} variant="outline" size="sm" className="font-semibold">
+              <Download className="w-4 h-4 mr-2" />
+              Exportar Excel
+            </Button>
+            <Button onClick={exportToPdf} variant="outline" size="sm" className="font-semibold">
+              <FileText className="w-4 h-4 mr-2" />
+              Exportar PDF
+            </Button>
             <div className="flex items-center gap-2">
               <label className="text-xs text-muted-foreground whitespace-nowrap">Meta mínima:</label>
               <Input
