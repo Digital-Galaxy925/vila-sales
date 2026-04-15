@@ -28,6 +28,7 @@ const calcMargem = (pv: number, pc: number) => (pv > 0 ? ((pv - pc) / pv) * 100 
 
 const AnaliseMargem = () => {
   const [filial, setFilial] = useState("all");
+  const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [minMargem, setMinMargem] = useState(17);
   const [activeFilter, setActiveFilter] = useState<"all" | "abaixo" | "acima" | "minima">("all");
@@ -60,6 +61,11 @@ const AnaliseMargem = () => {
     // Filter out products with no price data
     allProducts = allProducts.filter((p) => p.atual > 0 && p.custoLiq > 0);
 
+    // Apply BU filter
+    if (buFilter !== "all") {
+      allProducts = allProducts.filter((p: any) => (p.bu || "").toUpperCase() === buFilter);
+    }
+
     // Apply search
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -71,7 +77,7 @@ const AnaliseMargem = () => {
     }
 
     return allProducts;
-  }, [data, filial, searchTerm]);
+  }, [data, filial, searchTerm, buFilter]);
 
   // KPIs
   const kpis = useMemo(() => {
@@ -180,6 +186,19 @@ const AnaliseMargem = () => {
         }
       />
 
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        {(["all", "HC", "FR"] as const).map((bu) => (
+          <Button
+            key={bu}
+            variant={buFilter === bu ? "default" : "outline"}
+            size="sm"
+            onClick={() => setBuFilter(bu)}
+            className="font-semibold"
+          >
+            {bu === "all" ? "Todas as BUs" : bu}
+          </Button>
+        ))}
+      </div>
       <div className="mb-6">
         <FilialSelector selected={filial} onChange={setFilial} />
       </div>
