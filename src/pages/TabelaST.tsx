@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Search, AlertCircle, Package, Calculator } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
