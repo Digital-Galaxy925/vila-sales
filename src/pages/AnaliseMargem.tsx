@@ -43,7 +43,7 @@ const AnaliseMargem = () => {
   const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [minMargem, setMinMargem] = useState(17);
-  const [activeFilter, setActiveFilter] = useState<"all" | "abaixo" | "acima" | "minima">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "abaixo" | "acima" | "minima" | "critical" | "warning">("all");
 
   const data: DataMap = useMemo(() => {
     try {
@@ -155,10 +155,12 @@ const AnaliseMargem = () => {
     } else if (activeFilter === "acima") {
       filtered = products.filter((p) => p.margemCalc >= minMargem);
     } else if (activeFilter === "minima") {
-      // Show bottom 20 worst margins
       filtered = [...products].sort((a, b) => a.margemCalc - b.margemCalc).slice(0, 20);
+    } else if (activeFilter === "critical") {
+      filtered = products.filter((p) => p.margemCalc < 10);
+    } else if (activeFilter === "warning") {
+      filtered = products.filter((p) => p.margemCalc >= 10 && p.margemCalc < minMargem);
     }
-    // For "all", show all products
     return filtered.sort((a, b) => a.margemCalc - b.margemCalc).slice(0, 200);
   }, [products, minMargem, activeFilter]);
 
@@ -167,6 +169,8 @@ const AnaliseMargem = () => {
     abaixo: `Produtos Abaixo de ${minMargem}%`,
     acima: `Produtos Acima de ${minMargem}%`,
     minima: "Produtos com Menor Margem",
+    critical: "Produtos com Margem < 10%",
+    warning: `Produtos com Margem 10-${minMargem}%`,
   };
 
   const columns: { key: string; label: string; align?: "left" | "center" | "right"; render?: (v: any) => React.ReactNode }[] = [
@@ -323,9 +327,13 @@ const AnaliseMargem = () => {
           </div>
 
           {/* Alerts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-            <AlertCard type="critical" title="Margens < 10%" description="Ação urgente: produtos com margem abaixo de 10%" count={criticalCount} />
-            <AlertCard type="warning" title={`Margens 10-${minMargem}%`} description={`Revisar precificação: produtos entre 10% e ${minMargem}%`} count={warningCount} />
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+            <div onClick={() => setActiveFilter(activeFilter === "critical" ? "all" : "critical")} className={`cursor-pointer rounded-xl transition-all ${activeFilter === "critical" ? "ring-2 ring-destructive" : ""}`}>
+              <AlertCard type="critical" title="Margens < 10%" description="Ação urgente: produtos com margem abaixo de 10%" count={criticalCount} />
+            </div>
+            <div onClick={() => setActiveFilter(activeFilter === "warning" ? "all" : "warning")} className={`cursor-pointer rounded-xl transition-all ${activeFilter === "warning" ? "ring-2 ring-warning" : ""}`}>
+              <AlertCard type="warning" title={`Margens 10-${minMargem}%`} description={`Revisar precificação: produtos entre 10% e ${minMargem}%`} count={warningCount} />
+            </div>
           </div>
 
           {/* Distribution Chart */}
