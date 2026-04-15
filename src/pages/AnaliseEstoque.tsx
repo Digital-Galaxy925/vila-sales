@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
-import { Package, AlertTriangle, Clock, Search } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { Package, AlertTriangle, Clock, Search, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
@@ -162,16 +163,43 @@ const AnaliseEstoque = () => {
   const excessivo = useMemo(() => filtered.filter((p: any) => p.ddv > 90).length, [filtered]);
   const ruptura = useMemo(() => filtered.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7).length, [filtered]);
 
+  const exportToExcel = useCallback(() => {
+    const rows = filtered.map((p: any) => ({
+      "Código": p.seqProd,
+      "Descrição": p.descricao,
+      "Unid/CX": p.embCmp,
+      "Estoque": p.estoque,
+      "Cobertura (dias)": p.ddv,
+      "Preço de Custo": p.custoLiq,
+      "Preço de Venda": p.atual,
+      "Valor Estoque Custo": p.valorEstoque,
+      "Valor Estoque Venda": p.valorEstoqueVenda,
+      "Status": p.status,
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const colWidths = Object.keys(rows[0] || {}).map((k) => ({ wch: Math.max(k.length, 15) }));
+    ws["!cols"] = colWidths;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Estoque");
+    XLSX.writeFile(wb, "analise_estoque.xlsx");
+  }, [filtered]);
+
   return (
     <div>
       <PageHeader
         title="Análise de Estoque"
         description="Níveis de estoque, cobertura e valores por produto e filial"
         actions={
-          <Button className="bg-primary text-primary-foreground font-semibold">
-            <Package className="w-4 h-4 mr-2" />
-            Gerar Análise
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={exportToExcel} variant="outline" className="font-semibold">
+              <Download className="w-4 h-4 mr-2" />
+              Exportar Excel
+            </Button>
+            <Button className="bg-primary text-primary-foreground font-semibold">
+              <Package className="w-4 h-4 mr-2" />
+              Gerar Análise
+            </Button>
+          </div>
         }
       />
       <div className="mb-6">
