@@ -86,18 +86,30 @@ const AnaliseEstoque = () => {
 
   const allProducts = useMemo(() => {
     try {
-      const raw = JSON.parse(localStorage.getItem("vilasales_data") || "[]");
-      if (!Array.isArray(raw)) return [];
-      return raw.map((p: any) => ({
-        ...p,
-        estoque: num(p.estoque),
-        custoLiq: num(p.custoLiq),
-        atual: num(p.atual),
-        ddv: num(p.ddv),
-        embCmp: num(p.embCmp) || 1,
-        valorEstoque: num(p.estoque) * (num(p.embCmp) || 1) * num(p.custoLiq),
-        status: getStatus(num(p.ddv), num(p.estoque)),
-      }));
+      const raw = JSON.parse(localStorage.getItem("vilasales_data") || "{}");
+      if (!raw || typeof raw !== "object") return [];
+      // FilialData is { [filial: string]: Product[] }
+      const products: any[] = [];
+      Object.values(raw).forEach((arr: any) => {
+        if (Array.isArray(arr)) {
+          arr.forEach((p: any) => {
+            const estoque = num(p.estoque);
+            const custoLiq = num(p.custoLiq);
+            const embCmp = num(p.embCmp) || 1;
+            const ddv = num(p.ddv);
+            products.push({
+              ...p,
+              estoque,
+              custoLiq,
+              atual: num(p.atual),
+              ddv,
+              valorEstoque: estoque * embCmp * custoLiq,
+              status: getStatus(ddv, estoque),
+            });
+          });
+        }
+      });
+      return products;
     } catch {
       return [];
     }
