@@ -121,7 +121,7 @@ const AnaliseEstoque = () => {
       if (!raw || typeof raw !== "object") return [];
       // FilialData is { [filial: string]: Product[] }
       const products: any[] = [];
-      Object.values(raw).forEach((arr: any) => {
+      Object.entries(raw).forEach(([filialKey, arr]: [string, any]) => {
         if (Array.isArray(arr)) {
           arr.forEach((p: any) => {
             const estoque = num(p.estoque);
