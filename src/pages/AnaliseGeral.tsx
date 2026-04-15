@@ -184,44 +184,6 @@ const AnaliseGeral = () => {
           </ResponsiveContainer>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-card rounded-xl shadow-[var(--shadow-card)] p-5"
-        >
-          <h3 className="text-sm font-heading font-semibold text-card-foreground mb-4">
-            Distribuição de Margens
-          </h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={mockPieData}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={80}
-                dataKey="value"
-                strokeWidth={0}
-              >
-                {mockPieData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="flex justify-center gap-4 mt-2">
-            {mockPieData.map((entry, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                <span className="text-muted-foreground">
-                  {entry.name} ({entry.value}%)
-                </span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </div>
 
     </div>
