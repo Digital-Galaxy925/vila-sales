@@ -224,11 +224,6 @@ const AnaliseGeral = () => {
         </motion.div>
       </div>
 
-      <DataTable
-        title="Produtos em Destaque — Ação Necessária"
-        columns={columns}
-        data={mockProducts}
-      />
     </div>
   );
 };
