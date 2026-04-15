@@ -154,6 +154,7 @@ const AnaliseEstoque = () => {
   }, [allProducts, filial, search]);
 
   const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
+  const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
   const avgDdv = useMemo(() => {
     const withStock = filtered.filter((p: any) => p.estoque > 0);
     return withStock.length ? Math.round(withStock.reduce((s: number, p: any) => s + p.ddv, 0) / withStock.length) : 0;
@@ -177,8 +178,9 @@ const AnaliseEstoque = () => {
         <FilialSelector selected={filial} onChange={setFilial} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <KpiCard title="Valor Total Estoque" value={fmtAbrev(totalValor)} icon={Package} variant="default" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <KpiCard title="Valor Total Estoque Custo" value={fmtAbrev(totalValor)} icon={Package} variant="default" />
+        <KpiCard title="Valor Total Estoque Venda" value={fmtAbrev(totalValorVenda)} icon={Package} variant="default" />
         <KpiCard title="Cobertura Média" value={`${avgDdv} dias`} icon={Clock} variant="default" />
         <KpiCard title="Estoque Excessivo" value={`${excessivo} SKUs`} subtitle="> 90 dias" icon={AlertTriangle} variant="destructive" />
         <KpiCard title="Ruptura Iminente" value={`${ruptura} SKUs`} subtitle="< 7 dias" icon={AlertTriangle} variant="warning" />
