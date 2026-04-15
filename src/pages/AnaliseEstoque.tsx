@@ -152,8 +152,14 @@ const AnaliseEstoque = () => {
           (p.descricao || "").toLowerCase().includes(term)
       );
     }
+    if (ddvFilter.trim()) {
+      const maxDdv = parseFloat(ddvFilter);
+      if (!isNaN(maxDdv)) {
+        list = list.filter((p: any) => p.ddv <= maxDdv);
+      }
+    }
     return list;
-  }, [allProducts, filial, search]);
+  }, [allProducts, filial, search, ddvFilter]);
 
   const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
   const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
