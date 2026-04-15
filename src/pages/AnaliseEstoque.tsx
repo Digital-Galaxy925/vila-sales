@@ -114,6 +114,7 @@ const AnaliseEstoque = () => {
   const [filial, setFilial] = useState("all");
   const [search, setSearch] = useState("");
   const [ddvFilter, setDdvFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "excessivo" | "ruptura">("all");
 
   const allProducts = useMemo(() => {
     try {
