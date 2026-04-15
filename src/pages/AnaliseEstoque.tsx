@@ -191,6 +191,13 @@ const AnaliseEstoque = () => {
     return list;
   }, [baseFiltered, statusFilter]);
 
+  const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
+  const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
+  const avgDdv = useMemo(() => {
+    const withStock = filtered.filter((p: any) => p.estoque > 0);
+    return withStock.length ? Math.round(withStock.reduce((s: number, p: any) => s + p.ddv, 0) / withStock.length) : 0;
+  }, [filtered]);
+
   const exportToExcel = useCallback(() => {
     const rows = filtered.map((p: any) => ({
       "CD": p.filialNome,
