@@ -51,7 +51,7 @@ const filialNames: Record<string, string> = {
 };
 
 const columns = [
-  { key: "filialNome", label: "BU" },
+  { key: "filialNome", label: "CD" },
   { key: "seqProd", label: "Código" },
   { key: "descricao", label: "Descrição" },
   { key: "embCmp", label: "Unid/CX", align: "center" as const },
