@@ -43,6 +43,7 @@ const getStatus = (ddv: number, estoque: number) => {
 const columns = [
   { key: "seqProd", label: "Código" },
   { key: "descricao", label: "Descrição" },
+  { key: "embCmp", label: "Unid/CX", align: "center" as const },
   { key: "estoque", label: "Estoque", align: "right" as const, render: (v: number) => v.toLocaleString("pt-BR") },
   {
     key: "ddv",
