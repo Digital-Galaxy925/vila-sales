@@ -596,6 +596,7 @@ function UploadPanel({
     </div>
   );
 }
+const isFoods = (bu: string) => { const b = bu.toUpperCase(); return b === "FOODS" || b === "FR" || b === "FOOD"; };
 
 // ─── Step 3: Cross Analysis Table ────────────────────────────────────────────
 function CrossAnalysis({ data }: { data: FilialData }) {
