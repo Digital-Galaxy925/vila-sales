@@ -55,7 +55,7 @@ const AnaliseMargem = () => {
 
   // All products with margin calculated, filtered by filial
   const products = useMemo(() => {
-    let allProducts: (Product & { margemCalc: number })[] = [];
+    let allProducts: (Product & { margemCalc: number; filialNome: string; bu: string })[] = [];
     const filiais = filial === "all" ? FILIAL_ORDER : [filial];
 
     filiais.forEach((f) => {
