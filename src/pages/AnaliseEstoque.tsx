@@ -252,8 +252,12 @@ const AnaliseEstoque = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        <AlertCard type="critical" title="Estoque Excessivo" description="Produtos com cobertura superior a 90 dias — capital parado" count={excessivo} />
-        <AlertCard type="warning" title="Ruptura Iminente" description="Produtos com menos de 7 dias de cobertura" count={ruptura} />
+        <div onClick={() => setStatusFilter(statusFilter === "excessivo" ? "all" : "excessivo")} className="cursor-pointer">
+          <AlertCard type="critical" title="Estoque Excessivo" description="Produtos com cobertura superior a 90 dias — capital parado" count={excessivo} />
+        </div>
+        <div onClick={() => setStatusFilter(statusFilter === "ruptura" ? "all" : "ruptura")} className="cursor-pointer">
+          <AlertCard type="warning" title="Ruptura Iminente" description="Produtos com menos de 7 dias de cobertura" count={ruptura} />
+        </div>
       </div>
 
       <div className="mb-4">
