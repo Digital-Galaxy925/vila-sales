@@ -41,7 +41,17 @@ const getStatus = (ddv: number, estoque: number) => {
   return "OK";
 };
 
+const filialNames: Record<string, string> = {
+  "01": "Filial 01 - Poços",
+  "11": "Filial 11 - Campinas",
+  "12": "Filial 12 - Osasco",
+  "14": "Filial 14 - Betim",
+  "501": "Filial 501 - Focomix SP",
+  "502": "Filial 502 - Focomix MG",
+};
+
 const columns = [
+  { key: "filialNome", label: "BU" },
   { key: "seqProd", label: "Código" },
   { key: "descricao", label: "Descrição" },
   { key: "embCmp", label: "Unid/CX", align: "center" as const },
