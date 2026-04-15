@@ -69,7 +69,7 @@ const columns = [
   },
   {
     key: "valorEstoque",
-    label: "Valor Estoque",
+    label: "Valor Estoque Custo",
     align: "right" as const,
     render: (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
   },
