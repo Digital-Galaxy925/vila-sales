@@ -37,12 +37,25 @@ export default function TabelaST() {
   const [searched, setSearched] = useState(false);
   const [precoSemST, setPrecoSemST] = useState("");
 
-  const stData: STRow[] = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem("st_data") || "[]");
-    } catch {
-      return [];
-    }
+  const [stData, setStData] = useState<STRow[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("st_data")
+        .select("data")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      if (data?.data) {
+        setStData(data.data as unknown as STRow[]);
+      } else {
+        // Fallback to localStorage
+        try {
+          setStData(JSON.parse(localStorage.getItem("st_data") || "[]"));
+        } catch { setStData([]); }
+      }
+    })();
   }, []);
 
   const livrosData = useMemo(() => {
