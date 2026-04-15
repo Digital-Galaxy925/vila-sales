@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
-import { Package, AlertTriangle, Clock, Search } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { Package, AlertTriangle, Clock, Search, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
