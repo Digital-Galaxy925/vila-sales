@@ -1143,9 +1143,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     <span style={{
                       display: "inline-block", padding: "3px 10px", borderRadius: 6,
                       fontSize: 10, fontWeight: 600, letterSpacing: 0.5,
-                      background: p.bu === "FOODS" ? "#f0fdf4" : "#eef2ff",
-                      color:      p.bu === "FOODS" ? "#16a34a"  : "#a78bfa",
-                      border: `1px solid ${p.bu === "FOODS" ? "#bbf7d0" : "#4c1d95"}`,
+                      background: isFoods(p.bu) ? "#f0fdf4" : "#eef2ff",
+                      color:      isFoods(p.bu) ? "#16a34a"  : "#a78bfa",
+                      border: `1px solid ${isFoods(p.bu) ? "#bbf7d0" : "#4c1d95"}`,
                     }}>
                       {p.bu || "–"}
                     </span>
