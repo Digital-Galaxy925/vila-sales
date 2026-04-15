@@ -55,6 +55,18 @@ const columns = [
     ),
   },
   {
+    key: "custoLiq",
+    label: "Preço de Custo",
+    align: "right" as const,
+    render: (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+  },
+  {
+    key: "atual",
+    label: "Preço de Venda",
+    align: "right" as const,
+    render: (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+  },
+  {
     key: "valorEstoque",
     label: "Valor Estoque",
     align: "right" as const,
