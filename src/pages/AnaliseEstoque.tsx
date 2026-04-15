@@ -41,7 +41,17 @@ const getStatus = (ddv: number, estoque: number) => {
   return "OK";
 };
 
+const filialNames: Record<string, string> = {
+  "01": "Filial 01 - Poços",
+  "11": "Filial 11 - Campinas",
+  "12": "Filial 12 - Osasco",
+  "14": "Filial 14 - Betim",
+  "501": "Filial 501 - Focomix SP",
+  "502": "Filial 502 - Focomix MG",
+};
+
 const columns = [
+  { key: "filialNome", label: "BU" },
   { key: "seqProd", label: "Código" },
   { key: "descricao", label: "Descrição" },
   { key: "embCmp", label: "Unid/CX", align: "center" as const },
@@ -111,7 +121,7 @@ const AnaliseEstoque = () => {
       if (!raw || typeof raw !== "object") return [];
       // FilialData is { [filial: string]: Product[] }
       const products: any[] = [];
-      Object.values(raw).forEach((arr: any) => {
+      Object.entries(raw).forEach(([filialKey, arr]: [string, any]) => {
         if (Array.isArray(arr)) {
           arr.forEach((p: any) => {
             const estoque = num(p.estoque);
@@ -126,6 +136,7 @@ const AnaliseEstoque = () => {
               embCmp,
               atual,
               ddv,
+              filialNome: filialNames[p.filial || filialKey] || p.filial || filialKey,
               valorEstoque: estoque * embCmp * custoLiq,
               valorEstoqueVenda: estoque * embCmp * atual,
               status: getStatus(ddv, estoque),
