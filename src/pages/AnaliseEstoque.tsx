@@ -136,6 +136,7 @@ const AnaliseEstoque = () => {
               embCmp,
               atual,
               ddv,
+              filialNome: filialNames[p.filial || filialKey] || p.filial || filialKey,
               valorEstoque: estoque * embCmp * custoLiq,
               valorEstoqueVenda: estoque * embCmp * atual,
               status: getStatus(ddv, estoque),
