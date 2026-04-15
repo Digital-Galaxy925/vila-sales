@@ -153,7 +153,7 @@ const AnaliseEstoque = () => {
     }
   }, []);
 
-  const filtered = useMemo(() => {
+  const baseFiltered = useMemo(() => {
     let list = allProducts;
     if (buFilter !== "all") {
       list = list.filter((p: any) => (p.bu || "").toUpperCase() === buFilter);
@@ -175,13 +175,21 @@ const AnaliseEstoque = () => {
         list = list.filter((p: any) => p.ddv >= maxDdv);
       }
     }
+    return list;
+  }, [allProducts, filial, search, ddvFilter, buFilter]);
+
+  const excessivo = useMemo(() => baseFiltered.filter((p: any) => p.ddv > 90).length, [baseFiltered]);
+  const ruptura = useMemo(() => baseFiltered.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7).length, [baseFiltered]);
+
+  const filtered = useMemo(() => {
+    let list = baseFiltered;
     if (statusFilter === "excessivo") {
       list = list.filter((p: any) => p.ddv > 90);
     } else if (statusFilter === "ruptura") {
       list = list.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7);
     }
     return list;
-  }, [allProducts, filial, search, ddvFilter, statusFilter, buFilter]);
+  }, [baseFiltered, statusFilter]);
 
   const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
   const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
@@ -189,8 +197,6 @@ const AnaliseEstoque = () => {
     const withStock = filtered.filter((p: any) => p.estoque > 0);
     return withStock.length ? Math.round(withStock.reduce((s: number, p: any) => s + p.ddv, 0) / withStock.length) : 0;
   }, [filtered]);
-  const excessivo = useMemo(() => filtered.filter((p: any) => p.ddv > 90).length, [filtered]);
-  const ruptura = useMemo(() => filtered.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7).length, [filtered]);
 
   const exportToExcel = useCallback(() => {
     const rows = filtered.map((p: any) => ({
