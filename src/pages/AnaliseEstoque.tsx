@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Package, AlertTriangle, TrendingUp, Clock, Search } from "lucide-react";
+import { Package, AlertTriangle, Clock, Search } from "lucide-react";
 import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
@@ -8,20 +8,44 @@ import AlertCard from "@/components/AlertCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const mockProducts = [
-  { codigo: "7891024", descricao: "Sabonete Dove 90g", estoque: 1250, cobertura: 120, valor: 4312.50, status: "Alto" },
-  { codigo: "7891035", descricao: "Desodorante Rexona 150ml", estoque: 45, cobertura: 8, valor: 400.50, status: "Baixo" },
-  { codigo: "7891046", descricao: "Shampoo Clear Men 400ml", estoque: 320, cobertura: 45, valor: 3936.00, status: "OK" },
-  { codigo: "7891057", descricao: "Creme Dental Close Up 90g", estoque: 890, cobertura: 95, valor: 3738.00, status: "Alto" },
-  { codigo: "7891068", descricao: "Amaciante Comfort 2L", estoque: 150, cobertura: 30, valor: 1470.00, status: "OK" },
-];
+interface Product {
+  familia: string;
+  seqProd: string;
+  descricao: string;
+  estoque: number;
+  custoLiq: number;
+  atual: number;
+  ddv: number;
+  filial: string;
+  bu: string;
+  embCmp: string;
+}
+
+const num = (v: any): number => {
+  if (typeof v === "number") return v;
+  if (!v) return 0;
+  return parseFloat(String(v).replace(/\./g, "").replace(",", ".")) || 0;
+};
+
+const fmtAbrev = (v: number) => {
+  if (v >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `R$ ${(v / 1_000).toFixed(1)}K`;
+  return `R$ ${v.toFixed(2)}`;
+};
+
+const getStatus = (ddv: number, estoque: number) => {
+  if (estoque === 0 || ddv === 0) return "Sem Estoque";
+  if (ddv < 7) return "Baixo";
+  if (ddv > 40) return "Alto";
+  return "OK";
+};
 
 const columns = [
-  { key: "codigo", label: "Código" },
+  { key: "seqProd", label: "Código" },
   { key: "descricao", label: "Descrição" },
   { key: "estoque", label: "Estoque", align: "right" as const, render: (v: number) => v.toLocaleString("pt-BR") },
   {
-    key: "cobertura",
+    key: "ddv",
     label: "Cobertura (dias)",
     align: "center" as const,
     render: (v: number) => (
@@ -30,13 +54,26 @@ const columns = [
       </span>
     ),
   },
-  { key: "valor", label: "Valor Estoque", align: "right" as const, render: (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` },
+  {
+    key: "valorEstoque",
+    label: "Valor Estoque",
+    align: "right" as const,
+    render: (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+  },
   {
     key: "status",
     label: "Status",
     align: "center" as const,
     render: (v: string) => (
-      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${v === "Alto" ? "bg-destructive/10 text-destructive" : v === "Baixo" ? "bg-warning/10 text-warning" : "bg-success/10 text-success"}`}>
+      <span
+        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+          v === "Alto" || v === "Sem Estoque"
+            ? "bg-destructive/10 text-destructive"
+            : v === "Baixo"
+            ? "bg-warning/10 text-warning"
+            : "bg-success/10 text-success"
+        }`}
+      >
         {v}
       </span>
     ),
@@ -47,13 +84,48 @@ const AnaliseEstoque = () => {
   const [filial, setFilial] = useState("all");
   const [search, setSearch] = useState("");
 
-  const filteredProducts = useMemo(() => {
-    if (!search.trim()) return mockProducts;
-    const term = search.trim().toLowerCase();
-    return mockProducts.filter(
-      (p) => p.codigo.toLowerCase().includes(term) || p.descricao.toLowerCase().includes(term)
-    );
-  }, [search]);
+  const allProducts = useMemo(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem("vilasales_data") || "[]");
+      if (!Array.isArray(raw)) return [];
+      return raw.map((p: any) => ({
+        ...p,
+        estoque: num(p.estoque),
+        custoLiq: num(p.custoLiq),
+        atual: num(p.atual),
+        ddv: num(p.ddv),
+        embCmp: num(p.embCmp) || 1,
+        valorEstoque: num(p.estoque) * (num(p.embCmp) || 1) * num(p.custoLiq),
+        status: getStatus(num(p.ddv), num(p.estoque)),
+      }));
+    } catch {
+      return [];
+    }
+  }, []);
+
+  const filtered = useMemo(() => {
+    let list = allProducts;
+    if (filial !== "all") {
+      list = list.filter((p: any) => p.filial === filial);
+    }
+    if (search.trim()) {
+      const term = search.trim().toLowerCase();
+      list = list.filter(
+        (p: any) =>
+          (p.seqProd || "").toLowerCase().includes(term) ||
+          (p.descricao || "").toLowerCase().includes(term)
+      );
+    }
+    return list;
+  }, [allProducts, filial, search]);
+
+  const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
+  const avgDdv = useMemo(() => {
+    const withStock = filtered.filter((p: any) => p.estoque > 0);
+    return withStock.length ? Math.round(withStock.reduce((s: number, p: any) => s + p.ddv, 0) / withStock.length) : 0;
+  }, [filtered]);
+  const excessivo = useMemo(() => filtered.filter((p: any) => p.ddv > 90).length, [filtered]);
+  const ruptura = useMemo(() => filtered.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7).length, [filtered]);
 
   return (
     <div>
@@ -67,18 +139,20 @@ const AnaliseEstoque = () => {
           </Button>
         }
       />
-      <div className="mb-6"><FilialSelector selected={filial} onChange={setFilial} /></div>
+      <div className="mb-6">
+        <FilialSelector selected={filial} onChange={setFilial} />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <KpiCard title="Valor Total Estoque" value="R$ 2.8M" icon={Package} variant="default" />
-        <KpiCard title="Cobertura Média" value="52 dias" icon={Clock} variant="default" />
-        <KpiCard title="Estoque Excessivo" value="124 SKUs" subtitle="> 90 dias" icon={AlertTriangle} variant="destructive" />
-        <KpiCard title="Ruptura Iminente" value="38 SKUs" subtitle="< 7 dias" icon={AlertTriangle} variant="warning" />
+        <KpiCard title="Valor Total Estoque" value={fmtAbrev(totalValor)} icon={Package} variant="default" />
+        <KpiCard title="Cobertura Média" value={`${avgDdv} dias`} icon={Clock} variant="default" />
+        <KpiCard title="Estoque Excessivo" value={`${excessivo} SKUs`} subtitle="> 90 dias" icon={AlertTriangle} variant="destructive" />
+        <KpiCard title="Ruptura Iminente" value={`${ruptura} SKUs`} subtitle="< 7 dias" icon={AlertTriangle} variant="warning" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        <AlertCard type="critical" title="Estoque Excessivo" description="Produtos com cobertura superior a 90 dias — capital parado" count={124} />
-        <AlertCard type="warning" title="Ruptura Iminente" description="Produtos com menos de 7 dias de cobertura" count={38} />
+        <AlertCard type="critical" title="Estoque Excessivo" description="Produtos com cobertura superior a 90 dias — capital parado" count={excessivo} />
+        <AlertCard type="warning" title="Ruptura Iminente" description="Produtos com menos de 7 dias de cobertura" count={ruptura} />
       </div>
 
       <div className="mb-4">
@@ -93,7 +167,7 @@ const AnaliseEstoque = () => {
         </div>
       </div>
 
-      <DataTable title="Detalhamento de Estoque" columns={columns} data={filteredProducts} />
+      <DataTable title="Detalhamento de Estoque" columns={columns} data={filtered} />
     </div>
   );
 };
