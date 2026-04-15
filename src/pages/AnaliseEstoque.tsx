@@ -103,6 +103,7 @@ const columns = [
 const AnaliseEstoque = () => {
   const [filial, setFilial] = useState("all");
   const [search, setSearch] = useState("");
+  const [ddvFilter, setDdvFilter] = useState("");
 
   const allProducts = useMemo(() => {
     try {
@@ -151,8 +152,14 @@ const AnaliseEstoque = () => {
           (p.descricao || "").toLowerCase().includes(term)
       );
     }
+    if (ddvFilter.trim()) {
+      const maxDdv = parseFloat(ddvFilter);
+      if (!isNaN(maxDdv)) {
+        list = list.filter((p: any) => p.ddv <= maxDdv);
+      }
+    }
     return list;
-  }, [allProducts, filial, search]);
+  }, [allProducts, filial, search, ddvFilter]);
 
   const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
   const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
@@ -202,8 +209,20 @@ const AnaliseEstoque = () => {
           </div>
         }
       />
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-end gap-4">
         <FilialSelector selected={filial} onChange={setFilial} />
+        <div className="bg-card rounded-xl shadow-[var(--shadow-card)] px-4 py-3 flex items-center gap-3">
+          <Clock className="w-4 h-4 text-primary" />
+          <label className="text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Cobertura máx. (DDV)</label>
+          <Input
+            type="number"
+            placeholder="Ex: 30"
+            value={ddvFilter}
+            onChange={(e) => setDdvFilter(e.target.value)}
+            className="w-24 h-8 text-sm"
+          />
+          <span className="text-xs text-muted-foreground">dias</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
