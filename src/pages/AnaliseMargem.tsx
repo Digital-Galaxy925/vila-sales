@@ -24,6 +24,15 @@ type DataMap = Record<string, Product[]>;
 
 const FILIAL_ORDER = ["01", "11", "12", "14", "501", "502"];
 
+const filialNames: Record<string, string> = {
+  "01": "Filial 01 - Poços",
+  "11": "Filial 11 - Campinas",
+  "12": "Filial 12 - Osasco",
+  "14": "Filial 14 - Betim",
+  "501": "Filial 501 - Focomix SP",
+  "502": "Filial 502 - Focomix MG",
+};
+
 const calcMargem = (pv: number, pc: number) => (pv > 0 ? ((pv - pc) / pv) * 100 : 0);
 
 const AnaliseMargem = () => {
@@ -158,6 +167,8 @@ const AnaliseMargem = () => {
   };
 
   const columns: { key: string; label: string; align?: "left" | "center" | "right"; render?: (v: any) => React.ReactNode }[] = [
+    { key: "filialNome", label: "CD" },
+    { key: "bu", label: "BU", align: "center" as const },
     { key: "seqProd", label: "Código" },
     { key: "descricao", label: "Descrição" },
     { key: "custoLiq", label: "Custo", align: "right" as const, render: (v: number) => `R$ ${v.toFixed(2)}` },
