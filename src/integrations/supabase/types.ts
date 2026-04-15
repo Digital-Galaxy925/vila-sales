@@ -113,6 +113,30 @@ export type Database = {
         }
         Relationships: []
       }
+      st_data: {
+        Row: {
+          created_at: string
+          data: Json
+          file_name: string
+          id: string
+          row_count: number
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          file_name?: string
+          id?: string
+          row_count?: number
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          file_name?: string
+          id?: string
+          row_count?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
