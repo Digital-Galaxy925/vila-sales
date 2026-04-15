@@ -74,6 +74,12 @@ const columns = [
     render: (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
   },
   {
+    key: "valorEstoqueVenda",
+    label: "Valor Estoque Venda",
+    align: "right" as const,
+    render: (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+  },
+  {
     key: "status",
     label: "Status",
     align: "center" as const,
@@ -110,13 +116,16 @@ const AnaliseEstoque = () => {
             const custoLiq = num(p.custoLiq);
             const embCmp = num(p.embCmp) || 1;
             const ddv = num(p.ddv);
+            const atual = num(p.atual);
             products.push({
               ...p,
               estoque,
               custoLiq,
-              atual: num(p.atual),
+              embCmp,
+              atual,
               ddv,
               valorEstoque: estoque * embCmp * custoLiq,
+              valorEstoqueVenda: estoque * embCmp * atual,
               status: getStatus(ddv, estoque),
             });
           });
