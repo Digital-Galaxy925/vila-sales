@@ -209,8 +209,20 @@ const AnaliseEstoque = () => {
           </div>
         }
       />
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-end gap-4">
         <FilialSelector selected={filial} onChange={setFilial} />
+        <div className="bg-card rounded-xl shadow-[var(--shadow-card)] px-4 py-3 flex items-center gap-3">
+          <Clock className="w-4 h-4 text-primary" />
+          <label className="text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Cobertura máx. (DDV)</label>
+          <Input
+            type="number"
+            placeholder="Ex: 30"
+            value={ddvFilter}
+            onChange={(e) => setDdvFilter(e.target.value)}
+            className="w-24 h-8 text-sm"
+          />
+          <span className="text-xs text-muted-foreground">dias</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
