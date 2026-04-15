@@ -116,6 +116,7 @@ const AnaliseEstoque = () => {
   const [search, setSearch] = useState("");
   const [ddvFilter, setDdvFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "excessivo" | "ruptura">("all");
+  const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
 
   const allProducts = useMemo(() => {
     try {
@@ -154,6 +155,9 @@ const AnaliseEstoque = () => {
 
   const filtered = useMemo(() => {
     let list = allProducts;
+    if (buFilter !== "all") {
+      list = list.filter((p: any) => (p.bu || "").toUpperCase() === buFilter);
+    }
     if (filial !== "all") {
       list = list.filter((p: any) => p.filial === filial);
     }
@@ -177,7 +181,7 @@ const AnaliseEstoque = () => {
       list = list.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7);
     }
     return list;
-  }, [allProducts, filial, search, ddvFilter, statusFilter]);
+  }, [allProducts, filial, search, ddvFilter, statusFilter, buFilter]);
 
   const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
   const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
@@ -229,6 +233,19 @@ const AnaliseEstoque = () => {
           </div>
         }
       />
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        {(["all", "HC", "FR"] as const).map((bu) => (
+          <Button
+            key={bu}
+            variant={buFilter === bu ? "default" : "outline"}
+            size="sm"
+            onClick={() => setBuFilter(bu)}
+            className="font-semibold"
+          >
+            {bu === "all" ? "Todas as BUs" : bu}
+          </Button>
+        ))}
+      </div>
       <div className="mb-6 flex flex-wrap items-end gap-4">
         <FilialSelector selected={filial} onChange={setFilial} />
         <div className="bg-card rounded-xl shadow-[var(--shadow-card)] px-4 py-3 flex items-center gap-3">
