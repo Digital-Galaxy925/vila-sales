@@ -596,6 +596,7 @@ function UploadPanel({
     </div>
   );
 }
+const isFoods = (bu: string) => { const b = bu.toUpperCase(); return b === "FOODS" || b === "FR" || b === "FOOD"; };
 
 // ─── Step 3: Cross Analysis Table ────────────────────────────────────────────
 function CrossAnalysis({ data }: { data: FilialData }) {
@@ -669,7 +670,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       const q = search.toLowerCase();
       const matchSearch = !q || p.seqProd.toLowerCase().includes(q) || p.descricao.toLowerCase().includes(q);
       const matchMarg = filterMarg === "all" || (filterMarg === "critico" ? p.marg < minMargin : p.marg >= minMargin);
-      const matchBU = selectedBU === "all" || p.bu === selectedBU;
+      const matchBU = selectedBU === "all" || (selectedBU === "FOODS" ? isFoods(p.bu) : p.bu === selectedBU);
       const matchSpecific = !specificList || specificList.includes(p.seqProd);
       return matchSearch && matchMarg && matchBU && matchSpecific;
     })
@@ -682,13 +683,13 @@ function CrossAnalysis({ data }: { data: FilialData }) {
     });
 
   // KPIs respeitam filtro de BU
-  const buBase = selectedBU === "all" ? base : base.filter((p) => p.bu === selectedBU);
+  const buBase = selectedBU === "all" ? base : base.filter((p) => selectedBU === "FOODS" ? isFoods(p.bu) : p.bu === selectedBU);
   const criticos = buBase.filter((p) => p.marg < minMargin).length;
   const margMedia = buBase.length ? buBase.reduce((s, p) => s + p.marg, 0) / buBase.length : 0;
   const totalEstoque = buBase.reduce((s, p) => s + p.estoque, 0);
 
   // Contagens por BU para os badges
-  const countFoods = base.filter((p) => p.bu === "FOODS").length;
+  const countFoods = base.filter((p) => isFoods(p.bu)).length;
   const countHC    = base.filter((p) => p.bu === "HC").length;
 
   const toggleSort = (col: typeof sortCol) => {
@@ -1142,9 +1143,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     <span style={{
                       display: "inline-block", padding: "3px 10px", borderRadius: 6,
                       fontSize: 10, fontWeight: 600, letterSpacing: 0.5,
-                      background: p.bu === "FOODS" ? "#f0fdf4" : "#eef2ff",
-                      color:      p.bu === "FOODS" ? "#16a34a"  : "#a78bfa",
-                      border: `1px solid ${p.bu === "FOODS" ? "#bbf7d0" : "#4c1d95"}`,
+                      background: isFoods(p.bu) ? "#f0fdf4" : "#eef2ff",
+                      color:      isFoods(p.bu) ? "#16a34a"  : "#a78bfa",
+                      border: `1px solid ${isFoods(p.bu) ? "#bbf7d0" : "#4c1d95"}`,
                     }}>
                       {p.bu || "–"}
                     </span>
@@ -1678,7 +1679,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
     );
 
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
-  const buBase = selectedBU === "all" ? base : base.filter((p) => p.bu === selectedBU);
+  const buBase = selectedBU === "all" ? base : base.filter((p) => selectedBU === "FOODS" ? isFoods(p.bu) : p.bu === selectedBU);
 
   const semEstoque = buBase.filter((p) => p.estoque === 0).length;
   const estoqueBaixo = buBase.filter((p) => p.estoque > 0 && p.ddv < 7).length;
@@ -1694,7 +1695,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
     return s + (isNaN(v) ? 0 : v);
   }, 0);
 
-  const countFoods = base.filter((p) => p.bu === "FOODS").length;
+  const countFoods = base.filter((p) => isFoods(p.bu)).length;
   const countHC = base.filter((p) => p.bu === "HC").length;
 
   const filtered = buBase.filter((p) => {
