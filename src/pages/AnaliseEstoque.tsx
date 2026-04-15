@@ -103,6 +103,7 @@ const columns = [
 const AnaliseEstoque = () => {
   const [filial, setFilial] = useState("all");
   const [search, setSearch] = useState("");
+  const [ddvFilter, setDdvFilter] = useState("");
 
   const allProducts = useMemo(() => {
     try {
