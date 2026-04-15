@@ -336,23 +336,6 @@ const AnaliseMargem = () => {
             </div>
           </div>
 
-          {/* Distribution Chart */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card rounded-xl shadow-[var(--shadow-card)] p-5 mb-8">
-            <h3 className="text-sm font-heading font-semibold text-card-foreground mb-4">Distribuição de Margens por Faixa</h3>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={distribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 90%)" />
-                <XAxis dataKey="range" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid hsl(220, 15%, 90%)", fontSize: "12px" }} />
-                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                  {distribution.map((entry, i) => (
-                    <Cell key={i} fill={entry.isBelowTarget ? "hsl(0, 72%, 51%)" : "hsl(152, 60%, 42%)"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </motion.div>
 
           {/* Search + Table */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
