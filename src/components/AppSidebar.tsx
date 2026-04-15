@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { to: "/manual", label: "Análise de Custos", icon: BarChart3 },
   { to: "/gerencial", label: "Análise Gerencial", icon: BriefcaseBusiness },
+  { to: "/manual", label: "Análise de Custos", icon: BarChart3 },
   { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
