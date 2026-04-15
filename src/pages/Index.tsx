@@ -1240,18 +1240,25 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                   </td>
 
                   {/* Margem com Sell Out */}
-                  <td style={{ padding: "10px 16px", textAlign: "center", fontFamily: "monospace", fontWeight: 700 }}>
-                    {(() => {
-                      const margSellout = p.sellout > 0
-                        ? ((p.atual - (p.custoLiq - p.sellout)) / p.atual) * 100
-                        : 0;
-                      if (margSellout === 0) return <span style={{ color: "#d1d5db" }}>—</span>;
-                      return (
-                        <span style={{ color: margSellout >= minMargin ? "#16a34a" : "#dc2626" }}>
-                          {margSellout.toFixed(2)}%
-                        </span>
-                      );
-                    })()}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="—"
+                      value={margSelloutInput[`${p.filial}-${p.seqProd}`] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.,]/g, "");
+                        setMargSelloutInput((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: val }));
+                      }}
+                      style={{
+                        width: 70, padding: "5px 8px", borderRadius: 6,
+                        background: "#ffffff", border: "1px solid #d1d5db", color: "#0ea5e9",
+                        fontSize: 13, fontFamily: "monospace", fontWeight: 700, textAlign: "center",
+                        outline: "none",
+                      }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = "#0ea5e9")}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
+                    />
                   </td>
 
                   {/* Adicionar Sell Out */}
