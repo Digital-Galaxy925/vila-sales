@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Package, AlertTriangle, TrendingUp, Clock } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Package, AlertTriangle, TrendingUp, Clock, Search } from "lucide-react";
 import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
 import DataTable from "@/components/DataTable";
 import AlertCard from "@/components/AlertCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const mockProducts = [
   { codigo: "7891024", descricao: "Sabonete Dove 90g", estoque: 1250, cobertura: 120, valor: 4312.50, status: "Alto" },
@@ -44,6 +45,15 @@ const columns = [
 
 const AnaliseEstoque = () => {
   const [filial, setFilial] = useState("all");
+  const [search, setSearch] = useState("");
+
+  const filteredProducts = useMemo(() => {
+    if (!search.trim()) return mockProducts;
+    const term = search.trim().toLowerCase();
+    return mockProducts.filter(
+      (p) => p.codigo.toLowerCase().includes(term) || p.descricao.toLowerCase().includes(term)
+    );
+  }, [search]);
 
   return (
     <div>
@@ -71,7 +81,19 @@ const AnaliseEstoque = () => {
         <AlertCard type="warning" title="Ruptura Iminente" description="Produtos com menos de 7 dias de cobertura" count={38} />
       </div>
 
-      <DataTable title="Detalhamento de Estoque" columns={columns} data={mockProducts} />
+      <div className="mb-4">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por código ou descrição..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      <DataTable title="Detalhamento de Estoque" columns={columns} data={filteredProducts} />
     </div>
   );
 };
