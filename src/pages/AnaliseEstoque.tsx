@@ -114,6 +114,7 @@ const AnaliseEstoque = () => {
   const [filial, setFilial] = useState("all");
   const [search, setSearch] = useState("");
   const [ddvFilter, setDdvFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "excessivo" | "ruptura">("all");
 
   const allProducts = useMemo(() => {
     try {
@@ -169,8 +170,13 @@ const AnaliseEstoque = () => {
         list = list.filter((p: any) => p.ddv >= maxDdv);
       }
     }
+    if (statusFilter === "excessivo") {
+      list = list.filter((p: any) => p.ddv > 90);
+    } else if (statusFilter === "ruptura") {
+      list = list.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7);
+    }
     return list;
-  }, [allProducts, filial, search, ddvFilter]);
+  }, [allProducts, filial, search, ddvFilter, statusFilter]);
 
   const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
   const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
@@ -246,8 +252,12 @@ const AnaliseEstoque = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        <AlertCard type="critical" title="Estoque Excessivo" description="Produtos com cobertura superior a 90 dias — capital parado" count={excessivo} />
-        <AlertCard type="warning" title="Ruptura Iminente" description="Produtos com menos de 7 dias de cobertura" count={ruptura} />
+        <div onClick={() => setStatusFilter(statusFilter === "excessivo" ? "all" : "excessivo")} className="cursor-pointer">
+          <AlertCard type="critical" title="Estoque Excessivo" description="Produtos com cobertura superior a 90 dias — capital parado" count={excessivo} />
+        </div>
+        <div onClick={() => setStatusFilter(statusFilter === "ruptura" ? "all" : "ruptura")} className="cursor-pointer">
+          <AlertCard type="warning" title="Ruptura Iminente" description="Produtos com menos de 7 dias de cobertura" count={ruptura} />
+        </div>
       </div>
 
       <div className="mb-4">
