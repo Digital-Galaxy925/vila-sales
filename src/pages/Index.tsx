@@ -720,15 +720,30 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export XLSX
   const exportXLSX = () => {
-    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Promoção (R$)","Margem (%)","Status Margem","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
+    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Promoção (R$)","Margem (%)","Status Margem","Margem com Sell Out (%)","Adicionar Sell Out (R$)","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
     const rows = filtered.map((p) => {
-      const raw = desiredMargins[`${p.filial}-${p.seqProd}`];
+      const key = `${p.filial}-${p.seqProd}`;
+      // Margem com Sell Out
+      const margSellVal = margSelloutInput[key] || "";
+      const margSellNum = margSellVal ? num(margSellVal) : NaN;
+      // Adicionar Sell Out (calculado)
+      let adicionarSellout = "";
+      if (!isNaN(margSellNum) && margSellNum > 0 && margSellNum < 100) {
+        const precoAlvo = p.promoc > 0 ? p.promoc : p.atual;
+        if (precoAlvo > 0) {
+          const custoMaximo = precoAlvo * (1 - margSellNum / 100);
+          const selloutNecessario = p.custoLiq - custoMaximo;
+          adicionarSellout = selloutNecessario > 0 ? selloutNecessario.toFixed(2) : "";
+        }
+      }
+      // Margem desejada / Preço futuro
+      const raw = desiredMargins[key];
       const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
       const futuro = !isNaN(margDes) && margDes < 100 ? p.custoLiq / (1 - margDes / 100) : NaN;
-      const rawPreco = desiredPrices[`${p.filial}-${p.seqProd}`];
+      const rawPreco = desiredPrices[key];
       const precoDesejado = rawPreco ? parseFloat(rawPreco.replace(",", ".")) : NaN;
       const margFutura = !isNaN(precoDesejado) && precoDesejado > 0 ? (((precoDesejado - p.custoLiq) / precoDesejado) * 100).toFixed(2) : "";
-      const rawDesc = promoDiscounts[`${p.filial}-${p.seqProd}`];
+      const rawDesc = promoDiscounts[key];
       const descPerc = rawDesc ? parseFloat(rawDesc.replace(",", ".")) : NaN;
       const basePreco = !isNaN(precoDesejado) && precoDesejado > 0 ? precoDesejado : futuro;
       const precoFuturoFinal = !isNaN(basePreco) && !isNaN(descPerc) ? (basePreco - (basePreco * descPerc / 100)).toFixed(2) : "";
@@ -746,6 +761,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         (p.promoc ?? 0).toFixed(2),
         p.marg.toFixed(2),
         p.marg >= minMargin ? "Saudável" : "Crítico",
+        margSellVal,
+        adicionarSellout,
         raw || "",
         !isNaN(futuro) ? futuro.toFixed(2) : "",
         rawPreco || "",
