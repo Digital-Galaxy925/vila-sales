@@ -63,7 +63,7 @@ const AnaliseMargem = () => {
       if (!items) return;
       items.forEach((p) => {
         const m = calcMargem(p.atual, p.custoLiq);
-        allProducts.push({ ...p, margemCalc: m, filial: f });
+        allProducts.push({ ...p, margemCalc: m, filial: f, filialNome: filialNames[f] || f, bu: (p as any).bu || "" });
       });
     });
 
