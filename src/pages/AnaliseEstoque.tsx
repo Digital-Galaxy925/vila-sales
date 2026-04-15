@@ -155,7 +155,7 @@ const AnaliseEstoque = () => {
     if (ddvFilter.trim()) {
       const maxDdv = parseFloat(ddvFilter);
       if (!isNaN(maxDdv)) {
-        list = list.filter((p: any) => p.ddv <= maxDdv);
+        list = list.filter((p: any) => p.ddv >= maxDdv);
       }
     }
     return list;
