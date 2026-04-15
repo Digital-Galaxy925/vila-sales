@@ -74,6 +74,12 @@ const columns = [
     render: (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
   },
   {
+    key: "valorEstoqueVenda",
+    label: "Valor Estoque Venda",
+    align: "right" as const,
+    render: (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+  },
+  {
     key: "status",
     label: "Status",
     align: "center" as const,
