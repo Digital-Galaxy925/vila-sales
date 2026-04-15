@@ -612,6 +612,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
   const [addedSellout, setAddedSellout] = useState<Record<string, string>>({});
+  const [margSelloutInput, setMargSelloutInput] = useState<Record<string, string>>({});
   const [specificList, setSpecificList] = useState<string[] | null>(null);
   const [specificFileName, setSpecificFileName] = useState("");
   const [specificNotFound, setSpecificNotFound] = useState<string[]>([]);
