@@ -183,6 +183,7 @@ const AnaliseEstoque = () => {
 
   const exportToExcel = useCallback(() => {
     const rows = filtered.map((p: any) => ({
+      "CD": p.filialNome,
       "Código": p.seqProd,
       "Descrição": p.descricao,
       "Unid/CX": p.embCmp,
