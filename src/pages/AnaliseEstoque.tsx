@@ -170,8 +170,13 @@ const AnaliseEstoque = () => {
         list = list.filter((p: any) => p.ddv >= maxDdv);
       }
     }
+    if (statusFilter === "excessivo") {
+      list = list.filter((p: any) => p.ddv > 90);
+    } else if (statusFilter === "ruptura") {
+      list = list.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7);
+    }
     return list;
-  }, [allProducts, filial, search, ddvFilter]);
+  }, [allProducts, filial, search, ddvFilter, statusFilter]);
 
   const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
   const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
