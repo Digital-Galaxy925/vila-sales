@@ -173,6 +173,7 @@ const AnaliseMargem = () => {
     { key: "descricao", label: "Descrição" },
     { key: "custoLiq", label: "Custo", align: "right" as const, render: (v: number) => `R$ ${v.toFixed(2)}` },
     { key: "atual", label: "Venda", align: "right" as const, render: (v: number) => `R$ ${v.toFixed(2)}` },
+    { key: "promoc", label: "Promocional", align: "right" as const, render: (v: number) => v > 0 ? `R$ ${v.toFixed(2)}` : "—" },
     { key: "margemCalc", label: "Margem", align: "center" as const, render: (v: number) => <MarginBadge value={v} /> },
   ];
 
