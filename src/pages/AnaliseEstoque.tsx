@@ -270,10 +270,10 @@ const AnaliseEstoque = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
-        <KpiCard title="Valor Total Estoque Custo" value={fmtAbrev(totalValor)} icon={Package} variant="default" />
-        <KpiCard title="Valor Total Estoque Venda" value={fmtAbrev(totalValorVenda)} icon={Package} variant="default" />
-        <KpiCard title="Volume Total (Caixas)" value={totalVolumeCaixas.toLocaleString("pt-BR")} icon={Package} variant="default" />
-        <KpiCard title="Cobertura Média" value={`${avgDdv} dias`} icon={Clock} variant="default" />
+        <KpiCard title="Valor Total Estoque Custo" value={fmtAbrev(totalValor)} icon={Package} variant="success" />
+        <KpiCard title="Valor Total Estoque Venda" value={fmtAbrev(totalValorVenda)} icon={Package} variant="success" />
+        <KpiCard title="Volume Total (Caixas)" value={totalVolumeCaixas.toLocaleString("pt-BR")} icon={Package} variant="success" />
+        <KpiCard title="Cobertura Média" value={`${avgDdv} dias`} icon={Clock} variant="warning" />
         <div onClick={() => setStatusFilter(statusFilter === "excessivo" ? "all" : "excessivo")} className={`cursor-pointer rounded-xl transition-all ${statusFilter === "excessivo" ? "ring-2 ring-destructive" : ""}`}>
           <KpiCard title="Estoque Excessivo" value={`${excessivo} SKUs`} subtitle="> 90 dias" icon={AlertTriangle} variant="destructive" />
         </div>
