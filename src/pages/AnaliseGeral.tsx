@@ -170,7 +170,7 @@ const AnaliseGeral = () => {
         <FilialSelector selected={filial} onChange={setFilial} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <KpiCard
           title="Total SKUs"
           value={globalKpis.totalSkus.toLocaleString("pt-BR")}
@@ -197,8 +197,15 @@ const AnaliseGeral = () => {
           variant="destructive"
         />
         <KpiCard
-          title="Valor em Estoque"
+          title="Valor em Estoque Custo"
           value={fmtAbrev(globalKpis.totalEstCusto)}
+          subtitle="Todas as filiais"
+          icon={DollarSign}
+          variant="default"
+        />
+        <KpiCard
+          title="Valor em Estoque Venda"
+          value={fmtAbrev(globalKpis.totalEstVenda)}
           subtitle="Todas as filiais"
           icon={DollarSign}
           variant="default"
