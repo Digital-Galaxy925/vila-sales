@@ -142,7 +142,8 @@ const AnaliseGeral = () => {
     const totalEstCusto = all.reduce((s, f) => s + f.estoqueCusto, 0);
     const avgMargem = all.length > 0 ? all.reduce((s, f) => s + f.margemMedia, 0) / all.length : 0;
     const totalAbaixo = all.reduce((s, f) => s + f.abaixoMargem, 0);
-    return { totalSkus, totalEstCusto, avgMargem, totalAbaixo };
+    const totalEstVenda = all.reduce((s, f) => s + f.estoqueVenda, 0);
+    return { totalSkus, totalEstCusto, totalEstVenda, avgMargem, totalAbaixo };
   }, [filialSummaries]);
 
   const barData = useMemo(() => {
@@ -169,7 +170,7 @@ const AnaliseGeral = () => {
         <FilialSelector selected={filial} onChange={setFilial} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <KpiCard
           title="Total SKUs"
           value={globalKpis.totalSkus.toLocaleString("pt-BR")}
@@ -196,8 +197,15 @@ const AnaliseGeral = () => {
           variant="destructive"
         />
         <KpiCard
-          title="Valor em Estoque"
+          title="Valor em Estoque Custo"
           value={fmtAbrev(globalKpis.totalEstCusto)}
+          subtitle="Todas as filiais"
+          icon={DollarSign}
+          variant="default"
+        />
+        <KpiCard
+          title="Valor em Estoque Venda"
+          value={fmtAbrev(globalKpis.totalEstVenda)}
           subtitle="Todas as filiais"
           icon={DollarSign}
           variant="default"
