@@ -9,7 +9,8 @@ import {
   TrendingDown,
   Clock,
   ShieldAlert,
-  BoxSelect,
+  Download,
+  FileText,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import KpiCard from "@/components/KpiCard";
