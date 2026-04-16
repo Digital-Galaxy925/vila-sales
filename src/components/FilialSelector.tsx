@@ -17,7 +17,7 @@ interface FilialSelectorProps {
 
 const FilialSelector = ({ selected, onChange }: FilialSelectorProps) => {
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-2 flex-wrap overflow-x-auto pb-1 -mx-1 px-1">
       {filiais.map((f) => (
         <button
           key={f.id}
