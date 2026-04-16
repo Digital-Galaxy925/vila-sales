@@ -8,23 +8,29 @@ interface KpiCardProps {
   icon: LucideIcon;
   trend?: "up" | "down" | "neutral";
   trendValue?: string;
-  variant?: "default" | "success" | "warning" | "destructive";
+  variant?: "default" | "primary" | "info" | "success" | "warning" | "destructive" | "purple";
   onClick?: () => void;
   active?: boolean;
 }
 
 const variantStyles = {
   default: "border-border",
+  primary: "border-l-[3px] border-l-primary border-t-0 border-r-0 border-b-0",
+  info: "border-l-[3px] border-l-[hsl(199,89%,48%)] border-t-0 border-r-0 border-b-0",
   success: "border-l-[3px] border-l-success border-t-0 border-r-0 border-b-0",
   warning: "border-l-[3px] border-l-warning border-t-0 border-r-0 border-b-0",
   destructive: "border-l-[3px] border-l-destructive border-t-0 border-r-0 border-b-0",
+  purple: "border-l-[3px] border-l-[hsl(271,76%,53%)] border-t-0 border-r-0 border-b-0",
 };
 
 const iconBgStyles = {
   default: "bg-primary/8 text-primary",
+  primary: "bg-primary/8 text-primary",
+  info: "bg-[hsl(199,89%,48%)]/8 text-[hsl(199,89%,48%)]",
   success: "bg-success/8 text-success",
   warning: "bg-warning/8 text-warning",
   destructive: "bg-destructive/8 text-destructive",
+  purple: "bg-[hsl(271,76%,53%)]/8 text-[hsl(271,76%,53%)]",
 };
 
 const KpiCard = ({
