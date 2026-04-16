@@ -156,16 +156,86 @@ const AnaliseGeral = () => {
     }));
   }, [filialSummaries]);
 
+  const exportToExcel = useCallback(() => {
+    const rows = filialSummaries.map((f) => ({
+      "Filial": f.label,
+      "Total Produtos": f.totalProdutos,
+      "Margem Média (%)": f.margemMedia,
+      "Estoque Custo (R$)": f.estoqueCusto,
+      "Estoque Venda (R$)": f.estoqueVenda,
+      "DDV Médio (dias)": f.ddvMedio,
+      "Margem < 17%": f.abaixoMargem,
+      "Ruptura": f.ruptura,
+      "Estoque < 10 dias": f.abaixo10dias,
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const fmtMoeda = 'R$ #,##0.00';
+    const fmtPerc = '0.0%';
+    const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
+    for (let R = range.s.r + 1; R <= range.e.r; R++) {
+      for (const C of [3, 4]) {
+        const addr = XLSX.utils.encode_cell({ r: R, c: C });
+        if (ws[addr] && typeof ws[addr].v === "number") ws[addr].z = fmtMoeda;
+      }
+      const percAddr = XLSX.utils.encode_cell({ r: R, c: 2 });
+      if (ws[percAddr] && typeof ws[percAddr].v === "number") {
+        ws[percAddr].v = ws[percAddr].v / 100;
+        ws[percAddr].z = fmtPerc;
+      }
+    }
+    ws["!cols"] = Object.keys(rows[0] || {}).map((k) => ({ wch: Math.max(k.length + 2, 18) }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Resumo Filiais");
+    XLSX.writeFile(wb, "analise_geral.xlsx");
+  }, [filialSummaries]);
+
+  const exportToPdf = useCallback(() => {
+    const doc = new jsPDF({ orientation: "landscape" });
+    doc.setFontSize(16);
+    doc.text("Análise Geral - Resumo por Filial", 14, 18);
+    doc.setFontSize(9);
+    doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")}`, 14, 25);
+
+    const head = [["Filial", "Produtos", "Margem Média", "Est. Custo", "Est. Venda", "DDV Médio", "Margem<17%", "Ruptura", "Est.<10d"]];
+    const body = filialSummaries.map((f) => [
+      f.label,
+      f.totalProdutos,
+      `${f.margemMedia.toFixed(1)}%`,
+      `R$ ${f.estoqueCusto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+      `R$ ${f.estoqueVenda.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+      `${f.ddvMedio} dias`,
+      f.abaixoMargem,
+      f.ruptura,
+      f.abaixo10dias,
+    ]);
+
+    autoTable(doc, {
+      head,
+      body,
+      startY: 30,
+      styles: { fontSize: 8, cellPadding: 3 },
+      headStyles: { fillColor: [0, 113, 227], textColor: 255, fontStyle: "bold" },
+    });
+
+    doc.save("analise_geral.pdf");
+  }, [filialSummaries]);
+
   return (
     <div>
       <PageHeader
         title="Análise Geral"
         description="Visão consolidada dos KPIs de compras — Unilever / Grupo Vila Nova"
         actions={
-          <Button className="bg-primary text-primary-foreground font-semibold">
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Gerar Análise
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={exportToExcel} variant="outline" className="font-semibold">
+              <Download className="w-4 h-4 mr-2" />
+              Excel
+            </Button>
+            <Button onClick={exportToPdf} variant="outline" className="font-semibold">
+              <FileText className="w-4 h-4 mr-2" />
+              PDF
+            </Button>
+          </div>
         }
       />
 
