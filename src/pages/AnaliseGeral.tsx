@@ -11,7 +11,7 @@ import {
   ShieldAlert,
   BoxSelect,
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
@@ -319,7 +319,9 @@ const AnaliseGeral = () => {
                   fontSize: "12px",
                 }}
               />
-              <Bar dataKey="margem" radius={[6, 6, 0, 0]} fill="hsl(192, 85%, 40%)" />
+              <Bar dataKey="margem" radius={[6, 6, 0, 0]} fill="hsl(192, 85%, 40%)">
+                <LabelList dataKey="margem" position="top" fontSize={11} fontWeight={600} formatter={(v: number) => `${v}%`} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
