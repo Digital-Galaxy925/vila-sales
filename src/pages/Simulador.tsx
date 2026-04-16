@@ -103,7 +103,7 @@ export default function Simulador() {
   const showResults = produto && precoVenda > 0;
 
   return (
-    <div style={{ padding: "28px 36px", minHeight: "100vh", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1a1a2e" }}>
+    <div style={{ minHeight: "100vh", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1a1a2e" }}>
       <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4, letterSpacing: "-0.02em", color: "#0f172a" }}>
         Simulador de Ofertas
       </h1>
