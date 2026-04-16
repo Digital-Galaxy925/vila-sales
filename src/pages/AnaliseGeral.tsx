@@ -287,7 +287,7 @@ const AnaliseGeral = () => {
 
       {/* Filial Summary Cards */}
       <h3 className="text-sm font-heading font-semibold text-foreground mb-4 uppercase tracking-wider">Resumo por Filial</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         {filialSummaries.map((f, i) => (
           <motion.div
             key={f.id}
