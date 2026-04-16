@@ -5,7 +5,8 @@ const AppLayout = () => {
   return (
     <div className="min-h-screen bg-background">
       <AppSidebar />
-      <main className="ml-64 bg-background min-h-screen">
+      {/* pt-14 on mobile for the top bar, lg:pt-0 + lg:ml-64 for desktop sidebar */}
+      <main className="pt-14 lg:pt-0 lg:ml-64 bg-background min-h-screen">
         <Outlet />
       </main>
     </div>

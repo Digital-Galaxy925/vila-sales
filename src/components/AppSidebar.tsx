@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   BarChart3,
@@ -12,6 +13,8 @@ import {
   BriefcaseBusiness,
   Table,
   GitCompareArrows,
+  Menu,
+  X,
 } from "lucide-react";
 
 const navItems = [
@@ -34,9 +37,10 @@ const navItems = [
 
 const AppSidebar = () => {
   const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-sidebar-bg flex flex-col z-50">
+  const sidebarContent = (
+    <>
       {/* Brand */}
       <div className="px-5 py-5 border-b border-white/[0.06]">
         <div className="flex items-center gap-3">
@@ -51,6 +55,13 @@ const AppSidebar = () => {
               Gestão Comercial
             </p>
           </div>
+          {/* Close button on mobile */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="ml-auto lg:hidden text-white/60 hover:text-white p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -62,6 +73,7 @@ const AppSidebar = () => {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] transition-all duration-150 ${
                 isActive
                   ? "bg-primary/15 text-white font-medium"
@@ -87,7 +99,44 @@ const AppSidebar = () => {
           </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-sidebar-bg z-50 flex items-center px-4 gap-3">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="text-white/80 hover:text-white p-1"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+            <BarChart3 className="w-3.5 h-3.5 text-primary-foreground" />
+          </div>
+          <span className="text-[13px] font-semibold text-white">Vila Sales</span>
+        </div>
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-50"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - desktop: fixed, mobile: slide-in drawer */}
+      <aside
+        className={`fixed left-0 top-0 h-screen w-64 bg-sidebar-bg flex flex-col z-50 transition-transform duration-300 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 };
 
