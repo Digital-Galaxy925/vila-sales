@@ -614,6 +614,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
   const [addedSellout, setAddedSellout] = useState<Record<string, string>>({});
   const [margSelloutInput, setMargSelloutInput] = useState<Record<string, string>>({});
+  const [analiseSelect, setAnaliseSelect] = useState<Record<string, string>>({});
   const [specificList, setSpecificList] = useState<string[] | null>(null);
   const [specificFileName, setSpecificFileName] = useState("");
   const [specificNotFound, setSpecificNotFound] = useState<string[]>([]);
@@ -720,7 +721,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export XLSX
   const exportXLSX = () => {
-    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Promoção (R$)","Margem (%)","Status Margem","Margem com Sell Out (%)","Adicionar Sell Out (R$)","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)"];
+    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Promoção (R$)","Margem (%)","Status Margem","Margem com Sell Out (%)","Adicionar Sell Out (R$)","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)","Análise"];
     const rows = filtered.map((p) => {
       const key = `${p.filial}-${p.seqProd}`;
       // Margem com Sell Out
@@ -769,6 +770,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         margFutura ? parseFloat(margFutura) / 100 : "",
         rawDesc ? descPerc / 100 : "",
         precoFuturoFinal ? parseFloat(precoFuturoFinal) : "",
+        analiseSelect[key] || "",
       ];
     });
     const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
@@ -1149,6 +1151,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               <th style={{ padding: "11px 16px", textAlign: "right", color: "#c084fc", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
                 Preço Futuro Final
               </th>
+              <th style={{ padding: "11px 16px", textAlign: "center", color: "#ef4444", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
+                Análise
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -1425,6 +1430,26 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       const final_ = base - (base * descPerc / 100);
                       return <span style={{ color: "#c084fc" }}>R$ {final_.toFixed(2)}</span>;
                     })()}
+                  </td>
+
+                  {/* Análise */}
+                  <td style={{ padding: "10px 8px", textAlign: "center" }}>
+                    <select
+                      value={analiseSelect[`${p.filial}-${p.seqProd}`] || ""}
+                      onChange={(e) => setAnaliseSelect((prev) => ({ ...prev, [`${p.filial}-${p.seqProd}`]: e.target.value }))}
+                      style={{
+                        width: 140, padding: "5px 6px", borderRadius: 6,
+                        background: "#ffffff", border: "1px solid #d1d5db", color: analiseSelect[`${p.filial}-${p.seqProd}`] ? "#1f2937" : "#9ca3af",
+                        fontSize: 11, fontWeight: 600, outline: "none", cursor: "pointer",
+                      }}
+                    >
+                      <option value="">Selecione</option>
+                      <option value="Margem Baixa">Margem Baixa</option>
+                      <option value="Estoque Zerado">Estoque Zerado</option>
+                      <option value="Custo Zerado Com Estoque">Custo Zerado Com Estoque</option>
+                      <option value="Estoque Baixo">Estoque Baixo</option>
+                      <option value="Outro">Outro</option>
+                    </select>
                   </td>
                 </tr>
               );
