@@ -8,7 +8,7 @@ interface KpiCardProps {
   icon: LucideIcon;
   trend?: "up" | "down" | "neutral";
   trendValue?: string;
-  variant?: "default" | "success" | "warning" | "destructive";
+  variant?: "default" | "primary" | "info" | "success" | "warning" | "destructive" | "purple";
   onClick?: () => void;
   active?: boolean;
 }
