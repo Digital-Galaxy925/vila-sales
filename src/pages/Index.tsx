@@ -755,20 +755,20 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.descricao,
         p.embCmp || "",
         p.estoque,
-        p.custoLiq.toFixed(2),
-        p.sellout.toFixed(2),
-        p.atual.toFixed(2),
-        (p.promoc ?? 0).toFixed(2),
-        p.marg.toFixed(2),
+        p.custoLiq,
+        p.sellout,
+        p.atual,
+        p.promoc ?? 0,
+        p.marg / 100,
         p.marg >= minMargin ? "Saudável" : "Crítico",
-        margSellVal,
-        adicionarSellout,
-        raw || "",
-        !isNaN(futuro) ? futuro.toFixed(2) : "",
-        rawPreco || "",
-        margFutura,
-        rawDesc || "",
-        precoFuturoFinal,
+        margSellVal ? margSellNum / 100 : "",
+        adicionarSellout ? parseFloat(adicionarSellout) : "",
+        raw ? margDes / 100 : "",
+        !isNaN(futuro) ? futuro : "",
+        rawPreco ? precoDesejado : "",
+        margFutura ? parseFloat(margFutura) / 100 : "",
+        rawDesc ? descPerc / 100 : "",
+        precoFuturoFinal ? parseFloat(precoFuturoFinal) : "",
       ];
     });
     const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
@@ -777,6 +777,23 @@ function CrossAnalysis({ data }: { data: FilialData }) {
       const maxLen = Math.max(h.length, ...rows.map(r => String(r[i] ?? "").length));
       return { wch: Math.min(maxLen + 2, 40) };
     });
+    // Aplicar formatação de moeda e porcentagem
+    const fmtMoeda = 'R$ #,##0.00';
+    const fmtPerc = '0.00%';
+    // Índices das colunas (0-based): 7=Custo, 8=Sellout, 9=Venda, 10=Promo, 11=Margem, 13=MargSellout, 14=AddSellout, 15=MargDesejada, 16=PrecoFuturo, 17=PrecoDesejado, 18=MargFutura, 19=DescPromo, 20=PrecoFutFinal
+    const moedaCols = [7, 8, 9, 10, 14, 16, 17, 20];
+    const percCols = [11, 13, 15, 18, 19];
+    const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
+    for (let R = range.s.r + 1; R <= range.e.r; R++) {
+      for (const C of moedaCols) {
+        const addr = XLSX.utils.encode_cell({ r: R, c: C });
+        if (ws[addr] && typeof ws[addr].v === "number") ws[addr].z = fmtMoeda;
+      }
+      for (const C of percCols) {
+        const addr = XLSX.utils.encode_cell({ r: R, c: C });
+        if (ws[addr] && typeof ws[addr].v === "number") ws[addr].z = fmtPerc;
+      }
+    }
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Análise de Custos");
     XLSX.writeFile(wb, "analise_custos.xlsx");
