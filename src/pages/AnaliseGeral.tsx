@@ -13,10 +13,12 @@ import {
   FileText,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
-import AlertCard from "@/components/AlertCard";
 import { Button } from "@/components/ui/button";
 
 const num = (v: any): number => {
