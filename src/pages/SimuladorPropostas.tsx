@@ -427,7 +427,7 @@ export default function SimuladorPropostas() {
   };
 
   return (
-    <div style={{ padding: "28px 36px", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1f2937" }}>
+    <div style={{ fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1f2937" }}>
         <h1 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4, letterSpacing: "-0.02em", color: "#0f172a" }}>
           Simulador de Propostas
         </h1>

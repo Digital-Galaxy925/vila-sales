@@ -520,7 +520,7 @@ export default function ComparativoLivros() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0b1120", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", color: "#e2e8f0", padding: "32px 40px" }}>
+    <div style={{ minHeight: "100vh", background: "#0b1120", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", color: "#e2e8f0" }}>
       <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>📚 Comparativo de Livros</h1>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 32 }}>
         Compare os livros da semana anterior com os atuais para identificar alterações de preço.
