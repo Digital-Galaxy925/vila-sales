@@ -193,6 +193,7 @@ const AnaliseEstoque = () => {
 
   const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
   const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
+  const totalVolumeCaixas = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.estoque || 0), 0), [filtered]);
   const avgDdv = useMemo(() => {
     const withStock = filtered.filter((p: any) => p.estoque > 0);
     return withStock.length ? Math.round(withStock.reduce((s: number, p: any) => s + p.ddv, 0) / withStock.length) : 0;
@@ -268,9 +269,10 @@ const AnaliseEstoque = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
         <KpiCard title="Valor Total Estoque Custo" value={fmtAbrev(totalValor)} icon={Package} variant="default" />
         <KpiCard title="Valor Total Estoque Venda" value={fmtAbrev(totalValorVenda)} icon={Package} variant="default" />
+        <KpiCard title="Volume Total (Caixas)" value={totalVolumeCaixas.toLocaleString("pt-BR")} icon={Package} variant="default" />
         <KpiCard title="Cobertura Média" value={`${avgDdv} dias`} icon={Clock} variant="default" />
         <div onClick={() => setStatusFilter(statusFilter === "excessivo" ? "all" : "excessivo")} className={`cursor-pointer rounded-xl transition-all ${statusFilter === "excessivo" ? "ring-2 ring-destructive" : ""}`}>
           <KpiCard title="Estoque Excessivo" value={`${excessivo} SKUs`} subtitle="> 90 dias" icon={AlertTriangle} variant="destructive" />
