@@ -522,6 +522,9 @@ const Transferencia = () => {
                       <TableCell className="text-xs text-right bg-primary/5 font-semibold text-primary">
                         {o ? o.estoque.toLocaleString("pt-BR") : <span className="text-muted-foreground font-normal">—</span>}
                       </TableCell>
+                      <TableCell className="text-xs text-right bg-primary/5 font-semibold">
+                        {o ? (o.estoque - totalCx).toLocaleString("pt-BR") : <span className="text-muted-foreground font-normal">—</span>}
+                      </TableCell>
                       <TableCell className="text-xs text-center bg-primary/5 font-semibold">
                         {o ? <span className={ddvColor(o.ddv)}>{o.ddv}</span> : <span className="text-muted-foreground font-normal">—</span>}
                       </TableCell>
