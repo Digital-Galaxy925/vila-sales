@@ -303,38 +303,44 @@ const Transferencia = () => {
     return idx;
   }, [destinoRows]);
 
-  const origemMetricasIndex = useMemo(() => {
+  const buildMetricIndex = (filial: string) => {
     const idx = new Map<string, LivroMetricRow>();
-    // Fonte primária: dados já carregados em vilasales_data para a filial de origem.
-    // Garante que Est. Disp. CD Origem / DDV Origem / Pendente Origem reflitam
-    // exatamente o livro_<origem> sem depender de re-upload do cache de métricas.
-    const origemList = rowsByFilial[effectiveOrigem] || [];
-    origemList.forEach((p) => {
-      idx.set(normCod(p.seqProd), {
+
+    try {
+      const raw = JSON.parse(localStorage.getItem(LIVRO_METRICS_STORAGE_KEY) || "{}");
+      const filialMetrics = raw?.[filial] || {};
+      Object.entries(filialMetrics).forEach(([sku, values]: [string, any]) => {
+        idx.set(normCod(sku), {
+          estoque: num(values?.estoque),
+          ddv: num(values?.ddv),
+          pendCmp: num(values?.pendCmp),
+        });
+      });
+    } catch {
+      // ignore
+    }
+
+    (rowsByFilial[filial] || []).forEach((p) => {
+      const key = normCod(p.seqProd);
+      idx.set(key, {
         estoque: num(p.estoque),
         ddv: num(p.ddv),
         pendCmp: num(p.pendCmp),
       });
     });
-    // Fallback: cache vilasales_livro_metrics (preenche apenas códigos faltantes)
-    try {
-      const raw = JSON.parse(localStorage.getItem(LIVRO_METRICS_STORAGE_KEY) || "{}");
-      const filialMetrics = raw?.[effectiveOrigem] || {};
-      Object.entries(filialMetrics).forEach(([sku, values]: [string, any]) => {
-        const key = normCod(sku);
-        if (!idx.has(key)) {
-          idx.set(key, {
-            estoque: num(values?.estoque),
-            ddv: num(values?.ddv),
-            pendCmp: num(values?.pendCmp),
-          });
-        }
-      });
-    } catch {
-      // ignore
-    }
+
     return idx;
-  }, [effectiveOrigem, rowsByFilial]);
+  };
+
+  const origemMetricasIndex = useMemo(
+    () => buildMetricIndex(effectiveOrigem),
+    [effectiveOrigem, rowsByFilial]
+  );
+
+  const destinoMetricasIndex = useMemo(
+    () => buildMetricIndex(effectiveDestino),
+    [effectiveDestino, rowsByFilial]
+  );
 
   const sugestoes = useMemo(() => {
     return origemRows.filter((p) => {
@@ -392,15 +398,23 @@ const Transferencia = () => {
       ),
     [destinoRows, transferQty, palletMap]
   );
+
   const exportarExcel = () => {
     if (destinoRows.length === 0) {
       toast({ title: "Nada para exportar", description: "Ajuste os filtros para visualizar produtos.", variant: "destructive" });
       return;
     }
+
     const data = destinoRows.map((p) => {
-      const o = origemMetricasIndex.get(normCod(p.seqProd));
+      const key = normCod(p.seqProd);
+      const o = origemMetricasIndex.get(key);
+      const d = destinoMetricasIndex.get(key);
+      const estoqueDestinoAtual = d?.estoque ?? 0;
+      const ddvDestinoAtual = d?.ddv ?? 0;
+      const pendenteDestinoAtual = d?.pendCmp ?? 0;
       const q = transferQty[p.seqProd] || { cx: 0, camada: 0, pallet: 0 };
       const totalCx = calcCaixasTransferencia(p.seqProd);
+
       return {
         BU: p.bu || "",
         "Código": p.seqProd,
@@ -410,16 +424,17 @@ const Transferencia = () => {
         "Est. Disp. CD Origem": o ? o.estoque : 0,
         "DDV Origem": o ? o.ddv : 0,
         "Pendente Origem": o ? o.pendCmp : 0,
-        "Estoque Destino": p.estoque,
-        "DDV Destino": p.ddv,
-        "Pendente Destino": p.pendCmp || 0,
+        "Estoque Destino": estoqueDestinoAtual,
+        "DDV Destino": ddvDestinoAtual,
+        "Pendente Destino": pendenteDestinoAtual,
         "CX": q.cx || 0,
         "Camada": q.camada || 0,
         "Pallet": q.pallet || 0,
         "Total CX": totalCx,
-        "Est. Futuro Destino": p.estoque + totalCx,
+        "Est. Futuro Destino": estoqueDestinoAtual + totalCx,
       };
     });
+
     const ws = XLSX.utils.json_to_sheet(data);
     ws["!cols"] = [
       { wch: 6 }, { wch: 12 }, { wch: 40 }, { wch: 22 }, { wch: 22 },
@@ -478,12 +493,17 @@ const Transferencia = () => {
                 </TableRow>
               ) : (
                 rows.map((p) => {
+                  const key = normCod(p.seqProd);
                   const q = transferQty[p.seqProd] || { cx: 0, camada: 0, pallet: 0 };
                   const totalCx = calcCaixasTransferencia(p.seqProd);
-                  const estoqueFuturo = p.estoque + totalCx;
                   const pal = getPallet(p.seqProd);
                   const semPallet = !pal && (q.camada > 0 || q.pallet > 0);
-                  const o = origemMetricasIndex.get(normCod(p.seqProd));
+                  const o = origemMetricasIndex.get(key);
+                  const d = destinoMetricasIndex.get(key);
+                  const estoqueDestinoAtual = d?.estoque ?? 0;
+                  const ddvDestinoAtual = d?.ddv ?? 0;
+                  const pendenteDestinoAtual = d?.pendCmp ?? 0;
+                  const estoqueFuturo = estoqueDestinoAtual + totalCx;
 
                   return (
                     <TableRow key={`${p.filial}-${p.seqProd}`}>
@@ -508,13 +528,13 @@ const Transferencia = () => {
                         {o ? o.pendCmp.toLocaleString("pt-BR") : <span className="text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell className="text-xs text-right">
-                        {p.estoque.toLocaleString("pt-BR")}
+                        {estoqueDestinoAtual.toLocaleString("pt-BR")}
                       </TableCell>
-                      <TableCell className={`text-xs text-center font-semibold ${ddvColor(p.ddv)}`}>
-                        {p.ddv}
+                      <TableCell className={`text-xs text-center font-semibold ${ddvColor(ddvDestinoAtual)}`}>
+                        {ddvDestinoAtual}
                       </TableCell>
                       <TableCell className="text-xs text-right">
-                        {p.pendCmp ? p.pendCmp.toLocaleString("pt-BR") : "—"}
+                        {d ? d.pendCmp.toLocaleString("pt-BR") : <span className="text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell className="text-center p-1 align-top">
                         <Input
