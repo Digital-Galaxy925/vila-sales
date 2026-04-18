@@ -48,7 +48,7 @@ const num = (v: any): number => {
 };
 
 const normCod = (v: any): string =>
-  String(v ?? "").trim().replace(/^0+/, "").toUpperCase();
+  String(v ?? "").trim().replace(/\.0+$/, "").replace(/^0+/, "").toUpperCase();
 
 interface ProdRow {
   filial: string;
