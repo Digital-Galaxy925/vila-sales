@@ -472,6 +472,7 @@ const Transferencia = () => {
                 <TableHead className="text-xs text-center bg-primary/5">CD Origem</TableHead>
                 <TableHead className="text-xs text-center bg-success/10">CD Destino</TableHead>
                 <TableHead className="text-xs text-right bg-primary/5">Est. Disp. CD Origem</TableHead>
+                <TableHead className="text-xs text-right bg-primary/5">Estoque - Transferência</TableHead>
                 <TableHead className="text-xs text-center bg-primary/5">DDV Origem</TableHead>
                 <TableHead className="text-xs text-right bg-primary/5">Pendente Origem</TableHead>
                 <TableHead className="text-xs text-right">Estoque Destino</TableHead>
