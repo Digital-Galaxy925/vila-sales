@@ -422,6 +422,7 @@ const Transferencia = () => {
         "CD Origem": filialNames[effectiveOrigem] || effectiveOrigem,
         "CD Destino": filialNames[effectiveDestino] || effectiveDestino,
         "Est. Disp. CD Origem": o ? o.estoque : 0,
+        "Estoque - Transferência": o ? o.estoque - totalCx : 0,
         "DDV Origem": o ? o.ddv : 0,
         "Pendente Origem": o ? o.pendCmp : 0,
         "Estoque Destino": estoqueDestinoAtual,
@@ -438,7 +439,7 @@ const Transferencia = () => {
     const ws = XLSX.utils.json_to_sheet(data);
     ws["!cols"] = [
       { wch: 6 }, { wch: 12 }, { wch: 40 }, { wch: 22 }, { wch: 22 },
-      { wch: 18 }, { wch: 12 }, { wch: 16 }, { wch: 16 }, { wch: 12 }, { wch: 16 },
+      { wch: 18 }, { wch: 20 }, { wch: 12 }, { wch: 16 }, { wch: 16 }, { wch: 12 }, { wch: 16 },
       { wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 18 },
     ];
     const wb = XLSX.utils.book_new();
@@ -472,6 +473,7 @@ const Transferencia = () => {
                 <TableHead className="text-xs text-center bg-primary/5">CD Origem</TableHead>
                 <TableHead className="text-xs text-center bg-success/10">CD Destino</TableHead>
                 <TableHead className="text-xs text-right bg-primary/5">Est. Disp. CD Origem</TableHead>
+                <TableHead className="text-xs text-right bg-primary/5">Estoque - Transferência</TableHead>
                 <TableHead className="text-xs text-center bg-primary/5">DDV Origem</TableHead>
                 <TableHead className="text-xs text-right bg-primary/5">Pendente Origem</TableHead>
                 <TableHead className="text-xs text-right">Estoque Destino</TableHead>
@@ -487,7 +489,7 @@ const Transferencia = () => {
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={16} className="text-center text-muted-foreground py-8 text-sm">
+                  <TableCell colSpan={17} className="text-center text-muted-foreground py-8 text-sm">
                     Nenhum produto neste CD com os filtros atuais.
                   </TableCell>
                 </TableRow>
@@ -520,6 +522,9 @@ const Transferencia = () => {
                       </TableCell>
                       <TableCell className="text-xs text-right bg-primary/5 font-semibold text-primary">
                         {o ? o.estoque.toLocaleString("pt-BR") : <span className="text-muted-foreground font-normal">—</span>}
+                      </TableCell>
+                      <TableCell className="text-xs text-right bg-primary/5 font-semibold">
+                        {o ? (o.estoque - totalCx).toLocaleString("pt-BR") : <span className="text-muted-foreground font-normal">—</span>}
                       </TableCell>
                       <TableCell className="text-xs text-center bg-primary/5 font-semibold">
                         {o ? <span className={ddvColor(o.ddv)}>{o.ddv}</span> : <span className="text-muted-foreground font-normal">—</span>}
