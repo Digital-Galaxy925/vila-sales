@@ -390,8 +390,6 @@ const Transferencia = () => {
     const ws = XLSX.utils.json_to_sheet(data);
     ws["!cols"] = [
       { wch: 6 }, { wch: 12 }, { wch: 40 }, { wch: 22 }, { wch: 22 },
-    ws["!cols"] = [
-      { wch: 6 }, { wch: 12 }, { wch: 40 }, { wch: 22 }, { wch: 22 },
       { wch: 18 }, { wch: 12 }, { wch: 16 }, { wch: 16 }, { wch: 12 }, { wch: 16 },
       { wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 18 },
     ];
