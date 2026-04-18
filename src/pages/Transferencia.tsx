@@ -121,12 +121,17 @@ const pickField = (row: any, candidates: string[]): any => {
 const Transferencia = () => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const skuListInputRef = useRef<HTMLInputElement>(null);
   const [origem, setOrigem] = useState<string>("");
   const [destino, setDestino] = useState<string>("");
   const [search, setSearch] = useState("");
   const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
   const [onlyZeroStock, setOnlyZeroStock] = useState(false);
   const [maxDdv, setMaxDdv] = useState<string>("");
+
+  // Lista específica de SKUs para filtrar (upload de planilha)
+  const [skuFilterList, setSkuFilterList] = useState<Set<string>>(new Set());
+  const [skuFilterFileName, setSkuFilterFileName] = useState<string>("");
 
   // Palletização: { codigoNormalizado: { cxPorCamada, camadasPorPallet, cxPorPallet } }
   const [palletMap, setPalletMap] = useState<Record<string, PalletInfo>>({});
