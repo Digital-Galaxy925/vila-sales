@@ -655,8 +655,8 @@ const Transferencia = () => {
               </div>
             </div>
 
-            {/* Botão de filtro estoque zero */}
-            <div className="mt-3 flex items-center gap-2">
+            {/* Filtros adicionais */}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
               <Button
                 type="button"
                 variant={onlyZeroStock ? "default" : "outline"}
@@ -672,6 +672,34 @@ const Transferencia = () => {
                   {destinoRows.length} {destinoRows.length === 1 ? "item" : "itens"} sem estoque no CD Destino
                 </span>
               )}
+
+              <div className="flex items-center gap-2 border-l border-border pl-3">
+                <label className="text-xs text-muted-foreground whitespace-nowrap">DDV Destino ≤</label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={maxDdv}
+                  onChange={(e) => setMaxDdv(e.target.value)}
+                  placeholder="Ex: 15"
+                  className="h-8 w-24 text-xs"
+                />
+                {maxDdv && !isNaN(parseFloat(maxDdv.replace(",", "."))) && (
+                  <>
+                    <span className="text-xs text-muted-foreground">
+                      {destinoRows.length} {destinoRows.length === 1 ? "item" : "itens"}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => setMaxDdv("")}
+                    >
+                      Limpar
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
