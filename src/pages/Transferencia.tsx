@@ -501,6 +501,9 @@ const Transferencia = () => {
                       <TableCell className="text-xs text-center bg-primary/5 font-medium text-primary">
                         {filialNames[effectiveOrigem] || effectiveOrigem || "—"}
                       </TableCell>
+                      <TableCell className="text-xs text-center bg-success/10 font-medium text-success">
+                        {filialNames[effectiveDestino] || effectiveDestino || "—"}
+                      </TableCell>
                       <TableCell className="text-center p-1 align-top">
                         <Input
                           type="number"
