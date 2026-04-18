@@ -11,6 +11,8 @@ import {
   Layers,
   Boxes,
   Download,
+  ListFilter,
+  X,
 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
@@ -119,12 +121,17 @@ const pickField = (row: any, candidates: string[]): any => {
 const Transferencia = () => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const skuListInputRef = useRef<HTMLInputElement>(null);
   const [origem, setOrigem] = useState<string>("");
   const [destino, setDestino] = useState<string>("");
   const [search, setSearch] = useState("");
   const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
   const [onlyZeroStock, setOnlyZeroStock] = useState(false);
   const [maxDdv, setMaxDdv] = useState<string>("");
+
+  // Lista específica de SKUs para filtrar (upload de planilha)
+  const [skuFilterList, setSkuFilterList] = useState<Set<string>>(new Set());
+  const [skuFilterFileName, setSkuFilterFileName] = useState<string>("");
 
   // Palletização: { codigoNormalizado: { cxPorCamada, camadasPorPallet, cxPorPallet } }
   const [palletMap, setPalletMap] = useState<Record<string, PalletInfo>>({});
@@ -235,6 +242,66 @@ const Transferencia = () => {
     toast({ title: "Palletização removida" });
   };
 
+  const handleSkuListUpload = async (file: File) => {
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        defval: "",
+        blankrows: false,
+      });
+
+      const set = new Set<string>();
+      rows.forEach((r) => {
+        if (!r) return;
+        // Coleta códigos de qualquer coluna (cobre planilhas com header ou sem)
+        r.forEach((cell) => {
+          if (cell === "" || cell === null || cell === undefined) return;
+          const cod = normCod(cell);
+          // Ignora linhas que claramente não são códigos (ex: "Código", "SKU")
+          if (cod && /[0-9]/.test(cod)) set.add(cod);
+        });
+      });
+
+      if (set.size === 0) {
+        toast({
+          title: "Nenhum código válido encontrado",
+          description: "A planilha deve conter os códigos dos produtos (numéricos).",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSkuFilterList(set);
+      setSkuFilterFileName(file.name);
+      toast({
+        title: "Lista de produtos carregada",
+        description: `${set.size} ${set.size === 1 ? "código" : "códigos"} aplicados como filtro`,
+      });
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erro ao processar planilha",
+        description: "Confira o formato do arquivo e tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const onSkuListChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleSkuListUpload(file);
+    e.target.value = "";
+  };
+
+  const limparSkuList = () => {
+    setSkuFilterList(new Set());
+    setSkuFilterFileName("");
+    toast({ title: "Filtro de produtos removido" });
+  };
+
   const { rowsByFilial, filiaisDisponiveis } = useMemo(() => {
     const map: Record<string, ProdRow[]> = {};
     try {
@@ -271,6 +338,9 @@ const Transferencia = () => {
 
   const applyFilter = (rows: ProdRow[], aplicarZero = false, aplicarMaxDdv = false) => {
     let list = rows;
+    if (skuFilterList.size > 0) {
+      list = list.filter((p) => skuFilterList.has(normCod(p.seqProd)));
+    }
     if (buFilter !== "all") list = list.filter((p) => p.bu === buFilter);
     if (search.trim()) {
       const term = search.trim().toLowerCase();
@@ -290,11 +360,11 @@ const Transferencia = () => {
 
   const origemRows = useMemo(
     () => applyFilter(rowsByFilial[effectiveOrigem] || []),
-    [rowsByFilial, effectiveOrigem, search, buFilter]
+    [rowsByFilial, effectiveOrigem, search, buFilter, skuFilterList]
   );
   const destinoRows = useMemo(
     () => applyFilter(rowsByFilial[effectiveDestino] || [], onlyZeroStock, true),
-    [rowsByFilial, effectiveDestino, search, buFilter, onlyZeroStock, maxDdv]
+    [rowsByFilial, effectiveDestino, search, buFilter, onlyZeroStock, maxDdv, skuFilterList]
   );
 
   const destinoIndex = useMemo(() => {
@@ -805,6 +875,48 @@ const Transferencia = () => {
                       className="h-7 px-2 text-xs"
                       onClick={() => setMaxDdv("")}
                     >
+                      Limpar
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 border-l border-border pl-3">
+                <input
+                  ref={skuListInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  className="hidden"
+                  onChange={onSkuListChange}
+                />
+                <Button
+                  type="button"
+                  variant={skuFilterList.size > 0 ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => skuListInputRef.current?.click()}
+                  className="text-xs h-8"
+                  title="Faça upload de uma planilha (.xlsx/.csv) com os códigos dos produtos a analisar"
+                >
+                  <ListFilter className="w-3.5 h-3.5 mr-1.5" />
+                  {skuFilterList.size > 0
+                    ? `Lista ativa: ${skuFilterList.size} ${skuFilterList.size === 1 ? "produto" : "produtos"}`
+                    : "Upload Lista de Produtos"}
+                </Button>
+                {skuFilterList.size > 0 && (
+                  <>
+                    {skuFilterFileName && (
+                      <span className="text-xs text-muted-foreground truncate max-w-[200px]" title={skuFilterFileName}>
+                        {skuFilterFileName}
+                      </span>
+                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={limparSkuList}
+                    >
+                      <X className="w-3.5 h-3.5 mr-1" />
                       Limpar
                     </Button>
                   </>
