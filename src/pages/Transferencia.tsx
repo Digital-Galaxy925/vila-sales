@@ -646,9 +646,8 @@ const Transferencia = () => {
             <KpiCard title="Total a Transferir (cx)" value={totalCxTransferencia.toLocaleString("pt-BR")} icon={Boxes} variant="primary" />
           </div>
 
-          {/* Tabelas lado a lado */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            {renderOrigemTable()}
+          {/* Tabela CD Destino */}
+          <div>
             {renderDestinoTable()}
           </div>
 
