@@ -2410,6 +2410,32 @@ export default function Index() {
       };
 
       // ── 3. Cruzamento direto por posição ──────────────────────────────────────
+      const buildLivroMetrics = (
+        rawRows: string[][],
+        colCod: number,
+        colEstoque: number,
+        colDDV: number
+      ): Record<string, LivroMetricRow> => {
+        const header = rawRows[0] ?? [];
+        const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
+        const finalColEstoque = findHeaderIndex(header, ["ESTOQUE"], colEstoque);
+        const finalColDDV = findHeaderIndex(header, ["DDV"], colDDV);
+        const finalColPendCmp = findHeaderIndex(header, ["PEND.CMP", "PEND CMP", "PENDCMP", "PEND_COMPRA", "PENDENCIA"], -1);
+        const result: Record<string, LivroMetricRow> = {};
+
+        rawRows.slice(1).forEach((cols) => {
+          const cod = normCod(cols[finalColCod] ?? "");
+          if (!cod) return;
+          result[cod] = {
+            estoque: num(cols[finalColEstoque] ?? "0"),
+            ddv: num(cols[finalColDDV] ?? "0"),
+            pendCmp: finalColPendCmp >= 0 ? num(cols[finalColPendCmp] ?? "0") : 0,
+          };
+        });
+
+        return result;
+      };
+
       // livro_01 – Poços:
       //   col[1] = código (coluna 2)
       //   col[2] = descrição (coluna C)
@@ -2441,6 +2467,7 @@ export default function Index() {
         const finalColPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV"], colPrecoFallback);
         const finalColSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
         const finalColPromoc = findHeaderIndex(header, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"], -1);
+        const finalColPendCmp = findHeaderIndex(header, ["PEND.CMP", "PEND CMP", "PENDCMP", "PEND_COMPRA", "PENDENCIA"], -1);
 
         const dataRows = rawRows.slice(1);
         const result: Product[] = [];
@@ -2457,7 +2484,6 @@ export default function Index() {
           const estoqueStr = overrideEstoqueRow?.estoque && num(overrideEstoqueRow.estoque) !== 0
             ? overrideEstoqueRow.estoque
             : cols[finalColEstoque] ?? "0";
-          // Custo e preço: se existe override de preços (livro_10/510), SEMPRE usar dele — sem fallback para o arquivo base
           const custoStr = overridePrecos
             ? (overridePrecosRow?.custo ?? "0")
             : (cols[finalColCusto] ?? "0");
@@ -2470,6 +2496,7 @@ export default function Index() {
           const promocStr = overridePrecos
             ? (overridePrecosRow?.promoc ?? "0")
             : ((finalColPromoc >= 0 ? cols[finalColPromoc] : undefined) ?? "0");
+
 
           const estoque = num(estoqueStr);
           const custoLiq = num(custoStr);
