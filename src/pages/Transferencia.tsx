@@ -305,21 +305,36 @@ const Transferencia = () => {
 
   const origemMetricasIndex = useMemo(() => {
     const idx = new Map<string, LivroMetricRow>();
+    // Fonte primária: dados já carregados em vilasales_data para a filial de origem.
+    // Garante que Est. Disp. CD Origem / DDV Origem / Pendente Origem reflitam
+    // exatamente o livro_<origem> sem depender de re-upload do cache de métricas.
+    const origemList = rowsByFilial[effectiveOrigem] || [];
+    origemList.forEach((p) => {
+      idx.set(normCod(p.seqProd), {
+        estoque: num(p.estoque),
+        ddv: num(p.ddv),
+        pendCmp: num(p.pendCmp),
+      });
+    });
+    // Fallback: cache vilasales_livro_metrics (preenche apenas códigos faltantes)
     try {
       const raw = JSON.parse(localStorage.getItem(LIVRO_METRICS_STORAGE_KEY) || "{}");
       const filialMetrics = raw?.[effectiveOrigem] || {};
       Object.entries(filialMetrics).forEach(([sku, values]: [string, any]) => {
-        idx.set(normCod(sku), {
-          estoque: num(values?.estoque),
-          ddv: num(values?.ddv),
-          pendCmp: num(values?.pendCmp),
-        });
+        const key = normCod(sku);
+        if (!idx.has(key)) {
+          idx.set(key, {
+            estoque: num(values?.estoque),
+            ddv: num(values?.ddv),
+            pendCmp: num(values?.pendCmp),
+          });
+        }
       });
     } catch {
       // ignore
     }
     return idx;
-  }, [effectiveOrigem]);
+  }, [effectiveOrigem, rowsByFilial]);
 
   const sugestoes = useMemo(() => {
     return origemRows.filter((p) => {
