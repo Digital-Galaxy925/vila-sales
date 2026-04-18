@@ -62,9 +62,9 @@ interface ProdRow {
 }
 
 interface PalletInfo {
-  cxPorCamada: number;
-  camadasPorPallet: number;
-  cxPorPallet: number;
+  unPorCx: number;       // coluna F: unidades por caixa
+  cxPorPallet: number;   // coluna G: caixas por pallet
+  cxPorCamada: number;   // coluna H: caixas por camada
 }
 
 const PALLET_STORAGE_KEY = "vilasales_palletizacao";
@@ -149,62 +149,42 @@ const Transferencia = () => {
       const buf = await file.arrayBuffer();
       const wb = XLSX.read(buf, { type: "array" });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
+      // Lê como array de arrays para acessar colunas por posição (A=0, F=5, G=6, H=7)
+      const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        defval: "",
+        blankrows: false,
+      });
 
       const map: Record<string, PalletInfo> = {};
-      rows.forEach((r) => {
-        const cod = pickField(r, [
-          "codigo",
-          "cod",
-          "sku",
-          "seqprod",
-          "produto",
-          "item",
-        ]);
-        if (!cod) return;
-        const cxPorCamada = num(
-          pickField(r, [
-            "cxporcamada",
-            "caixasporcamada",
-            "cxcamada",
-            "cx/camada",
-            "caixascamada",
-          ])
-        );
-        const camadasPorPallet = num(
-          pickField(r, [
-            "camadasporpallet",
-            "camadaspallet",
-            "camadas/pallet",
-            "camadas",
-          ])
-        );
-        const cxPorPalletDireto = num(
-          pickField(r, [
-            "cxporpallet",
-            "caixasporpallet",
-            "cxpallet",
-            "cx/pallet",
-            "caixaspallet",
-            "totalcaixas",
-            "totalcx",
-          ])
-        );
-        const cxPorPallet =
-          cxPorPalletDireto || cxPorCamada * camadasPorPallet;
-        if (!cxPorCamada && !camadasPorPallet && !cxPorPallet) return;
-        map[normCod(cod)] = {
-          cxPorCamada,
-          camadasPorPallet,
-          cxPorPallet,
-        };
-      });
+      // Detecta linha de cabeçalho: primeira linha cuja coluna A não é numérica
+      let startIdx = 0;
+      for (let i = 0; i < Math.min(5, rows.length); i++) {
+        const a = rows[i]?.[0];
+        if (a && !isNaN(Number(String(a).replace(/\./g, "").replace(",", ".")))) {
+          startIdx = i;
+          break;
+        }
+        startIdx = i + 1;
+      }
+
+      for (let i = startIdx; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.length === 0) continue;
+        const cod = r[0]; // Coluna A: código
+        if (cod === "" || cod === null || cod === undefined) continue;
+        const unPorCx = num(r[5]);      // Coluna F
+        const cxPorPallet = num(r[6]);  // Coluna G
+        const cxPorCamada = num(r[7]);  // Coluna H
+        if (!unPorCx && !cxPorPallet && !cxPorCamada) continue;
+        map[normCod(cod)] = { unPorCx, cxPorPallet, cxPorCamada };
+      }
 
       if (Object.keys(map).length === 0) {
         toast({
           title: "Nenhum dado válido encontrado",
           description:
-            "Verifique se a planilha contém colunas como Código, Cx/Camada, Camadas/Pallet.",
+            "Verifique se a planilha tem o código na coluna A e os valores em F (un/cx), G (cx/pallet) e H (cx/camada).",
           variant: "destructive",
         });
         return;
@@ -520,7 +500,7 @@ const Transferencia = () => {
                       <TableCell className="text-xs text-center bg-primary/5 font-medium text-primary">
                         {filialNames[effectiveOrigem] || effectiveOrigem || "—"}
                       </TableCell>
-                      <TableCell className="text-center p-1">
+                      <TableCell className="text-center p-1 align-top">
                         <Input
                           type="number"
                           min={0}
@@ -528,9 +508,15 @@ const Transferencia = () => {
                           onChange={(e) => updateQty(p.seqProd, "cx", e.target.value)}
                           className="h-7 w-16 text-xs text-center px-1"
                           placeholder="0"
+                          title={pal ? `${pal.unPorCx} un/cx` : "Sem palletização"}
                         />
+                        {q.cx > 0 && pal?.unPorCx ? (
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                            = {(q.cx * pal.unPorCx).toLocaleString("pt-BR")} un
+                          </div>
+                        ) : null}
                       </TableCell>
-                      <TableCell className="text-center p-1">
+                      <TableCell className="text-center p-1 align-top">
                         <Input
                           type="number"
                           min={0}
@@ -540,8 +526,13 @@ const Transferencia = () => {
                           placeholder="0"
                           title={pal ? `${pal.cxPorCamada} cx/camada` : "Sem palletização"}
                         />
+                        {q.camada > 0 && pal?.cxPorCamada ? (
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                            = {(q.camada * pal.cxPorCamada).toLocaleString("pt-BR")} cx
+                          </div>
+                        ) : null}
                       </TableCell>
-                      <TableCell className="text-center p-1">
+                      <TableCell className="text-center p-1 align-top">
                         <Input
                           type="number"
                           min={0}
@@ -551,6 +542,11 @@ const Transferencia = () => {
                           placeholder="0"
                           title={pal ? `${pal.cxPorPallet} cx/pallet` : "Sem palletização"}
                         />
+                        {q.pallet > 0 && pal?.cxPorPallet ? (
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                            = {(q.pallet * pal.cxPorPallet).toLocaleString("pt-BR")} cx
+                          </div>
+                        ) : null}
                       </TableCell>
                       <TableCell className={`text-xs text-right font-semibold ${totalCx > 0 ? "text-success" : "text-muted-foreground"}`}>
                         {totalCx > 0 ? totalCx.toLocaleString("pt-BR") : "—"}
