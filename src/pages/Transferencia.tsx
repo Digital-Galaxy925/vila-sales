@@ -489,7 +489,7 @@ const Transferencia = () => {
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center text-muted-foreground py-8 text-sm">
+                  <TableCell colSpan={12} className="text-center text-muted-foreground py-8 text-sm">
                     Nenhum produto neste CD com os filtros atuais.
                   </TableCell>
                 </TableRow>
