@@ -48,7 +48,7 @@ const num = (v: any): number => {
 };
 
 const normCod = (v: any): string =>
-  String(v ?? "").trim().replace(/^0+/, "").toUpperCase();
+  String(v ?? "").trim().replace(/\.0+$/, "").replace(/^0+/, "").toUpperCase();
 
 interface ProdRow {
   filial: string;
@@ -468,6 +468,8 @@ const Transferencia = () => {
                           <div className="text-[10px] text-muted-foreground mt-0.5">
                             = {(q.camada * pal.cxPorCamada).toLocaleString("pt-BR")} cx
                           </div>
+                        ) : q.camada > 0 ? (
+                          <div className="text-[10px] text-destructive mt-0.5">sem cx/camada</div>
                         ) : null}
                       </TableCell>
                       <TableCell className="text-center p-1 align-top">
@@ -484,6 +486,8 @@ const Transferencia = () => {
                           <div className="text-[10px] text-muted-foreground mt-0.5">
                             = {(q.pallet * pal.cxPorPallet).toLocaleString("pt-BR")} cx
                           </div>
+                        ) : q.pallet > 0 ? (
+                          <div className="text-[10px] text-destructive mt-0.5">sem cx/pallet</div>
                         ) : null}
                       </TableCell>
                       <TableCell className={`text-xs text-right font-semibold ${totalCx > 0 ? "text-success" : "text-muted-foreground"}`}>
