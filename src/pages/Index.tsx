@@ -2285,6 +2285,7 @@ export default function Index() {
     try {
       localStorage.removeItem("vilasales_data");
       localStorage.removeItem("vilasales_lastUpdate");
+      localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
     } catch (_) {}
   }, []);
 
