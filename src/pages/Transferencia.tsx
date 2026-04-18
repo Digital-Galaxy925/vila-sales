@@ -637,6 +637,25 @@ const Transferencia = () => {
                 </div>
               </div>
             </div>
+
+            {/* Botão de filtro estoque zero */}
+            <div className="mt-3 flex items-center gap-2">
+              <Button
+                type="button"
+                variant={onlyZeroStock ? "default" : "outline"}
+                size="sm"
+                onClick={() => setOnlyZeroStock((v) => !v)}
+                className="text-xs h-8"
+              >
+                <Package className="w-3.5 h-3.5 mr-1.5" />
+                {onlyZeroStock ? "Mostrando apenas estoque zero" : "Filtrar estoque zero (Destino)"}
+              </Button>
+              {onlyZeroStock && (
+                <span className="text-xs text-muted-foreground">
+                  {destinoRows.length} {destinoRows.length === 1 ? "item" : "itens"} sem estoque no CD Destino
+                </span>
+              )}
+            </div>
           </div>
 
           {/* KPIs */}
