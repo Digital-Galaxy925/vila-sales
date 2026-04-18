@@ -33,6 +33,18 @@ interface FilialData {
   [filial: string]: Product[];
 }
 
+interface LivroMetricRow {
+  estoque: number;
+  ddv: number;
+  pendCmp: number;
+}
+
+interface LivroMetricsData {
+  [filial: string]: Record<string, LivroMetricRow>;
+}
+
+const LIVRO_METRICS_STORAGE_KEY = "vilasales_livro_metrics";
+
 interface UploadedFiles {
   livro_01?: File;
   livro_10?: File;
