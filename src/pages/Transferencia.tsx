@@ -417,15 +417,6 @@ const Transferencia = () => {
                       <TableCell className="text-xs text-center bg-success/10 font-medium text-success">
                         {filialNames[effectiveDestino] || effectiveDestino || "—"}
                       </TableCell>
-                      <TableCell className="text-xs text-right">
-                        {p.estoque.toLocaleString("pt-BR")}
-                      </TableCell>
-                      <TableCell className={`text-xs text-center font-semibold ${ddvColor(p.ddv)}`}>
-                        {p.ddv}
-                      </TableCell>
-                      <TableCell className="text-xs text-right">
-                        {p.pendCmp ? p.pendCmp.toLocaleString("pt-BR") : "—"}
-                      </TableCell>
                       <TableCell className="text-xs text-right bg-primary/5 font-semibold text-primary">
                         {(() => {
                           const o = origemIndex.get(normCod(p.seqProd));
@@ -437,6 +428,15 @@ const Transferencia = () => {
                           const o = origemIndex.get(normCod(p.seqProd));
                           return o ? <span className={ddvColor(o.ddv)}>{o.ddv}</span> : <span className="text-muted-foreground font-normal">—</span>;
                         })()}
+                      </TableCell>
+                      <TableCell className="text-xs text-right">
+                        {p.estoque.toLocaleString("pt-BR")}
+                      </TableCell>
+                      <TableCell className={`text-xs text-center font-semibold ${ddvColor(p.ddv)}`}>
+                        {p.ddv}
+                      </TableCell>
+                      <TableCell className="text-xs text-right">
+                        {p.pendCmp ? p.pendCmp.toLocaleString("pt-BR") : "—"}
                       </TableCell>
                       <TableCell className="text-center p-1 align-top">
                         <Input
