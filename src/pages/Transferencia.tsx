@@ -149,62 +149,42 @@ const Transferencia = () => {
       const buf = await file.arrayBuffer();
       const wb = XLSX.read(buf, { type: "array" });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
+      // Lê como array de arrays para acessar colunas por posição (A=0, F=5, G=6, H=7)
+      const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        defval: "",
+        blankrows: false,
+      });
 
       const map: Record<string, PalletInfo> = {};
-      rows.forEach((r) => {
-        const cod = pickField(r, [
-          "codigo",
-          "cod",
-          "sku",
-          "seqprod",
-          "produto",
-          "item",
-        ]);
-        if (!cod) return;
-        const cxPorCamada = num(
-          pickField(r, [
-            "cxporcamada",
-            "caixasporcamada",
-            "cxcamada",
-            "cx/camada",
-            "caixascamada",
-          ])
-        );
-        const camadasPorPallet = num(
-          pickField(r, [
-            "camadasporpallet",
-            "camadaspallet",
-            "camadas/pallet",
-            "camadas",
-          ])
-        );
-        const cxPorPalletDireto = num(
-          pickField(r, [
-            "cxporpallet",
-            "caixasporpallet",
-            "cxpallet",
-            "cx/pallet",
-            "caixaspallet",
-            "totalcaixas",
-            "totalcx",
-          ])
-        );
-        const cxPorPallet =
-          cxPorPalletDireto || cxPorCamada * camadasPorPallet;
-        if (!cxPorCamada && !camadasPorPallet && !cxPorPallet) return;
-        map[normCod(cod)] = {
-          cxPorCamada,
-          camadasPorPallet,
-          cxPorPallet,
-        };
-      });
+      // Detecta linha de cabeçalho: primeira linha cuja coluna A não é numérica
+      let startIdx = 0;
+      for (let i = 0; i < Math.min(5, rows.length); i++) {
+        const a = rows[i]?.[0];
+        if (a && !isNaN(Number(String(a).replace(/\./g, "").replace(",", ".")))) {
+          startIdx = i;
+          break;
+        }
+        startIdx = i + 1;
+      }
+
+      for (let i = startIdx; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.length === 0) continue;
+        const cod = r[0]; // Coluna A: código
+        if (cod === "" || cod === null || cod === undefined) continue;
+        const unPorCx = num(r[5]);      // Coluna F
+        const cxPorPallet = num(r[6]);  // Coluna G
+        const cxPorCamada = num(r[7]);  // Coluna H
+        if (!unPorCx && !cxPorPallet && !cxPorCamada) continue;
+        map[normCod(cod)] = { unPorCx, cxPorPallet, cxPorCamada };
+      }
 
       if (Object.keys(map).length === 0) {
         toast({
           title: "Nenhum dado válido encontrado",
           description:
-            "Verifique se a planilha contém colunas como Código, Cx/Camada, Camadas/Pallet.",
+            "Verifique se a planilha tem o código na coluna A e os valores em F (un/cx), G (cx/pallet) e H (cx/camada).",
           variant: "destructive",
         });
         return;
