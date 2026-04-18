@@ -62,6 +62,12 @@ interface ProdRow {
   pendCmp: number;
 }
 
+interface LivroMetricRow {
+  estoque: number;
+  ddv: number;
+  pendCmp: number;
+}
+
 interface PalletInfo {
   unPorCx: number;       // coluna F: unidades por caixa
   cxPorPallet: number;   // coluna G: caixas por pallet
@@ -69,6 +75,7 @@ interface PalletInfo {
 }
 
 const PALLET_STORAGE_KEY = "vilasales_palletizacao";
+const LIVRO_METRICS_STORAGE_KEY = "vilasales_livro_metrics";
 
 const ddvColor = (v: number) => {
   if (v <= 0) return "text-destructive";
@@ -296,12 +303,23 @@ const Transferencia = () => {
     return idx;
   }, [destinoRows]);
 
-  // Index completo da filial Origem (sem aplicar search/BU/zero) para lookup correto por SKU
-  const origemIndex = useMemo(() => {
-    const idx = new Map<string, ProdRow>();
-    (rowsByFilial[effectiveOrigem] || []).forEach((p) => idx.set(normCod(p.seqProd), p));
+  const origemMetricasIndex = useMemo(() => {
+    const idx = new Map<string, LivroMetricRow>();
+    try {
+      const raw = JSON.parse(localStorage.getItem(LIVRO_METRICS_STORAGE_KEY) || "{}");
+      const filialMetrics = raw?.[effectiveOrigem] || {};
+      Object.entries(filialMetrics).forEach(([sku, values]: [string, any]) => {
+        idx.set(normCod(sku), {
+          estoque: num(values?.estoque),
+          ddv: num(values?.ddv),
+          pendCmp: num(values?.pendCmp),
+        });
+      });
+    } catch {
+      // ignore
+    }
     return idx;
-  }, [rowsByFilial, effectiveOrigem]);
+  }, [effectiveOrigem]);
 
   const sugestoes = useMemo(() => {
     return origemRows.filter((p) => {
@@ -365,7 +383,7 @@ const Transferencia = () => {
       return;
     }
     const data = destinoRows.map((p) => {
-      const o = origemIndex.get(normCod(p.seqProd));
+      const o = origemMetricasIndex.get(normCod(p.seqProd));
       const q = transferQty[p.seqProd] || { cx: 0, camada: 0, pallet: 0 };
       const totalCx = calcCaixasTransferencia(p.seqProd);
       return {
@@ -376,7 +394,7 @@ const Transferencia = () => {
         "CD Destino": filialNames[effectiveDestino] || effectiveDestino,
         "Est. Disp. CD Origem": o ? o.estoque : 0,
         "DDV Origem": o ? o.ddv : 0,
-        "Pendente Origem": o ? (o.pendCmp || 0) : 0,
+        "Pendente Origem": o ? o.pendCmp : 0,
         "Estoque Destino": p.estoque,
         "DDV Destino": p.ddv,
         "Pendente Destino": p.pendCmp || 0,
@@ -450,7 +468,7 @@ const Transferencia = () => {
                   const estoqueFuturo = p.estoque + totalCx;
                   const pal = getPallet(p.seqProd);
                   const semPallet = !pal && (q.camada > 0 || q.pallet > 0);
-                  const o = origemIndex.get(normCod(p.seqProd));
+                  const o = origemMetricasIndex.get(normCod(p.seqProd));
 
                   return (
                     <TableRow key={`${p.filial}-${p.seqProd}`}>
@@ -472,7 +490,7 @@ const Transferencia = () => {
                         {o ? <span className={ddvColor(o.ddv)}>{o.ddv}</span> : <span className="text-muted-foreground font-normal">—</span>}
                       </TableCell>
                       <TableCell className="text-xs text-right bg-primary/5">
-                        {o && o.pendCmp ? o.pendCmp.toLocaleString("pt-BR") : <span className="text-muted-foreground">—</span>}
+                        {o ? o.pendCmp.toLocaleString("pt-BR") : <span className="text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell className="text-xs text-right">
                         {p.estoque.toLocaleString("pt-BR")}

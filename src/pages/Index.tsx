@@ -25,6 +25,7 @@ interface Product {
   atual: number;
   sugerido: number;
   ddv: number;
+  pendCmp: number;
   filial: Filial;
   bu: string; // FOODS | HC
 }
@@ -32,6 +33,18 @@ interface Product {
 interface FilialData {
   [filial: string]: Product[];
 }
+
+interface LivroMetricRow {
+  estoque: number;
+  ddv: number;
+  pendCmp: number;
+}
+
+interface LivroMetricsData {
+  [filial: string]: Record<string, LivroMetricRow>;
+}
+
+const LIVRO_METRICS_STORAGE_KEY = "vilasales_livro_metrics";
 
 interface UploadedFiles {
   livro_01?: File;
@@ -158,6 +171,7 @@ function rowToProduct(row: Record<string, string>, filial: Filial): Product {
     estoque: num(findCol(row, ["ESTOQUE"])),
     sellout: num(findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"])),
     promoc: num(findCol(row, ["PROMOC", "PROMOÇÃO", "PROMOCAO", "PROMO"])),
+    pendCmp: num(findCol(row, ["PEND.CMP", "PEND CMP", "PENDCMP", "PEND_COMPRA", "PENDENCIA"])),
     custoLiq: pc,
     comis: num(findCol(row, ["COMIS"])),
     marg: num(findCol(row, ["MARG"])) || margCalc,
@@ -2273,6 +2287,7 @@ export default function Index() {
     try {
       localStorage.removeItem("vilasales_data");
       localStorage.removeItem("vilasales_lastUpdate");
+      localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
     } catch (_) {}
   }, []);
 
@@ -2397,6 +2412,32 @@ export default function Index() {
       };
 
       // ── 3. Cruzamento direto por posição ──────────────────────────────────────
+      const buildLivroMetrics = (
+        rawRows: string[][],
+        colCod: number,
+        colEstoque: number,
+        colDDV: number
+      ): Record<string, LivroMetricRow> => {
+        const header = rawRows[0] ?? [];
+        const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
+        const finalColEstoque = findHeaderIndex(header, ["ESTOQUE"], colEstoque);
+        const finalColDDV = findHeaderIndex(header, ["DDV"], colDDV);
+        const finalColPendCmp = findHeaderIndex(header, ["PEND.CMP", "PEND CMP", "PENDCMP", "PEND_COMPRA", "PENDENCIA"], -1);
+        const result: Record<string, LivroMetricRow> = {};
+
+        rawRows.slice(1).forEach((cols) => {
+          const cod = normCod(cols[finalColCod] ?? "");
+          if (!cod) return;
+          result[cod] = {
+            estoque: num(cols[finalColEstoque] ?? "0"),
+            ddv: num(cols[finalColDDV] ?? "0"),
+            pendCmp: finalColPendCmp >= 0 ? num(cols[finalColPendCmp] ?? "0") : 0,
+          };
+        });
+
+        return result;
+      };
+
       // livro_01 – Poços:
       //   col[1] = código (coluna 2)
       //   col[2] = descrição (coluna C)
@@ -2428,6 +2469,7 @@ export default function Index() {
         const finalColPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV"], colPrecoFallback);
         const finalColSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
         const finalColPromoc = findHeaderIndex(header, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"], -1);
+        const finalColPendCmp = findHeaderIndex(header, ["PEND.CMP", "PEND CMP", "PENDCMP", "PEND_COMPRA", "PENDENCIA"], -1);
 
         const dataRows = rawRows.slice(1);
         const result: Product[] = [];
@@ -2444,7 +2486,6 @@ export default function Index() {
           const estoqueStr = overrideEstoqueRow?.estoque && num(overrideEstoqueRow.estoque) !== 0
             ? overrideEstoqueRow.estoque
             : cols[finalColEstoque] ?? "0";
-          // Custo e preço: se existe override de preços (livro_10/510), SEMPRE usar dele — sem fallback para o arquivo base
           const custoStr = overridePrecos
             ? (overridePrecosRow?.custo ?? "0")
             : (cols[finalColCusto] ?? "0");
@@ -2458,12 +2499,14 @@ export default function Index() {
             ? (overridePrecosRow?.promoc ?? "0")
             : ((finalColPromoc >= 0 ? cols[finalColPromoc] : undefined) ?? "0");
 
+
           const estoque = num(estoqueStr);
           const custoLiq = num(custoStr);
           const atual = num(precoStr);
           const sellout = num(selloutStr);
           const promoc = num(promocStr);
           const ddv = num(cols[finalColDDV] ?? "0");
+          const pendCmp = finalColPendCmp >= 0 ? num(cols[finalColPendCmp] ?? "0") : 0;
           const marg = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
           result.push({
@@ -2485,6 +2528,7 @@ export default function Index() {
             atual,
             sugerido: 0,
             ddv,
+            pendCmp,
             filial,
             bu: baseEntry.bu,
           });
@@ -2503,47 +2547,52 @@ export default function Index() {
       PRODUTOS_SEM_ST.forEach((cod) => map10.delete(cod));
 
       const newData: FilialData = {};
+      const livroMetricsData: LivroMetricsData = {};
 
       // Filial 01 – Poços (estoque = livro_01; preço custo/venda = livro_10)
       if (files.livro_01) {
         const raw01 = await parseCSVRaw(files.livro_01);
+        livroMetricsData["01"] = buildLivroMetrics(raw01, 1, 6, 7);
         newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 19, undefined, map10.size > 0 ? map10 : undefined);
       }
 
-      // Filial 11 – Campinas
       if (files.livro_11) {
         const raw = await parseCSVRaw(files.livro_11);
+        livroMetricsData["11"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["11"] = buildProducts(raw, "11", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 12 – Osasco
       if (files.livro_12) {
         const raw = await parseCSVRaw(files.livro_12);
+        livroMetricsData["12"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["12"] = buildProducts(raw, "12", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 14 – Betim
       if (files.livro_14) {
         const raw = await parseCSVRaw(files.livro_14);
+        livroMetricsData["14"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["14"] = buildProducts(raw, "14", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 501 – Focomix SP
       if (files.livro_501) {
         const raw = await parseCSVRaw(files.livro_501);
+        livroMetricsData["501"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["501"] = buildProducts(raw, "501", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 502 – Focomix MG (estoque = livro_502; preço custo/venda = livro_510)
       const map510 = await buildOverrideMap(files.livro_510, "livro_510");
 
       if (files.livro_502) {
         const raw = await parseCSVRaw(files.livro_502);
+        livroMetricsData["502"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 19, undefined, map510.size > 0 ? map510 : undefined);
       }
 
       setData(newData);
-      try { localStorage.setItem("vilasales_data", JSON.stringify(newData)); } catch(_) {}
+      try {
+        localStorage.setItem("vilasales_data", JSON.stringify(newData));
+        localStorage.setItem(LIVRO_METRICS_STORAGE_KEY, JSON.stringify(livroMetricsData));
+      } catch(_) {}
       const updateTime = new Date().toLocaleString("pt-BR");
       setLastUpdate(updateTime);
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
