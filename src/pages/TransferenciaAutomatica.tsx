@@ -505,19 +505,22 @@ const TransferenciaAutomatica = () => {
           {/* KPIs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <KpiCard
-              label="Produtos sugeridos"
+              title="Produtos sugeridos"
               value={totalProdutos.toLocaleString("pt-BR")}
               icon={Package}
+              variant="primary"
             />
             <KpiCard
-              label="Total CXs sugeridas"
+              title="Total CXs sugeridas"
               value={totalCxSugeridas.toLocaleString("pt-BR")}
               icon={ArrowLeftRight}
+              variant="success"
             />
             <KpiCard
-              label="Total Pallets"
+              title="Total Pallets"
               value={totalPallets.toLocaleString("pt-BR")}
               icon={Zap}
+              variant="info"
             />
           </div>
 
