@@ -493,12 +493,17 @@ const Transferencia = () => {
                 </TableRow>
               ) : (
                 rows.map((p) => {
+                  const key = normCod(p.seqProd);
                   const q = transferQty[p.seqProd] || { cx: 0, camada: 0, pallet: 0 };
                   const totalCx = calcCaixasTransferencia(p.seqProd);
-                  const estoqueFuturo = p.estoque + totalCx;
                   const pal = getPallet(p.seqProd);
                   const semPallet = !pal && (q.camada > 0 || q.pallet > 0);
-                  const o = origemMetricasIndex.get(normCod(p.seqProd));
+                  const o = origemMetricasIndex.get(key);
+                  const d = destinoMetricasIndex.get(key);
+                  const estoqueDestinoAtual = d?.estoque ?? 0;
+                  const ddvDestinoAtual = d?.ddv ?? 0;
+                  const pendenteDestinoAtual = d?.pendCmp ?? 0;
+                  const estoqueFuturo = estoqueDestinoAtual + totalCx;
 
                   return (
                     <TableRow key={`${p.filial}-${p.seqProd}`}>
@@ -523,13 +528,13 @@ const Transferencia = () => {
                         {o ? o.pendCmp.toLocaleString("pt-BR") : <span className="text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell className="text-xs text-right">
-                        {p.estoque.toLocaleString("pt-BR")}
+                        {estoqueDestinoAtual.toLocaleString("pt-BR")}
                       </TableCell>
-                      <TableCell className={`text-xs text-center font-semibold ${ddvColor(p.ddv)}`}>
-                        {p.ddv}
+                      <TableCell className={`text-xs text-center font-semibold ${ddvColor(ddvDestinoAtual)}`}>
+                        {ddvDestinoAtual}
                       </TableCell>
                       <TableCell className="text-xs text-right">
-                        {p.pendCmp ? p.pendCmp.toLocaleString("pt-BR") : "—"}
+                        {d ? d.pendCmp.toLocaleString("pt-BR") : <span className="text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell className="text-center p-1 align-top">
                         <Input
