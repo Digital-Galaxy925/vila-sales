@@ -116,6 +116,7 @@ const Transferencia = () => {
   const [search, setSearch] = useState("");
   const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
   const [onlyZeroStock, setOnlyZeroStock] = useState(false);
+  const [maxDdv, setMaxDdv] = useState<string>("");
 
   // Palletização: { codigoNormalizado: { cxPorCamada, camadasPorPallet, cxPorPallet } }
   const [palletMap, setPalletMap] = useState<Record<string, PalletInfo>>({});
@@ -260,7 +261,7 @@ const Transferencia = () => {
   const effectiveDestino =
     destino || filiaisDisponiveis.find((f) => f !== effectiveOrigem) || "";
 
-  const applyFilter = (rows: ProdRow[], aplicarZero = false) => {
+  const applyFilter = (rows: ProdRow[], aplicarZero = false, aplicarMaxDdv = false) => {
     let list = rows;
     if (buFilter !== "all") list = list.filter((p) => p.bu === buFilter);
     if (search.trim()) {
@@ -272,6 +273,10 @@ const Transferencia = () => {
       );
     }
     if (aplicarZero) list = list.filter((p) => (p.estoque || 0) <= 0);
+    if (aplicarMaxDdv) {
+      const limit = parseFloat(maxDdv.replace(",", "."));
+      if (!isNaN(limit)) list = list.filter((p) => (p.ddv ?? 0) <= limit);
+    }
     return list;
   };
 
@@ -280,8 +285,8 @@ const Transferencia = () => {
     [rowsByFilial, effectiveOrigem, search, buFilter]
   );
   const destinoRows = useMemo(
-    () => applyFilter(rowsByFilial[effectiveDestino] || [], onlyZeroStock),
-    [rowsByFilial, effectiveDestino, search, buFilter, onlyZeroStock]
+    () => applyFilter(rowsByFilial[effectiveDestino] || [], onlyZeroStock, true),
+    [rowsByFilial, effectiveDestino, search, buFilter, onlyZeroStock, maxDdv]
   );
 
   const destinoIndex = useMemo(() => {
@@ -650,8 +655,8 @@ const Transferencia = () => {
               </div>
             </div>
 
-            {/* Botão de filtro estoque zero */}
-            <div className="mt-3 flex items-center gap-2">
+            {/* Filtros adicionais */}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
               <Button
                 type="button"
                 variant={onlyZeroStock ? "default" : "outline"}
@@ -667,6 +672,34 @@ const Transferencia = () => {
                   {destinoRows.length} {destinoRows.length === 1 ? "item" : "itens"} sem estoque no CD Destino
                 </span>
               )}
+
+              <div className="flex items-center gap-2 border-l border-border pl-3">
+                <label className="text-xs text-muted-foreground whitespace-nowrap">DDV Destino ≤</label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={maxDdv}
+                  onChange={(e) => setMaxDdv(e.target.value)}
+                  placeholder="Ex: 15"
+                  className="h-8 w-24 text-xs"
+                />
+                {maxDdv && !isNaN(parseFloat(maxDdv.replace(",", "."))) && (
+                  <>
+                    <span className="text-xs text-muted-foreground">
+                      {destinoRows.length} {destinoRows.length === 1 ? "item" : "itens"}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => setMaxDdv("")}
+                    >
+                      Limpar
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
