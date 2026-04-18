@@ -171,6 +171,7 @@ function rowToProduct(row: Record<string, string>, filial: Filial): Product {
     estoque: num(findCol(row, ["ESTOQUE"])),
     sellout: num(findCol(row, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"])),
     promoc: num(findCol(row, ["PROMOC", "PROMOÇÃO", "PROMOCAO", "PROMO"])),
+    pendCmp: num(findCol(row, ["PEND.CMP", "PEND CMP", "PENDCMP", "PEND_COMPRA", "PENDENCIA"])),
     custoLiq: pc,
     comis: num(findCol(row, ["COMIS"])),
     marg: num(findCol(row, ["MARG"])) || margCalc,
