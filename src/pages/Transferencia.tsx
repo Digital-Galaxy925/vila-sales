@@ -284,20 +284,20 @@ const Transferencia = () => {
 
   const destinoIndex = useMemo(() => {
     const idx = new Map<string, ProdRow>();
-    destinoRows.forEach((p) => idx.set(p.seqProd, p));
+    destinoRows.forEach((p) => idx.set(normCod(p.seqProd), p));
     return idx;
   }, [destinoRows]);
 
   const origemIndex = useMemo(() => {
     const idx = new Map<string, ProdRow>();
-    origemRows.forEach((p) => idx.set(p.seqProd, p));
+    origemRows.forEach((p) => idx.set(normCod(p.seqProd), p));
     return idx;
   }, [origemRows]);
 
   const sugestoes = useMemo(() => {
     return origemRows.filter((p) => {
       if (p.ddv <= 90) return false;
-      const d = destinoIndex.get(p.seqProd);
+      const d = destinoIndex.get(normCod(p.seqProd));
       if (!d) return false;
       return d.ddv >= 0 && d.ddv < 15;
     }).length;
@@ -424,7 +424,7 @@ const Transferencia = () => {
                       </TableCell>
                       <TableCell className="text-xs text-right bg-primary/5 font-semibold text-primary">
                         {(() => {
-                          const o = origemIndex.get(p.seqProd);
+                          const o = origemIndex.get(normCod(p.seqProd));
                           return o ? o.estoque.toLocaleString("pt-BR") : <span className="text-muted-foreground font-normal">—</span>;
                         })()}
                       </TableCell>
