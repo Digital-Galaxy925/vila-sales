@@ -338,6 +338,9 @@ const Transferencia = () => {
 
   const applyFilter = (rows: ProdRow[], aplicarZero = false, aplicarMaxDdv = false) => {
     let list = rows;
+    if (skuFilterList.size > 0) {
+      list = list.filter((p) => skuFilterList.has(normCod(p.seqProd)));
+    }
     if (buFilter !== "all") list = list.filter((p) => p.bu === buFilter);
     if (search.trim()) {
       const term = search.trim().toLowerCase();
