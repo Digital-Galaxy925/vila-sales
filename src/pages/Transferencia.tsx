@@ -364,11 +364,11 @@ const Transferencia = () => {
 
   const totalCxTransferencia = useMemo(
     () =>
-      origemRows.reduce(
+      destinoRows.reduce(
         (s, p) => s + calcCaixasTransferencia(p.seqProd),
         0
       ),
-    [origemRows, transferQty, palletMap]
+    [destinoRows, transferQty, palletMap]
   );
 
   const renderOrigemTable = () => {
@@ -396,11 +396,93 @@ const Transferencia = () => {
                 <TableHead className="text-xs text-right">Estoque</TableHead>
                 <TableHead className="text-xs text-center">DDV</TableHead>
                 <TableHead className="text-xs text-right">Pend.Cmp</TableHead>
+                <TableHead className="text-xs text-center">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8 text-sm">
+                    Nenhum produto neste CD com os filtros atuais.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                rows.map((p) => {
+                  const cp = destinoIndex.get(p.seqProd);
+                  const isSugestao = p.ddv > 90 && cp && cp.ddv > 0 && cp.ddv < 15;
+                  return (
+                    <TableRow
+                      key={`${p.filial}-${p.seqProd}`}
+                      className={isSugestao ? "bg-warning/10" : ""}
+                    >
+                      <TableCell className="text-xs font-medium">{p.bu || "—"}</TableCell>
+                      <TableCell className="text-xs font-mono">{p.seqProd}</TableCell>
+                      <TableCell className="text-xs max-w-[240px] truncate" title={p.descricao}>
+                        {p.descricao}
+                      </TableCell>
+                      <TableCell className="text-xs text-right">
+                        {p.estoque.toLocaleString("pt-BR")}
+                      </TableCell>
+                      <TableCell className={`text-xs text-center font-semibold ${ddvColor(p.ddv)}`}>
+                        {p.ddv}
+                      </TableCell>
+                      <TableCell className="text-xs text-right">
+                        {p.pendCmp ? p.pendCmp.toLocaleString("pt-BR") : "—"}
+                      </TableCell>
+                      <TableCell className="text-xs text-center">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                            ddvBadge(p.ddv) === "Excesso"
+                              ? "bg-destructive/10 text-destructive"
+                              : ddvBadge(p.ddv) === "Ruptura"
+                              ? "bg-warning/10 text-warning"
+                              : ddvBadge(p.ddv) === "Sem est."
+                              ? "bg-muted text-muted-foreground"
+                              : "bg-success/10 text-success"
+                          }`}
+                        >
+                          {ddvBadge(p.ddv)}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDestinoTable = () => {
+    const rows = destinoRows;
+    return (
+      <div className="bg-card rounded-xl border border-border overflow-hidden flex flex-col">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-success/5">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-success" />
+            <h3 className="text-sm font-semibold text-foreground">
+              CD Destino — {filialNames[effectiveDestino] || effectiveDestino}
+            </h3>
+          </div>
+          <span className="text-xs text-muted-foreground">{rows.length} produtos</span>
+        </div>
+        <div className="overflow-auto max-h-[620px]">
+          <Table>
+            <TableHeader className="sticky top-0 bg-card z-10">
+              <TableRow>
+                <TableHead className="text-xs">BU</TableHead>
+                <TableHead className="text-xs">Código</TableHead>
+                <TableHead className="text-xs">Descrição</TableHead>
+                <TableHead className="text-xs text-right">Estoque</TableHead>
+                <TableHead className="text-xs text-center">DDV</TableHead>
+                <TableHead className="text-xs text-right">Pend.Cmp</TableHead>
                 <TableHead className="text-xs text-center bg-warning/10">CX</TableHead>
                 <TableHead className="text-xs text-center bg-warning/10">Camada</TableHead>
                 <TableHead className="text-xs text-center bg-warning/10">Pallet</TableHead>
                 <TableHead className="text-xs text-right bg-success/10">Total CX</TableHead>
-                <TableHead className="text-xs text-right bg-success/10">Est. Futuro Destino</TableHead>
+                <TableHead className="text-xs text-right bg-success/10">Est. Futuro</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -412,20 +494,14 @@ const Transferencia = () => {
                 </TableRow>
               ) : (
                 rows.map((p) => {
-                  const cp = destinoIndex.get(p.seqProd);
-                  const isSugestao = p.ddv > 90 && cp && cp.ddv > 0 && cp.ddv < 15;
                   const q = transferQty[p.seqProd] || { cx: 0, camada: 0, pallet: 0 };
                   const totalCx = calcCaixasTransferencia(p.seqProd);
-                  const estoqueDestinoAtual = cp?.estoque || 0;
-                  const estoqueFuturo = estoqueDestinoAtual + totalCx;
+                  const estoqueFuturo = p.estoque + totalCx;
                   const pal = getPallet(p.seqProd);
                   const semPallet = !pal && (q.camada > 0 || q.pallet > 0);
 
                   return (
-                    <TableRow
-                      key={`${p.filial}-${p.seqProd}`}
-                      className={isSugestao ? "bg-warning/10" : ""}
-                    >
+                    <TableRow key={`${p.filial}-${p.seqProd}`}>
                       <TableCell className="text-xs font-medium">{p.bu || "—"}</TableCell>
                       <TableCell className="text-xs font-mono">{p.seqProd}</TableCell>
                       <TableCell className="text-xs max-w-[200px] truncate" title={p.descricao}>
@@ -479,92 +555,13 @@ const Transferencia = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-xs text-right font-semibold">
-                        {cp ? (
-                          <span className={totalCx > 0 ? "text-primary" : "text-foreground"}>
-                            {estoqueFuturo.toLocaleString("pt-BR")}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">N/A</span>
-                        )}
+                        <span className={totalCx > 0 ? "text-primary" : "text-foreground"}>
+                          {estoqueFuturo.toLocaleString("pt-BR")}
+                        </span>
                       </TableCell>
                     </TableRow>
                   );
                 })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    );
-  };
-
-  const renderDestinoTable = () => {
-    const rows = destinoRows;
-    return (
-      <div className="bg-card rounded-xl border border-border overflow-hidden flex flex-col">
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-success/5">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-success" />
-            <h3 className="text-sm font-semibold text-foreground">
-              CD Destino — {filialNames[effectiveDestino] || effectiveDestino}
-            </h3>
-          </div>
-          <span className="text-xs text-muted-foreground">{rows.length} produtos</span>
-        </div>
-        <div className="overflow-auto max-h-[620px]">
-          <Table>
-            <TableHeader className="sticky top-0 bg-card z-10">
-              <TableRow>
-                <TableHead className="text-xs">BU</TableHead>
-                <TableHead className="text-xs">Código</TableHead>
-                <TableHead className="text-xs">Descrição</TableHead>
-                <TableHead className="text-xs text-right">Estoque</TableHead>
-                <TableHead className="text-xs text-center">DDV</TableHead>
-                <TableHead className="text-xs text-right">Pend.Cmp</TableHead>
-                <TableHead className="text-xs text-center">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8 text-sm">
-                    Nenhum produto neste CD com os filtros atuais.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                rows.map((p) => (
-                  <TableRow key={`${p.filial}-${p.seqProd}`}>
-                    <TableCell className="text-xs font-medium">{p.bu || "—"}</TableCell>
-                    <TableCell className="text-xs font-mono">{p.seqProd}</TableCell>
-                    <TableCell className="text-xs max-w-[240px] truncate" title={p.descricao}>
-                      {p.descricao}
-                    </TableCell>
-                    <TableCell className="text-xs text-right">
-                      {p.estoque.toLocaleString("pt-BR")}
-                    </TableCell>
-                    <TableCell className={`text-xs text-center font-semibold ${ddvColor(p.ddv)}`}>
-                      {p.ddv}
-                    </TableCell>
-                    <TableCell className="text-xs text-right">
-                      {p.pendCmp ? p.pendCmp.toLocaleString("pt-BR") : "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-center">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          ddvBadge(p.ddv) === "Excesso"
-                            ? "bg-destructive/10 text-destructive"
-                            : ddvBadge(p.ddv) === "Ruptura"
-                            ? "bg-warning/10 text-warning"
-                            : ddvBadge(p.ddv) === "Sem est."
-                            ? "bg-muted text-muted-foreground"
-                            : "bg-success/10 text-success"
-                        }`}
-                      >
-                        {ddvBadge(p.ddv)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))
               )}
             </TableBody>
           </Table>
