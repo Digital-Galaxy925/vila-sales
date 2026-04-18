@@ -422,6 +422,7 @@ const Transferencia = () => {
         "CD Origem": filialNames[effectiveOrigem] || effectiveOrigem,
         "CD Destino": filialNames[effectiveDestino] || effectiveDestino,
         "Est. Disp. CD Origem": o ? o.estoque : 0,
+        "Estoque - Transferência": o ? o.estoque - totalCx : 0,
         "DDV Origem": o ? o.ddv : 0,
         "Pendente Origem": o ? o.pendCmp : 0,
         "Estoque Destino": estoqueDestinoAtual,
