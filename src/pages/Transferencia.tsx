@@ -438,7 +438,7 @@ const Transferencia = () => {
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={15} className="text-center text-muted-foreground py-8 text-sm">
+                  <TableCell colSpan={16} className="text-center text-muted-foreground py-8 text-sm">
                     Nenhum produto neste CD com os filtros atuais.
                   </TableCell>
                 </TableRow>
@@ -449,6 +449,7 @@ const Transferencia = () => {
                   const estoqueFuturo = p.estoque + totalCx;
                   const pal = getPallet(p.seqProd);
                   const semPallet = !pal && (q.camada > 0 || q.pallet > 0);
+                  const o = origemIndex.get(normCod(p.seqProd));
 
                   return (
                     <TableRow key={`${p.filial}-${p.seqProd}`}>
@@ -464,16 +465,13 @@ const Transferencia = () => {
                         {filialNames[effectiveDestino] || effectiveDestino || "—"}
                       </TableCell>
                       <TableCell className="text-xs text-right bg-primary/5 font-semibold text-primary">
-                        {(() => {
-                          const o = origemIndex.get(normCod(p.seqProd));
-                          return o ? o.estoque.toLocaleString("pt-BR") : <span className="text-muted-foreground font-normal">—</span>;
-                        })()}
+                        {o ? o.estoque.toLocaleString("pt-BR") : <span className="text-muted-foreground font-normal">—</span>}
                       </TableCell>
                       <TableCell className="text-xs text-center bg-primary/5 font-semibold">
-                        {(() => {
-                          const o = origemIndex.get(normCod(p.seqProd));
-                          return o ? <span className={ddvColor(o.ddv)}>{o.ddv}</span> : <span className="text-muted-foreground font-normal">—</span>;
-                        })()}
+                        {o ? <span className={ddvColor(o.ddv)}>{o.ddv}</span> : <span className="text-muted-foreground font-normal">—</span>}
+                      </TableCell>
+                      <TableCell className="text-xs text-right bg-primary/5">
+                        {o && o.pendCmp ? o.pendCmp.toLocaleString("pt-BR") : <span className="text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell className="text-xs text-right">
                         {p.estoque.toLocaleString("pt-BR")}
