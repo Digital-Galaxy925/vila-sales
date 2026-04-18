@@ -880,6 +880,48 @@ const Transferencia = () => {
                   </>
                 )}
               </div>
+
+              <div className="flex items-center gap-2 border-l border-border pl-3">
+                <input
+                  ref={skuListInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  className="hidden"
+                  onChange={onSkuListChange}
+                />
+                <Button
+                  type="button"
+                  variant={skuFilterList.size > 0 ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => skuListInputRef.current?.click()}
+                  className="text-xs h-8"
+                  title="Faça upload de uma planilha (.xlsx/.csv) com os códigos dos produtos a analisar"
+                >
+                  <ListFilter className="w-3.5 h-3.5 mr-1.5" />
+                  {skuFilterList.size > 0
+                    ? `Lista ativa: ${skuFilterList.size} ${skuFilterList.size === 1 ? "produto" : "produtos"}`
+                    : "Upload Lista de Produtos"}
+                </Button>
+                {skuFilterList.size > 0 && (
+                  <>
+                    {skuFilterFileName && (
+                      <span className="text-xs text-muted-foreground truncate max-w-[200px]" title={skuFilterFileName}>
+                        {skuFilterFileName}
+                      </span>
+                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={limparSkuList}
+                    >
+                      <X className="w-3.5 h-3.5 mr-1" />
+                      Limpar
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
