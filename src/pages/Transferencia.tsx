@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Layers,
   Boxes,
+  Download,
 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
@@ -358,6 +359,45 @@ const Transferencia = () => {
       ),
     [destinoRows, transferQty, palletMap]
   );
+  const exportarExcel = () => {
+    if (destinoRows.length === 0) {
+      toast({ title: "Nada para exportar", description: "Ajuste os filtros para visualizar produtos.", variant: "destructive" });
+      return;
+    }
+    const data = destinoRows.map((p) => {
+      const o = origemIndex.get(normCod(p.seqProd));
+      const q = transferQty[p.seqProd] || { cx: 0, camada: 0, pallet: 0 };
+      const totalCx = calcCaixasTransferencia(p.seqProd);
+      return {
+        BU: p.bu || "",
+        "Código": p.seqProd,
+        "Descrição": p.descricao,
+        "CD Origem": filialNames[effectiveOrigem] || effectiveOrigem,
+        "CD Destino": filialNames[effectiveDestino] || effectiveDestino,
+        "Est. Disp. CD Origem": o ? o.estoque : 0,
+        "DDV Origem": o ? o.ddv : 0,
+        "Estoque Destino": p.estoque,
+        "DDV Destino": p.ddv,
+        "Pendente Destino": p.pendCmp || 0,
+        "CX": q.cx || 0,
+        "Camada": q.camada || 0,
+        "Pallet": q.pallet || 0,
+        "Total CX": totalCx,
+        "Est. Futuro Destino": p.estoque + totalCx,
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws["!cols"] = [
+      { wch: 6 }, { wch: 12 }, { wch: 40 }, { wch: 22 }, { wch: 22 },
+      { wch: 18 }, { wch: 12 }, { wch: 16 }, { wch: 12 }, { wch: 16 },
+      { wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 18 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Transferencia");
+    const fileName = `transferencia_${effectiveOrigem}_para_${effectiveDestino}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    toast({ title: "Excel exportado", description: `${data.length} linhas em ${fileName}` });
+  };
 
 
   const renderDestinoTable = () => {
@@ -522,6 +562,18 @@ const Transferencia = () => {
       <PageHeader
         title="Transferência entre CDs"
         description="Compare estoques entre Centros de Distribuição e identifique oportunidades de transferência"
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportarExcel}
+            className="text-xs"
+            disabled={destinoRows.length === 0}
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
+            Exportar Excel
+          </Button>
+        }
       />
 
       {/* Barra de Palletização */}
