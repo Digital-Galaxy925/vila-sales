@@ -2547,47 +2547,52 @@ export default function Index() {
       PRODUTOS_SEM_ST.forEach((cod) => map10.delete(cod));
 
       const newData: FilialData = {};
+      const livroMetricsData: LivroMetricsData = {};
 
       // Filial 01 – Poços (estoque = livro_01; preço custo/venda = livro_10)
       if (files.livro_01) {
         const raw01 = await parseCSVRaw(files.livro_01);
+        livroMetricsData["01"] = buildLivroMetrics(raw01, 1, 6, 7);
         newData["01"] = buildProducts(raw01, "01", 1, 2, 6, 7, 16, 19, undefined, map10.size > 0 ? map10 : undefined);
       }
 
-      // Filial 11 – Campinas
       if (files.livro_11) {
         const raw = await parseCSVRaw(files.livro_11);
+        livroMetricsData["11"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["11"] = buildProducts(raw, "11", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 12 – Osasco
       if (files.livro_12) {
         const raw = await parseCSVRaw(files.livro_12);
+        livroMetricsData["12"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["12"] = buildProducts(raw, "12", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 14 – Betim
       if (files.livro_14) {
         const raw = await parseCSVRaw(files.livro_14);
+        livroMetricsData["14"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["14"] = buildProducts(raw, "14", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 501 – Focomix SP
       if (files.livro_501) {
         const raw = await parseCSVRaw(files.livro_501);
+        livroMetricsData["501"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["501"] = buildProducts(raw, "501", 1, 2, 6, 7, 16, 19);
       }
 
-      // Filial 502 – Focomix MG (estoque = livro_502; preço custo/venda = livro_510)
       const map510 = await buildOverrideMap(files.livro_510, "livro_510");
 
       if (files.livro_502) {
         const raw = await parseCSVRaw(files.livro_502);
+        livroMetricsData["502"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 19, undefined, map510.size > 0 ? map510 : undefined);
       }
 
       setData(newData);
-      try { localStorage.setItem("vilasales_data", JSON.stringify(newData)); } catch(_) {}
+      try {
+        localStorage.setItem("vilasales_data", JSON.stringify(newData));
+        localStorage.setItem(LIVRO_METRICS_STORAGE_KEY, JSON.stringify(livroMetricsData));
+      } catch(_) {}
       const updateTime = new Date().toLocaleString("pt-BR");
       setLastUpdate(updateTime);
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
