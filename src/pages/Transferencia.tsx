@@ -116,6 +116,7 @@ const Transferencia = () => {
   const [search, setSearch] = useState("");
   const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
   const [onlyZeroStock, setOnlyZeroStock] = useState(false);
+  const [maxDdv, setMaxDdv] = useState<string>("");
 
   // Palletização: { codigoNormalizado: { cxPorCamada, camadasPorPallet, cxPorPallet } }
   const [palletMap, setPalletMap] = useState<Record<string, PalletInfo>>({});
