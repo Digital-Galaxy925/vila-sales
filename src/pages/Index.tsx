@@ -25,6 +25,7 @@ interface Product {
   atual: number;
   sugerido: number;
   ddv: number;
+  pendCmp: number;
   filial: Filial;
   bu: string; // FOODS | HC
 }
@@ -2504,6 +2505,7 @@ export default function Index() {
           const sellout = num(selloutStr);
           const promoc = num(promocStr);
           const ddv = num(cols[finalColDDV] ?? "0");
+          const pendCmp = finalColPendCmp >= 0 ? num(cols[finalColPendCmp] ?? "0") : 0;
           const marg = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
           result.push({
@@ -2525,6 +2527,7 @@ export default function Index() {
             atual,
             sugerido: 0,
             ddv,
+            pendCmp,
             filial,
             bu: baseEntry.bu,
           });
