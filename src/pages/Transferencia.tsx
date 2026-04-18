@@ -424,7 +424,7 @@ const Transferencia = () => {
                       </TableCell>
                       <TableCell className="text-xs text-right bg-primary/5 font-semibold text-primary">
                         {(() => {
-                          const o = origemIndex.get(p.seqProd);
+                          const o = origemIndex.get(normCod(p.seqProd));
                           return o ? o.estoque.toLocaleString("pt-BR") : <span className="text-muted-foreground font-normal">—</span>;
                         })()}
                       </TableCell>
