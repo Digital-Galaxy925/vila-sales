@@ -460,6 +460,7 @@ const Transferencia = () => {
                 <TableHead className="text-xs text-right">Pend.Cmp</TableHead>
                 <TableHead className="text-xs text-center bg-primary/5">CD Origem</TableHead>
                 <TableHead className="text-xs text-center bg-success/10">CD Destino</TableHead>
+                <TableHead className="text-xs text-right bg-primary/5">Est. Disp. CD Origem</TableHead>
                 <TableHead className="text-xs text-center bg-warning/10">CX</TableHead>
                 <TableHead className="text-xs text-center bg-warning/10">Camada</TableHead>
                 <TableHead className="text-xs text-center bg-warning/10">Pallet</TableHead>
@@ -470,7 +471,7 @@ const Transferencia = () => {
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={13} className="text-center text-muted-foreground py-8 text-sm">
+                  <TableCell colSpan={14} className="text-center text-muted-foreground py-8 text-sm">
                     Nenhum produto neste CD com os filtros atuais.
                   </TableCell>
                 </TableRow>
@@ -503,6 +504,12 @@ const Transferencia = () => {
                       </TableCell>
                       <TableCell className="text-xs text-center bg-success/10 font-medium text-success">
                         {filialNames[effectiveDestino] || effectiveDestino || "—"}
+                      </TableCell>
+                      <TableCell className="text-xs text-right bg-primary/5 font-semibold text-primary">
+                        {(() => {
+                          const o = origemIndex.get(p.seqProd);
+                          return o ? o.estoque.toLocaleString("pt-BR") : <span className="text-muted-foreground font-normal">—</span>;
+                        })()}
                       </TableCell>
                       <TableCell className="text-center p-1 align-top">
                         <Input
