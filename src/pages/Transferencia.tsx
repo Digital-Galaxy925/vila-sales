@@ -562,6 +562,18 @@ const Transferencia = () => {
       <PageHeader
         title="Transferência entre CDs"
         description="Compare estoques entre Centros de Distribuição e identifique oportunidades de transferência"
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportarExcel}
+            className="text-xs"
+            disabled={destinoRows.length === 0}
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
+            Exportar Excel
+          </Button>
+        }
       />
 
       {/* Barra de Palletização */}
