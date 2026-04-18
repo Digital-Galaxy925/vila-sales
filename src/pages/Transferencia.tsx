@@ -517,6 +517,9 @@ const Transferencia = () => {
                       <TableCell className="text-xs text-right">
                         {p.pendCmp ? p.pendCmp.toLocaleString("pt-BR") : "—"}
                       </TableCell>
+                      <TableCell className="text-xs text-center bg-primary/5 font-medium text-primary">
+                        {filialNames[effectiveOrigem] || effectiveOrigem || "—"}
+                      </TableCell>
                       <TableCell className="text-center p-1">
                         <Input
                           type="number"
