@@ -62,9 +62,9 @@ interface ProdRow {
 }
 
 interface PalletInfo {
-  cxPorCamada: number;
-  camadasPorPallet: number;
-  cxPorPallet: number;
+  unPorCx: number;       // coluna F: unidades por caixa
+  cxPorPallet: number;   // coluna G: caixas por pallet
+  cxPorCamada: number;   // coluna H: caixas por camada
 }
 
 const PALLET_STORAGE_KEY = "vilasales_palletizacao";
