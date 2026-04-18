@@ -290,11 +290,12 @@ const Transferencia = () => {
     return idx;
   }, [destinoRows]);
 
+  // Index completo da filial Origem (sem aplicar search/BU/zero) para lookup correto por SKU
   const origemIndex = useMemo(() => {
     const idx = new Map<string, ProdRow>();
-    origemRows.forEach((p) => idx.set(normCod(p.seqProd), p));
+    (rowsByFilial[effectiveOrigem] || []).forEach((p) => idx.set(normCod(p.seqProd), p));
     return idx;
-  }, [origemRows]);
+  }, [rowsByFilial, effectiveOrigem]);
 
   const sugestoes = useMemo(() => {
     return origemRows.filter((p) => {
