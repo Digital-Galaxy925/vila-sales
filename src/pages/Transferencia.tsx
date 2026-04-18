@@ -261,7 +261,7 @@ const Transferencia = () => {
   const effectiveDestino =
     destino || filiaisDisponiveis.find((f) => f !== effectiveOrigem) || "";
 
-  const applyFilter = (rows: ProdRow[], aplicarZero = false) => {
+  const applyFilter = (rows: ProdRow[], aplicarZero = false, aplicarMaxDdv = false) => {
     let list = rows;
     if (buFilter !== "all") list = list.filter((p) => p.bu === buFilter);
     if (search.trim()) {
@@ -273,6 +273,10 @@ const Transferencia = () => {
       );
     }
     if (aplicarZero) list = list.filter((p) => (p.estoque || 0) <= 0);
+    if (aplicarMaxDdv) {
+      const limit = parseFloat(maxDdv.replace(",", "."));
+      if (!isNaN(limit)) list = list.filter((p) => (p.ddv ?? 0) <= limit);
+    }
     return list;
   };
 
@@ -281,8 +285,8 @@ const Transferencia = () => {
     [rowsByFilial, effectiveOrigem, search, buFilter]
   );
   const destinoRows = useMemo(
-    () => applyFilter(rowsByFilial[effectiveDestino] || [], onlyZeroStock),
-    [rowsByFilial, effectiveDestino, search, buFilter, onlyZeroStock]
+    () => applyFilter(rowsByFilial[effectiveDestino] || [], onlyZeroStock, true),
+    [rowsByFilial, effectiveDestino, search, buFilter, onlyZeroStock, maxDdv]
   );
 
   const destinoIndex = useMemo(() => {
