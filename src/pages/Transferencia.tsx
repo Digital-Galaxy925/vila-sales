@@ -242,6 +242,66 @@ const Transferencia = () => {
     toast({ title: "Palletização removida" });
   };
 
+  const handleSkuListUpload = async (file: File) => {
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        defval: "",
+        blankrows: false,
+      });
+
+      const set = new Set<string>();
+      rows.forEach((r) => {
+        if (!r) return;
+        // Coleta códigos de qualquer coluna (cobre planilhas com header ou sem)
+        r.forEach((cell) => {
+          if (cell === "" || cell === null || cell === undefined) return;
+          const cod = normCod(cell);
+          // Ignora linhas que claramente não são códigos (ex: "Código", "SKU")
+          if (cod && /[0-9]/.test(cod)) set.add(cod);
+        });
+      });
+
+      if (set.size === 0) {
+        toast({
+          title: "Nenhum código válido encontrado",
+          description: "A planilha deve conter os códigos dos produtos (numéricos).",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSkuFilterList(set);
+      setSkuFilterFileName(file.name);
+      toast({
+        title: "Lista de produtos carregada",
+        description: `${set.size} ${set.size === 1 ? "código" : "códigos"} aplicados como filtro`,
+      });
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Erro ao processar planilha",
+        description: "Confira o formato do arquivo e tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const onSkuListChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleSkuListUpload(file);
+    e.target.value = "";
+  };
+
+  const limparSkuList = () => {
+    setSkuFilterList(new Set());
+    setSkuFilterFileName("");
+    toast({ title: "Filtro de produtos removido" });
+  };
+
   const { rowsByFilial, filiaisDisponiveis } = useMemo(() => {
     const map: Record<string, ProdRow[]> = {};
     try {
