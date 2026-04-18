@@ -360,11 +360,11 @@ const Transferencia = () => {
 
   const origemRows = useMemo(
     () => applyFilter(rowsByFilial[effectiveOrigem] || []),
-    [rowsByFilial, effectiveOrigem, search, buFilter]
+    [rowsByFilial, effectiveOrigem, search, buFilter, skuFilterList]
   );
   const destinoRows = useMemo(
     () => applyFilter(rowsByFilial[effectiveDestino] || [], onlyZeroStock, true),
-    [rowsByFilial, effectiveDestino, search, buFilter, onlyZeroStock, maxDdv]
+    [rowsByFilial, effectiveDestino, search, buFilter, onlyZeroStock, maxDdv, skuFilterList]
   );
 
   const destinoIndex = useMemo(() => {
