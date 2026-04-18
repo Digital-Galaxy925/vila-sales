@@ -115,6 +115,7 @@ const Transferencia = () => {
   const [destino, setDestino] = useState<string>("");
   const [search, setSearch] = useState("");
   const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
+  const [onlyZeroStock, setOnlyZeroStock] = useState(false);
 
   // Palletização: { codigoNormalizado: { cxPorCamada, camadasPorPallet, cxPorPallet } }
   const [palletMap, setPalletMap] = useState<Record<string, PalletInfo>>({});
@@ -259,7 +260,7 @@ const Transferencia = () => {
   const effectiveDestino =
     destino || filiaisDisponiveis.find((f) => f !== effectiveOrigem) || "";
 
-  const applyFilter = (rows: ProdRow[]) => {
+  const applyFilter = (rows: ProdRow[], aplicarZero = false) => {
     let list = rows;
     if (buFilter !== "all") list = list.filter((p) => p.bu === buFilter);
     if (search.trim()) {
@@ -270,6 +271,7 @@ const Transferencia = () => {
           p.descricao.toLowerCase().includes(term)
       );
     }
+    if (aplicarZero) list = list.filter((p) => (p.estoque || 0) <= 0);
     return list;
   };
 
@@ -278,8 +280,8 @@ const Transferencia = () => {
     [rowsByFilial, effectiveOrigem, search, buFilter]
   );
   const destinoRows = useMemo(
-    () => applyFilter(rowsByFilial[effectiveDestino] || []),
-    [rowsByFilial, effectiveDestino, search, buFilter]
+    () => applyFilter(rowsByFilial[effectiveDestino] || [], onlyZeroStock),
+    [rowsByFilial, effectiveDestino, search, buFilter, onlyZeroStock]
   );
 
   const destinoIndex = useMemo(() => {
@@ -634,6 +636,25 @@ const Transferencia = () => {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Botão de filtro estoque zero */}
+            <div className="mt-3 flex items-center gap-2">
+              <Button
+                type="button"
+                variant={onlyZeroStock ? "default" : "outline"}
+                size="sm"
+                onClick={() => setOnlyZeroStock((v) => !v)}
+                className="text-xs h-8"
+              >
+                <Package className="w-3.5 h-3.5 mr-1.5" />
+                {onlyZeroStock ? "Mostrando apenas estoque zero" : "Filtrar estoque zero (Destino)"}
+              </Button>
+              {onlyZeroStock && (
+                <span className="text-xs text-muted-foreground">
+                  {destinoRows.length} {destinoRows.length === 1 ? "item" : "itens"} sem estoque no CD Destino
+                </span>
+              )}
             </div>
           </div>
 
