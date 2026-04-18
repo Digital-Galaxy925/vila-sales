@@ -500,7 +500,7 @@ const Transferencia = () => {
                       <TableCell className="text-xs text-center bg-primary/5 font-medium text-primary">
                         {filialNames[effectiveOrigem] || effectiveOrigem || "—"}
                       </TableCell>
-                      <TableCell className="text-center p-1">
+                      <TableCell className="text-center p-1 align-top">
                         <Input
                           type="number"
                           min={0}
@@ -508,9 +508,15 @@ const Transferencia = () => {
                           onChange={(e) => updateQty(p.seqProd, "cx", e.target.value)}
                           className="h-7 w-16 text-xs text-center px-1"
                           placeholder="0"
+                          title={pal ? `${pal.unPorCx} un/cx` : "Sem palletização"}
                         />
+                        {q.cx > 0 && pal?.unPorCx ? (
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                            = {(q.cx * pal.unPorCx).toLocaleString("pt-BR")} un
+                          </div>
+                        ) : null}
                       </TableCell>
-                      <TableCell className="text-center p-1">
+                      <TableCell className="text-center p-1 align-top">
                         <Input
                           type="number"
                           min={0}
@@ -520,8 +526,13 @@ const Transferencia = () => {
                           placeholder="0"
                           title={pal ? `${pal.cxPorCamada} cx/camada` : "Sem palletização"}
                         />
+                        {q.camada > 0 && pal?.cxPorCamada ? (
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                            = {(q.camada * pal.cxPorCamada).toLocaleString("pt-BR")} cx
+                          </div>
+                        ) : null}
                       </TableCell>
-                      <TableCell className="text-center p-1">
+                      <TableCell className="text-center p-1 align-top">
                         <Input
                           type="number"
                           min={0}
@@ -531,6 +542,11 @@ const Transferencia = () => {
                           placeholder="0"
                           title={pal ? `${pal.cxPorPallet} cx/pallet` : "Sem palletização"}
                         />
+                        {q.pallet > 0 && pal?.cxPorPallet ? (
+                          <div className="text-[10px] text-muted-foreground mt-0.5">
+                            = {(q.pallet * pal.cxPorPallet).toLocaleString("pt-BR")} cx
+                          </div>
+                        ) : null}
                       </TableCell>
                       <TableCell className={`text-xs text-right font-semibold ${totalCx > 0 ? "text-success" : "text-muted-foreground"}`}>
                         {totalCx > 0 ? totalCx.toLocaleString("pt-BR") : "—"}
