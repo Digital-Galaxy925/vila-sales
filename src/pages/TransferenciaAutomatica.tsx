@@ -139,39 +139,69 @@ const TransferenciaAutomatica = () => {
   const effectiveDestino =
     destino || filiaisDisponiveis.find((f) => f !== effectiveOrigem) || "";
 
-  // Constrói índice de métricas (estoque, ddv, pendCmp) lendo PRIMEIRO do livro
-  // específico da filial (vilasales_livro_metrics[filial]) e caindo para o
-  // dataset geral apenas quando o SKU não existe no livro. Assim Est. Origem
-  // e DDV Origem sempre vêm da coluna correta do livro_<filial>.
+  // Particularidades de filiais: o DDV de algumas filiais vem de OUTRO livro.
+  // - Filial 502 (Focomix MG): Estoque do livro_502, DDV do livro_510
+  // - Filial 01 (Poços):       Estoque do livro_01,  DDV do livro_10
+  const DDV_SOURCE_OVERRIDE: Record<string, string> = {
+    "502": "510",
+    "01": "10",
+    "1": "10",
+  };
+
+  // Constrói índice de métricas. Estoque/PendCmp vêm do livro da própria filial,
+  // DDV pode vir de um livro diferente quando a filial tem override configurado.
   const buildMetricIndex = (filial: string) => {
     const idx = new Map<string, LivroMetricRow>();
     if (!filial) return idx;
 
-    // 1) Dataset geral por filial como fallback inicial
+    const ddvFilial = DDV_SOURCE_OVERRIDE[filial] || filial;
+
+    let livroRaw: Record<string, any> = {};
+    try {
+      livroRaw = JSON.parse(
+        localStorage.getItem(LIVRO_METRICS_STORAGE_KEY) || "{}"
+      );
+    } catch {
+      // ignore
+    }
+    const estoqueLivro = livroRaw?.[filial] || {};
+    const ddvLivro = livroRaw?.[ddvFilial] || {};
+
+    // 1) Fallback: dataset geral por filial (estoque/pendCmp da própria filial)
     (rowsByFilial[filial] || []).forEach((p) => {
-      idx.set(normCod(p.seqProd), {
+      const key = normCod(p.seqProd);
+      idx.set(key, {
         estoque: num(p.estoque),
         ddv: num(p.ddv),
         pendCmp: num(p.pendCmp),
       });
     });
 
-    // 2) Livro da filial sobrescreve com os valores oficiais (Estoque / DDV)
-    try {
-      const raw = JSON.parse(
-        localStorage.getItem(LIVRO_METRICS_STORAGE_KEY) || "{}"
-      );
-      const filialMetrics = raw?.[filial] || {};
-      Object.entries(filialMetrics).forEach(([sku, values]: [string, any]) => {
-        idx.set(normCod(sku), {
-          estoque: num(values?.estoque),
-          ddv: num(values?.ddv),
-          pendCmp: num(values?.pendCmp),
-        });
+    // 2) Sobrescreve Estoque / PendCmp com o livro_<filial>
+    Object.entries(estoqueLivro).forEach(([sku, values]: [string, any]) => {
+      const key = normCod(sku);
+      const cur = idx.get(key) || { estoque: 0, ddv: 0, pendCmp: 0 };
+      idx.set(key, {
+        estoque: num(values?.estoque),
+        ddv: cur.ddv,
+        pendCmp: num(values?.pendCmp),
       });
-    } catch {
-      // ignore
-    }
+    });
+
+    // 3) Sobrescreve DDV usando o livro da filial de DDV (com override quando aplicável)
+    // Constrói um índice auxiliar do livro de DDV para encontrar o SKU mesmo se
+    // o produto não estiver no livro de estoque.
+    const ddvIndex = new Map<string, number>();
+    Object.entries(ddvLivro).forEach(([sku, values]: [string, any]) => {
+      ddvIndex.set(normCod(sku), num(values?.ddv));
+    });
+
+    // Aplica o DDV: para cada SKU já no índice, sobrescreve com o valor do livro de DDV.
+    idx.forEach((val, key) => {
+      if (ddvIndex.has(key)) {
+        idx.set(key, { ...val, ddv: ddvIndex.get(key) ?? 0 });
+      }
+    });
 
     return idx;
   };
