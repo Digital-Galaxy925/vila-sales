@@ -219,22 +219,69 @@ const TransferenciaAutomatica = () => {
       const estoqueMinOrig = consumoDiarioOrig * seguroOrig;
       const cxDisponiveisOrig = Math.max(0, Math.floor(o.estoque - estoqueMinOrig));
 
-      const cxSugeridas = Math.min(cxNecessarias, cxDisponiveisOrig);
+      let cxSugeridas = Math.min(cxNecessarias, cxDisponiveisOrig);
       if (cxSugeridas <= 0) return;
 
-      // Conversão em pallets/camadas (otimizado por palletização)
+      // Arredonda para múltiplos de pallet (preferencial) ou camada.
+      // Regra: nunca exceder cxDisponiveisOrig. Pode ficar abaixo do necessário,
+      // mas sempre em múltiplo exato de pallet ou camada.
       const pal = getPallet(d.seqProd);
       let pallets = 0;
       let camadas = 0;
-      let cxAvulsas = cxSugeridas;
-      if (pal?.cxPorPallet && pal.cxPorPallet > 0) {
-        pallets = Math.floor(cxSugeridas / pal.cxPorPallet);
-        cxAvulsas = cxSugeridas - pallets * pal.cxPorPallet;
+      let cxAvulsas = 0;
+
+      const cxPallet = pal?.cxPorPallet && pal.cxPorPallet > 0 ? pal.cxPorPallet : 0;
+      const cxCamada = pal?.cxPorCamada && pal.cxPorCamada > 0 ? pal.cxPorCamada : 0;
+
+      if (cxPallet > 0 || cxCamada > 0) {
+        // Tenta encaixar o máximo em pallets cheios sem ultrapassar disponível
+        if (cxPallet > 0) {
+          pallets = Math.floor(cxSugeridas / cxPallet);
+          // Se arredondar para cima ainda cabe na disponibilidade da origem
+          // e fica mais próximo do necessário, prioriza arredondar para cima.
+          const upPallets = pallets + 1;
+          const upTotal = upPallets * cxPallet;
+          const downTotal = pallets * cxPallet;
+          const distDown = cxSugeridas - downTotal;
+          const distUp = upTotal - cxSugeridas;
+          if (
+            upTotal <= cxDisponiveisOrig &&
+            distUp <= distDown
+          ) {
+            pallets = upPallets;
+          }
+        }
+
+        const restoAposPallets = cxSugeridas - pallets * cxPallet;
+
+        if (cxCamada > 0 && restoAposPallets > 0) {
+          // Arredonda o resto para múltiplo de camada (mais próximo, sem ultrapassar disp.)
+          camadas = Math.round(restoAposPallets / cxCamada);
+          // Garante não ultrapassar disponibilidade total
+          while (
+            pallets * cxPallet + camadas * cxCamada > cxDisponiveisOrig &&
+            camadas > 0
+          ) {
+            camadas -= 1;
+          }
+        }
+
+        cxSugeridas = pallets * cxPallet + camadas * cxCamada;
+
+        // Se zerou (necessidade muito pequena), sugere ao menos 1 camada se couber
+        if (cxSugeridas === 0 && cxCamada > 0 && cxCamada <= cxDisponiveisOrig) {
+          camadas = 1;
+          cxSugeridas = cxCamada;
+        } else if (cxSugeridas === 0 && cxPallet > 0 && cxPallet <= cxDisponiveisOrig) {
+          pallets = 1;
+          cxSugeridas = cxPallet;
+        }
+      } else {
+        // Sem dados de palletização cadastrados: mantém comportamento atual
+        cxAvulsas = cxSugeridas;
       }
-      if (pal?.cxPorCamada && pal.cxPorCamada > 0 && cxAvulsas >= pal.cxPorCamada) {
-        camadas = Math.floor(cxAvulsas / pal.cxPorCamada);
-        cxAvulsas = cxAvulsas - camadas * pal.cxPorCamada;
-      }
+
+      if (cxSugeridas <= 0) return;
 
       const ddvDestinoFuturo = consumoDiarioDest > 0
         ? Math.round((d.estoque + cxSugeridas) / consumoDiarioDest)
