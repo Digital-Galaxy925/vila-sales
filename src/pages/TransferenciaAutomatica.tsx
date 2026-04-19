@@ -251,23 +251,20 @@ const TransferenciaAutomatica = () => {
     destinoList.forEach((d) => {
       const key = normCod(d.seqProd);
 
-      // Métricas oficiais lidas do livro da filial correspondente
-      const oMetric = origemMetricasIndex.get(key);
-      const dMetric = destinoMetricasIndex.get(key) || {
-        estoque: d.estoque,
-        ddv: d.ddv,
-        pendCmp: d.pendCmp,
-      };
-      if (!oMetric) return;
+      const oEstPend = origemEstoquePendIndex.get(key);
+      const oDdv = origemDdvIndex.get(key);
+      const dEstPend = destinoEstoquePendIndex.get(key);
+      const dDdvValue = destinoDdvIndex.get(key);
+      if (!oEstPend) return;
 
       const o = {
-        estoque: oMetric.estoque,
-        ddv: oMetric.ddv,
-        pendCmp: oMetric.pendCmp,
+        estoque: oEstPend.estoque,
+        ddv: oDdv ?? num(d.ddv),
+        pendCmp: oEstPend.pendCmp,
       };
-      const dEstoque = dMetric.estoque;
-      const dDdv = dMetric.ddv;
-      const dPend = dMetric.pendCmp;
+      const dEstoque = dEstPend?.estoque ?? num(d.estoque);
+      const dDdv = dDdvValue ?? num(d.ddv);
+      const dPend = dEstPend?.pendCmp ?? num(d.pendCmp);
 
       // Filtros base
       if (buFilter !== "all" && d.bu !== buFilter) return;
