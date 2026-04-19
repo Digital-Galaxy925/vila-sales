@@ -272,7 +272,7 @@ const TransferenciaAutomatica = () => {
 
       // Quantidade necessária para destino atingir o DDV mínimo
       const estoqueAlvoDest = consumoDiarioDest * minDest;
-      const cxNecessarias = Math.max(0, Math.ceil(estoqueAlvoDest - d.estoque));
+      const cxNecessarias = Math.max(0, Math.ceil(estoqueAlvoDest - dEstoque));
 
       // Quantidade que origem pode liberar mantendo o DDV de segurança
       const consumoDiarioOrig = o.ddv > 0 ? o.estoque / o.ddv : 0;
