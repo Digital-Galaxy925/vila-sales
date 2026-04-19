@@ -403,8 +403,10 @@ const TransferenciaAutomatica = () => {
   }, [
     rowsByFilial,
     effectiveDestino,
-    origemMetricasIndex,
-    destinoMetricasIndex,
+    origemEstoquePendIndex,
+    origemDdvIndex,
+    destinoEstoquePendIndex,
+    destinoDdvIndex,
     ddvMinDestino,
     ddvMaxOrigem,
     ddvSeguroOrigem,
