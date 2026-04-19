@@ -139,13 +139,52 @@ const TransferenciaAutomatica = () => {
   const effectiveDestino =
     destino || filiaisDisponiveis.find((f) => f !== effectiveOrigem) || "";
 
-  const origemIndex = useMemo(() => {
-    const idx = new Map<string, ProdRow>();
-    (rowsByFilial[effectiveOrigem] || []).forEach((p) =>
-      idx.set(normCod(p.seqProd), p)
-    );
+  // Constrói índice de métricas (estoque, ddv, pendCmp) lendo PRIMEIRO do livro
+  // específico da filial (vilasales_livro_metrics[filial]) e caindo para o
+  // dataset geral apenas quando o SKU não existe no livro. Assim Est. Origem
+  // e DDV Origem sempre vêm da coluna correta do livro_<filial>.
+  const buildMetricIndex = (filial: string) => {
+    const idx = new Map<string, LivroMetricRow>();
+    if (!filial) return idx;
+
+    // 1) Dataset geral por filial como fallback inicial
+    (rowsByFilial[filial] || []).forEach((p) => {
+      idx.set(normCod(p.seqProd), {
+        estoque: num(p.estoque),
+        ddv: num(p.ddv),
+        pendCmp: num(p.pendCmp),
+      });
+    });
+
+    // 2) Livro da filial sobrescreve com os valores oficiais (Estoque / DDV)
+    try {
+      const raw = JSON.parse(
+        localStorage.getItem(LIVRO_METRICS_STORAGE_KEY) || "{}"
+      );
+      const filialMetrics = raw?.[filial] || {};
+      Object.entries(filialMetrics).forEach(([sku, values]: [string, any]) => {
+        idx.set(normCod(sku), {
+          estoque: num(values?.estoque),
+          ddv: num(values?.ddv),
+          pendCmp: num(values?.pendCmp),
+        });
+      });
+    } catch {
+      // ignore
+    }
+
     return idx;
-  }, [rowsByFilial, effectiveOrigem]);
+  };
+
+  const origemMetricasIndex = useMemo(
+    () => buildMetricIndex(effectiveOrigem),
+    [effectiveOrigem, rowsByFilial]
+  );
+
+  const destinoMetricasIndex = useMemo(
+    () => buildMetricIndex(effectiveDestino),
+    [effectiveDestino, rowsByFilial]
+  );
 
   const getPallet = (sku: string): PalletInfo | undefined =>
     palletMap[normCod(sku)] || palletMap[sku];
