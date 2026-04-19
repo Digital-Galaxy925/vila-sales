@@ -63,7 +63,14 @@ interface PalletInfo {
   cxPorCamada: number;
 }
 
+interface LivroMetricRow {
+  estoque: number;
+  ddv: number;
+  pendCmp: number;
+}
+
 const PALLET_STORAGE_KEY = "vilasales_palletizacao";
+const LIVRO_METRICS_STORAGE_KEY = "vilasales_livro_metrics";
 
 const ddvColor = (v: number) => {
   if (v <= 0) return "text-destructive";
@@ -132,13 +139,52 @@ const TransferenciaAutomatica = () => {
   const effectiveDestino =
     destino || filiaisDisponiveis.find((f) => f !== effectiveOrigem) || "";
 
-  const origemIndex = useMemo(() => {
-    const idx = new Map<string, ProdRow>();
-    (rowsByFilial[effectiveOrigem] || []).forEach((p) =>
-      idx.set(normCod(p.seqProd), p)
-    );
+  // Constrói índice de métricas (estoque, ddv, pendCmp) lendo PRIMEIRO do livro
+  // específico da filial (vilasales_livro_metrics[filial]) e caindo para o
+  // dataset geral apenas quando o SKU não existe no livro. Assim Est. Origem
+  // e DDV Origem sempre vêm da coluna correta do livro_<filial>.
+  const buildMetricIndex = (filial: string) => {
+    const idx = new Map<string, LivroMetricRow>();
+    if (!filial) return idx;
+
+    // 1) Dataset geral por filial como fallback inicial
+    (rowsByFilial[filial] || []).forEach((p) => {
+      idx.set(normCod(p.seqProd), {
+        estoque: num(p.estoque),
+        ddv: num(p.ddv),
+        pendCmp: num(p.pendCmp),
+      });
+    });
+
+    // 2) Livro da filial sobrescreve com os valores oficiais (Estoque / DDV)
+    try {
+      const raw = JSON.parse(
+        localStorage.getItem(LIVRO_METRICS_STORAGE_KEY) || "{}"
+      );
+      const filialMetrics = raw?.[filial] || {};
+      Object.entries(filialMetrics).forEach(([sku, values]: [string, any]) => {
+        idx.set(normCod(sku), {
+          estoque: num(values?.estoque),
+          ddv: num(values?.ddv),
+          pendCmp: num(values?.pendCmp),
+        });
+      });
+    } catch {
+      // ignore
+    }
+
     return idx;
-  }, [rowsByFilial, effectiveOrigem]);
+  };
+
+  const origemMetricasIndex = useMemo(
+    () => buildMetricIndex(effectiveOrigem),
+    [effectiveOrigem, rowsByFilial]
+  );
+
+  const destinoMetricasIndex = useMemo(
+    () => buildMetricIndex(effectiveDestino),
+    [effectiveDestino, rowsByFilial]
+  );
 
   const getPallet = (sku: string): PalletInfo | undefined =>
     palletMap[normCod(sku)] || palletMap[sku];
@@ -176,8 +222,24 @@ const TransferenciaAutomatica = () => {
 
     destinoList.forEach((d) => {
       const key = normCod(d.seqProd);
-      const o = origemIndex.get(key);
-      if (!o) return;
+
+      // Métricas oficiais lidas do livro da filial correspondente
+      const oMetric = origemMetricasIndex.get(key);
+      const dMetric = destinoMetricasIndex.get(key) || {
+        estoque: d.estoque,
+        ddv: d.ddv,
+        pendCmp: d.pendCmp,
+      };
+      if (!oMetric) return;
+
+      const o = {
+        estoque: oMetric.estoque,
+        ddv: oMetric.ddv,
+        pendCmp: oMetric.pendCmp,
+      };
+      const dEstoque = dMetric.estoque;
+      const dDdv = dMetric.ddv;
+      const dPend = dMetric.pendCmp;
 
       // Filtros base
       if (buFilter !== "all" && d.bu !== buFilter) return;
@@ -191,18 +253,16 @@ const TransferenciaAutomatica = () => {
       }
 
       // Destino precisa estar abaixo do DDV mínimo (ruptura)
-      if (d.ddv >= minDest) return;
+      if (dDdv >= minDest) return;
 
       // Origem deve ter folga (DDV acima do limite seguro)
       if (o.ddv <= seguroOrig) return;
       if (maxOrig > 0 && o.ddv < maxOrig) return;
 
       // Consumo diário do destino (cx/dia) — deriva do estoque atual e DDV
-      // Se DDV destino > 0 e estoque > 0: consumo = estoque/ddv
-      // Se DDV destino = 0 (sem estoque), tenta usar consumo da origem como referência
       let consumoDiarioDest = 0;
-      if (d.ddv > 0 && d.estoque > 0) {
-        consumoDiarioDest = d.estoque / d.ddv;
+      if (dDdv > 0 && dEstoque > 0) {
+        consumoDiarioDest = dEstoque / dDdv;
       } else if (o.ddv > 0 && o.estoque > 0) {
         // fallback: assume mesmo giro proporcional da origem
         consumoDiarioDest = o.estoque / o.ddv / 2;
@@ -212,7 +272,7 @@ const TransferenciaAutomatica = () => {
 
       // Quantidade necessária para destino atingir o DDV mínimo
       const estoqueAlvoDest = consumoDiarioDest * minDest;
-      const cxNecessarias = Math.max(0, Math.ceil(estoqueAlvoDest - d.estoque));
+      const cxNecessarias = Math.max(0, Math.ceil(estoqueAlvoDest - dEstoque));
 
       // Quantidade que origem pode liberar mantendo o DDV de segurança
       const consumoDiarioOrig = o.ddv > 0 ? o.estoque / o.ddv : 0;
@@ -284,7 +344,7 @@ const TransferenciaAutomatica = () => {
       if (cxSugeridas <= 0) return;
 
       const ddvDestinoFuturo = consumoDiarioDest > 0
-        ? Math.round((d.estoque + cxSugeridas) / consumoDiarioDest)
+        ? Math.round((dEstoque + cxSugeridas) / consumoDiarioDest)
         : 0;
       const ddvOrigemFuturo = consumoDiarioOrig > 0
         ? Math.round((o.estoque - cxSugeridas) / consumoDiarioOrig)
@@ -297,9 +357,9 @@ const TransferenciaAutomatica = () => {
         estOrig: o.estoque,
         ddvOrig: o.ddv,
         pendOrig: o.pendCmp,
-        estDest: d.estoque,
-        ddvDest: d.ddv,
-        pendDest: d.pendCmp,
+        estDest: dEstoque,
+        ddvDest: dDdv,
+        pendDest: dPend,
         ddvDiarioDest: Math.round(consumoDiarioDest * 10) / 10,
         cxNecessarias,
         cxDisponiveisOrig,
@@ -318,7 +378,8 @@ const TransferenciaAutomatica = () => {
   }, [
     rowsByFilial,
     effectiveDestino,
-    origemIndex,
+    origemMetricasIndex,
+    destinoMetricasIndex,
     ddvMinDestino,
     ddvMaxOrigem,
     ddvSeguroOrigem,
