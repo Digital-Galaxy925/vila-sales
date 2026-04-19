@@ -63,7 +63,14 @@ interface PalletInfo {
   cxPorCamada: number;
 }
 
+interface LivroMetricRow {
+  estoque: number;
+  ddv: number;
+  pendCmp: number;
+}
+
 const PALLET_STORAGE_KEY = "vilasales_palletizacao";
+const LIVRO_METRICS_STORAGE_KEY = "vilasales_livro_metrics";
 
 const ddvColor = (v: number) => {
   if (v <= 0) return "text-destructive";
