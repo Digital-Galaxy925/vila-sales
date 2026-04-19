@@ -222,8 +222,24 @@ const TransferenciaAutomatica = () => {
 
     destinoList.forEach((d) => {
       const key = normCod(d.seqProd);
-      const o = origemIndex.get(key);
-      if (!o) return;
+
+      // Métricas oficiais lidas do livro da filial correspondente
+      const oMetric = origemMetricasIndex.get(key);
+      const dMetric = destinoMetricasIndex.get(key) || {
+        estoque: d.estoque,
+        ddv: d.ddv,
+        pendCmp: d.pendCmp,
+      };
+      if (!oMetric) return;
+
+      const o = {
+        estoque: oMetric.estoque,
+        ddv: oMetric.ddv,
+        pendCmp: oMetric.pendCmp,
+      };
+      const dEstoque = dMetric.estoque;
+      const dDdv = dMetric.ddv;
+      const dPend = dMetric.pendCmp;
 
       // Filtros base
       if (buFilter !== "all" && d.bu !== buFilter) return;
@@ -237,18 +253,16 @@ const TransferenciaAutomatica = () => {
       }
 
       // Destino precisa estar abaixo do DDV mínimo (ruptura)
-      if (d.ddv >= minDest) return;
+      if (dDdv >= minDest) return;
 
       // Origem deve ter folga (DDV acima do limite seguro)
       if (o.ddv <= seguroOrig) return;
       if (maxOrig > 0 && o.ddv < maxOrig) return;
 
       // Consumo diário do destino (cx/dia) — deriva do estoque atual e DDV
-      // Se DDV destino > 0 e estoque > 0: consumo = estoque/ddv
-      // Se DDV destino = 0 (sem estoque), tenta usar consumo da origem como referência
       let consumoDiarioDest = 0;
-      if (d.ddv > 0 && d.estoque > 0) {
-        consumoDiarioDest = d.estoque / d.ddv;
+      if (dDdv > 0 && dEstoque > 0) {
+        consumoDiarioDest = dEstoque / dDdv;
       } else if (o.ddv > 0 && o.estoque > 0) {
         // fallback: assume mesmo giro proporcional da origem
         consumoDiarioDest = o.estoque / o.ddv / 2;
