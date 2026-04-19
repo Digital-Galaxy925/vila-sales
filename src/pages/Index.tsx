@@ -2549,6 +2549,16 @@ export default function Index() {
       const newData: FilialData = {};
       const livroMetricsData: LivroMetricsData = {};
 
+      // livro_10 – Poços (preço custo/venda) — salvamos as métricas (DDV) para
+      // permitir que módulos de transferência leiam o DDV do livro_10 quando
+      // a regra de negócio exigir (Filial 01 usa DDV do livro_10).
+      if (files.livro_10) {
+        try {
+          const raw10 = await parseCSVRaw(files.livro_10);
+          livroMetricsData["10"] = buildLivroMetrics(raw10, 1, 6, 7);
+        } catch (_) {}
+      }
+
       // Filial 01 – Poços (estoque = livro_01; preço custo/venda = livro_10)
       if (files.livro_01) {
         const raw01 = await parseCSVRaw(files.livro_01);
@@ -2581,6 +2591,15 @@ export default function Index() {
       }
 
       const map510 = await buildOverrideMap(files.livro_510, "livro_510");
+
+      // livro_510 – Focomix MG (preço custo/venda) — salvamos métricas (DDV)
+      // para Filial 502 ler o DDV do livro_510.
+      if (files.livro_510) {
+        try {
+          const raw510 = await parseCSVRaw(files.livro_510);
+          livroMetricsData["510"] = buildLivroMetrics(raw510, 1, 6, 7);
+        } catch (_) {}
+      }
 
       if (files.livro_502) {
         const raw = await parseCSVRaw(files.livro_502);
