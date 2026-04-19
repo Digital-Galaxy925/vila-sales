@@ -344,7 +344,7 @@ const TransferenciaAutomatica = () => {
       if (cxSugeridas <= 0) return;
 
       const ddvDestinoFuturo = consumoDiarioDest > 0
-        ? Math.round((d.estoque + cxSugeridas) / consumoDiarioDest)
+        ? Math.round((dEstoque + cxSugeridas) / consumoDiarioDest)
         : 0;
       const ddvOrigemFuturo = consumoDiarioOrig > 0
         ? Math.round((o.estoque - cxSugeridas) / consumoDiarioOrig)
@@ -357,9 +357,9 @@ const TransferenciaAutomatica = () => {
         estOrig: o.estoque,
         ddvOrig: o.ddv,
         pendOrig: o.pendCmp,
-        estDest: d.estoque,
-        ddvDest: d.ddv,
-        pendDest: d.pendCmp,
+        estDest: dEstoque,
+        ddvDest: dDdv,
+        pendDest: dPend,
         ddvDiarioDest: Math.round(consumoDiarioDest * 10) / 10,
         cxNecessarias,
         cxDisponiveisOrig,
@@ -378,7 +378,8 @@ const TransferenciaAutomatica = () => {
   }, [
     rowsByFilial,
     effectiveDestino,
-    origemIndex,
+    origemMetricasIndex,
+    destinoMetricasIndex,
     ddvMinDestino,
     ddvMaxOrigem,
     ddvSeguroOrigem,
