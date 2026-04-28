@@ -234,7 +234,7 @@ const PedidosPendentes = () => {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-muted/40 font-semibold">
+                <tfoot className="sticky bottom-0 bg-muted/90 font-semibold backdrop-blur">
                   <tr>
                     <td className="px-3 py-2 text-card-foreground" colSpan={3}>
                       Total
@@ -242,7 +242,7 @@ const PedidosPendentes = () => {
                     {FILIAL_COLS.map((f) => (
                       <td
                         key={f.id}
-                        className="px-3 py-2 text-right tabular-nums text-card-foreground"
+                        className="px-3 py-2 text-right tabular-nums text-card-foreground whitespace-nowrap"
                       >
                         {fmt(totals[f.id])}
                       </td>
