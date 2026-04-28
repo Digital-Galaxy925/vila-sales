@@ -41,7 +41,7 @@ interface Row {
   total: number;
 }
 
-const toNum = (v: any): number => {
+const toNum = (v: unknown): number => {
   if (v === null || v === undefined || v === "") return 0;
   if (typeof v === "number") return v;
   const s = String(v).replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "");
@@ -61,65 +61,46 @@ const PedidosPendentes = () => {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object") setData(parsed);
       }
-    } catch (_) {}
+    } catch {
+      setData({});
+    }
     try {
       const m = localStorage.getItem("vilasales_livro_metrics");
       if (m) {
         const parsed = JSON.parse(m);
         if (parsed && typeof parsed === "object") setMetrics(parsed);
       }
-    } catch (_) {}
+    } catch {
+      setMetrics({});
+    }
   }, []);
 
   const rows = useMemo<Row[]>(() => {
     const map = new Map<string, Row>();
 
-    // 1) Lê os produtos completos (descrição + bu) do vilasales_data
+    // Usa como base apenas os produtos cruzados pela Análise de Custos, que já
+    // vêm filtrados pela planilha de produtos enviada no upload.
     for (const fid of FILIAL_COLS.map((f) => f.id)) {
       const list = Array.isArray(data?.[fid]) ? data[fid] : [];
       for (const p of list) {
         const codigo = String(p?.seqProd ?? "").trim();
         if (!codigo) continue;
-        let row = map.get(codigo);
-        if (!row) {
-          row = {
-            bu: String(p?.bu ?? "").trim(),
-            codigo,
-            descricao: String(p?.descricao ?? "").trim(),
-            pend: {},
-            total: 0,
-          };
-          map.set(codigo, row);
-        } else {
-          if (!row.descricao && p?.descricao) row.descricao = String(p.descricao);
-          if (!row.bu && p?.bu) row.bu = String(p.bu);
-        }
-        const pend = toNum(p?.pendCmp);
-        if (pend) {
-          row.pend[fid] = (row.pend[fid] || 0) + pend;
-        }
+        const row = map.get(codigo) ?? {
+          bu: "",
+          codigo,
+          descricao: "",
+          pend: {},
+          total: 0,
+        };
+
+        row.bu ||= String(p?.bu ?? "").trim().toUpperCase();
+        row.descricao ||= String(p?.descricao ?? "").trim();
+        row.pend[fid] = toNum(metrics?.[fid]?.[codigo]?.pendCmp ?? p?.pendCmp);
+        map.set(codigo, row);
       }
     }
 
-    // 2) Complementa com livro_metrics (mais completo, inclui SKUs sem cruzamento)
-    for (const fid of FILIAL_COLS.map((f) => f.id)) {
-      const lm = metrics?.[fid];
-      if (!lm || typeof lm !== "object") continue;
-      for (const [codigo, mrow] of Object.entries(lm)) {
-        const cod = String(codigo).trim();
-        if (!cod) continue;
-        const pend = toNum(mrow?.pendCmp);
-        if (!pend) continue;
-        let row = map.get(cod);
-        if (!row) {
-          row = { bu: "", codigo: cod, descricao: "", pend: {}, total: 0 };
-          map.set(cod, row);
-        }
-        if (!row.pend[fid]) row.pend[fid] = pend;
-      }
-    }
-
-    // 3) Calcula total e mantém só os que têm alguma pendência > 0
+    // Calcula total e mantém só os produtos da base que têm alguma pendência > 0
     const out: Row[] = [];
     for (const r of map.values()) {
       const total = FILIAL_COLS.reduce((s, f) => s + (r.pend[f.id] || 0), 0);
@@ -201,9 +182,17 @@ const PedidosPendentes = () => {
           </div>
 
           <div className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/60">
+            <div className="max-h-[calc(100vh-240px)] overflow-auto">
+              <table className="w-full min-w-[1180px] table-fixed text-sm">
+                <colgroup>
+                  <col className="w-20" />
+                  <col className="w-32" />
+                  <col className="w-[520px]" />
+                  {FILIAL_COLS.map((f) => (
+                    <col key={f.id} className="w-36" />
+                  ))}
+                </colgroup>
+                <thead className="sticky top-0 z-10 bg-muted/90 backdrop-blur">
                   <tr>
                     <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       BU
@@ -226,16 +215,22 @@ const PedidosPendentes = () => {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filtered.map((r) => (
-                    <tr key={r.codigo} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2 text-card-foreground">{r.bu}</td>
-                      <td className="px-3 py-2 font-mono text-xs text-card-foreground">
+                    <tr key={r.codigo} className="h-12 hover:bg-muted/30 transition-colors">
+                      <td className="px-3 py-2 font-semibold text-card-foreground whitespace-nowrap">
+                        {r.bu || "—"}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs text-card-foreground whitespace-nowrap">
                         {r.codigo}
                       </td>
-                      <td className="px-3 py-2 text-card-foreground">{r.descricao}</td>
+                      <td className="px-3 py-2 text-card-foreground align-middle">
+                        <div className="line-clamp-2 leading-snug break-words" title={r.descricao}>
+                          {r.descricao || "—"}
+                        </div>
+                      </td>
                       {FILIAL_COLS.map((f) => (
                         <td
                           key={f.id}
-                          className="px-3 py-2 text-right tabular-nums text-card-foreground"
+                          className="px-3 py-2 text-right tabular-nums text-card-foreground whitespace-nowrap"
                         >
                           {fmt(r.pend[f.id] || 0)}
                         </td>
@@ -243,7 +238,7 @@ const PedidosPendentes = () => {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-muted/40 font-semibold">
+                <tfoot className="sticky bottom-0 bg-muted/90 font-semibold backdrop-blur">
                   <tr>
                     <td className="px-3 py-2 text-card-foreground" colSpan={3}>
                       Total
@@ -251,7 +246,7 @@ const PedidosPendentes = () => {
                     {FILIAL_COLS.map((f) => (
                       <td
                         key={f.id}
-                        className="px-3 py-2 text-right tabular-nums text-card-foreground"
+                        className="px-3 py-2 text-right tabular-nums text-card-foreground whitespace-nowrap"
                       >
                         {fmt(totals[f.id])}
                       </td>
