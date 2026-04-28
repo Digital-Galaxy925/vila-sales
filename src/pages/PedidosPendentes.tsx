@@ -5,14 +5,23 @@ import PageHeader from "@/components/PageHeader";
 import { Input } from "@/components/ui/input";
 
 interface Product {
-  seqProd: string;
-  descricao: string;
-  pendCmp: number;
-  bu: string;
+  seqProd?: string;
+  descricao?: string;
+  pendCmp?: number | string;
+  bu?: string;
 }
 
 interface FilialData {
   [filial: string]: Product[];
+}
+
+interface LivroMetricRow {
+  estoque?: number;
+  ddv?: number;
+  pendCmp?: number | string;
+}
+interface LivroMetricsData {
+  [filial: string]: Record<string, LivroMetricRow>;
 }
 
 const FILIAL_COLS: { id: string; label: string }[] = [
@@ -29,28 +38,48 @@ interface Row {
   codigo: string;
   descricao: string;
   pend: Record<string, number>;
+  total: number;
 }
+
+const toNum = (v: any): number => {
+  if (v === null || v === undefined || v === "") return 0;
+  if (typeof v === "number") return v;
+  const s = String(v).replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "");
+  const n = parseFloat(s);
+  return isFinite(n) ? n : 0;
+};
 
 const PedidosPendentes = () => {
   const [data, setData] = useState<FilialData>({});
+  const [metrics, setMetrics] = useState<LivroMetricsData>({});
   const [search, setSearch] = useState("");
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem("vilasales_data");
-      if (raw) setData(JSON.parse(raw) || {});
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") setData(parsed);
+      }
+    } catch (_) {}
+    try {
+      const m = localStorage.getItem("vilasales_livro_metrics");
+      if (m) {
+        const parsed = JSON.parse(m);
+        if (parsed && typeof parsed === "object") setMetrics(parsed);
+      }
     } catch (_) {}
   }, []);
 
   const rows = useMemo<Row[]>(() => {
     const map = new Map<string, Row>();
+
+    // 1) Lê os produtos completos (descrição + bu) do vilasales_data
     for (const fid of FILIAL_COLS.map((f) => f.id)) {
       const list = Array.isArray(data?.[fid]) ? data[fid] : [];
       for (const p of list) {
         const codigo = String(p?.seqProd ?? "").trim();
         if (!codigo) continue;
-        const pend = Number(p?.pendCmp) || 0;
-        if (pend === 0) continue;
         let row = map.get(codigo);
         if (!row) {
           row = {
@@ -58,18 +87,48 @@ const PedidosPendentes = () => {
             codigo,
             descricao: String(p?.descricao ?? "").trim(),
             pend: {},
+            total: 0,
           };
           map.set(codigo, row);
+        } else {
+          if (!row.descricao && p?.descricao) row.descricao = String(p.descricao);
+          if (!row.bu && p?.bu) row.bu = String(p.bu);
         }
-        row.pend[fid] = pend;
-        if (!row.descricao && p?.descricao) row.descricao = String(p.descricao);
-        if (!row.bu && p?.bu) row.bu = String(p.bu);
+        const pend = toNum(p?.pendCmp);
+        if (pend) {
+          row.pend[fid] = (row.pend[fid] || 0) + pend;
+        }
       }
     }
-    return Array.from(map.values()).sort((a, b) =>
-      a.descricao.localeCompare(b.descricao, "pt-BR")
-    );
-  }, [data]);
+
+    // 2) Complementa com livro_metrics (mais completo, inclui SKUs sem cruzamento)
+    for (const fid of FILIAL_COLS.map((f) => f.id)) {
+      const lm = metrics?.[fid];
+      if (!lm || typeof lm !== "object") continue;
+      for (const [codigo, mrow] of Object.entries(lm)) {
+        const cod = String(codigo).trim();
+        if (!cod) continue;
+        const pend = toNum(mrow?.pendCmp);
+        if (!pend) continue;
+        let row = map.get(cod);
+        if (!row) {
+          row = { bu: "", codigo: cod, descricao: "", pend: {}, total: 0 };
+          map.set(cod, row);
+        }
+        if (!row.pend[fid]) row.pend[fid] = pend;
+      }
+    }
+
+    // 3) Calcula total e mantém só os que têm alguma pendência > 0
+    const out: Row[] = [];
+    for (const r of map.values()) {
+      const total = FILIAL_COLS.reduce((s, f) => s + (r.pend[f.id] || 0), 0);
+      if (total <= 0) continue;
+      r.total = total;
+      out.push(r);
+    }
+    return out.sort((a, b) => b.total - a.total);
+  }, [data, metrics]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -96,6 +155,9 @@ const PedidosPendentes = () => {
   const fmt = (n: number) =>
     n ? n.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) : "";
 
+  const hasAnyData =
+    Object.keys(data || {}).length > 0 || Object.keys(metrics || {}).length > 0;
+
   return (
     <div>
       <PageHeader
@@ -103,12 +165,20 @@ const PedidosPendentes = () => {
         description="Pendência de compra (PEND.CMP) por produto e filial"
       />
 
-      {rows.length === 0 ? (
+      {!hasAnyData ? (
         <div className="bg-card rounded-xl p-10 text-center shadow-[var(--shadow-card)]">
           <Package className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">
-            Nenhum dado de pedidos pendentes encontrado. Faça o upload dos livros na
-            tela de Análise Manual.
+            Nenhum dado encontrado. Faça o upload dos livros na tela de Análise
+            Manual primeiro.
+          </p>
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="bg-card rounded-xl p-10 text-center shadow-[var(--shadow-card)]">
+          <Package className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">
+            Os livros foram carregados, mas nenhum produto possui pendência de
+            compra (PEND.CMP) maior que zero.
           </p>
         </div>
       ) : (
@@ -161,9 +231,7 @@ const PedidosPendentes = () => {
                       <td className="px-3 py-2 font-mono text-xs text-card-foreground">
                         {r.codigo}
                       </td>
-                      <td className="px-3 py-2 text-card-foreground">
-                        {r.descricao}
-                      </td>
+                      <td className="px-3 py-2 text-card-foreground">{r.descricao}</td>
                       {FILIAL_COLS.map((f) => (
                         <td
                           key={f.id}
