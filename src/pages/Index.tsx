@@ -2486,18 +2486,34 @@ export default function Index() {
           const estoqueStr = overrideEstoqueRow?.estoque && num(overrideEstoqueRow.estoque) !== 0
             ? overrideEstoqueRow.estoque
             : cols[finalColEstoque] ?? "0";
+          // Quando há override de preços (livro_10 p/ Filial 01, livro_510 p/ Filial 502),
+          // usa o valor do override SOMENTE se ele existir e for não-zero;
+          // caso contrário, faz fallback para o valor do próprio livro da filial.
+          const ownCusto = cols[finalColCusto] ?? "0";
+          const ownPreco = cols[finalColPreco] ?? "0";
+          const ownSellout = (finalColSellout >= 0 ? cols[finalColSellout] : undefined) ?? "0";
+          const ownPromoc = (finalColPromoc >= 0 ? cols[finalColPromoc] : undefined) ?? "0";
+
           const custoStr = overridePrecos
-            ? (overridePrecosRow?.custo ?? "0")
-            : (cols[finalColCusto] ?? "0");
+            ? (overridePrecosRow?.custo && num(overridePrecosRow.custo) !== 0
+                ? overridePrecosRow.custo
+                : ownCusto)
+            : ownCusto;
           const precoStr = overridePrecos
-            ? (overridePrecosRow?.preco ?? "0")
-            : (cols[finalColPreco] ?? "0");
+            ? (overridePrecosRow?.preco && num(overridePrecosRow.preco) !== 0
+                ? overridePrecosRow.preco
+                : ownPreco)
+            : ownPreco;
           const selloutStr = overridePrecos
-            ? (overridePrecosRow?.sellout ?? "0")
-            : ((finalColSellout >= 0 ? cols[finalColSellout] : undefined) ?? "0");
+            ? (overridePrecosRow?.sellout && num(overridePrecosRow.sellout) !== 0
+                ? overridePrecosRow.sellout
+                : ownSellout)
+            : ownSellout;
           const promocStr = overridePrecos
-            ? (overridePrecosRow?.promoc ?? "0")
-            : ((finalColPromoc >= 0 ? cols[finalColPromoc] : undefined) ?? "0");
+            ? (overridePrecosRow?.promoc && num(overridePrecosRow.promoc) !== 0
+                ? overridePrecosRow.promoc
+                : ownPromoc)
+            : ownPromoc;
 
 
           const estoque = num(estoqueStr);
