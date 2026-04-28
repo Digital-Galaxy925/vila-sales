@@ -28,6 +28,7 @@ const navItems = [
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
   { to: "/propostas-aprovadas", label: "Propostas Aprovadas", icon: FileText },
+  { to: "/pedidos-pendentes", label: "Pedidos Pendentes", icon: FileText },
   { to: "/comparativo-livros", label: "Comparativo de Livros", icon: GitCompareArrows },
   { to: "/transferencia", label: "Transferência", icon: ArrowLeftRight },
   { to: "/transferencia-automatica", label: "Transferência Automática", icon: Zap },
