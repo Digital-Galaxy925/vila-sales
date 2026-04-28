@@ -178,9 +178,17 @@ const PedidosPendentes = () => {
           </div>
 
           <div className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/60">
+            <div className="max-h-[calc(100vh-240px)] overflow-auto">
+              <table className="w-full min-w-[1180px] table-fixed text-sm">
+                <colgroup>
+                  <col className="w-20" />
+                  <col className="w-32" />
+                  <col className="w-[520px]" />
+                  {FILIAL_COLS.map((f) => (
+                    <col key={f.id} className="w-36" />
+                  ))}
+                </colgroup>
+                <thead className="sticky top-0 z-10 bg-muted/90 backdrop-blur">
                   <tr>
                     <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       BU
@@ -203,16 +211,22 @@ const PedidosPendentes = () => {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filtered.map((r) => (
-                    <tr key={r.codigo} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2 text-card-foreground">{r.bu}</td>
-                      <td className="px-3 py-2 font-mono text-xs text-card-foreground">
+                    <tr key={r.codigo} className="h-12 hover:bg-muted/30 transition-colors">
+                      <td className="px-3 py-2 font-semibold text-card-foreground whitespace-nowrap">
+                        {r.bu || "—"}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs text-card-foreground whitespace-nowrap">
                         {r.codigo}
                       </td>
-                      <td className="px-3 py-2 text-card-foreground">{r.descricao}</td>
+                      <td className="px-3 py-2 text-card-foreground align-middle">
+                        <div className="line-clamp-2 leading-snug break-words" title={r.descricao}>
+                          {r.descricao || "—"}
+                        </div>
+                      </td>
                       {FILIAL_COLS.map((f) => (
                         <td
                           key={f.id}
-                          className="px-3 py-2 text-right tabular-nums text-card-foreground"
+                          className="px-3 py-2 text-right tabular-nums text-card-foreground whitespace-nowrap"
                         >
                           {fmt(r.pend[f.id] || 0)}
                         </td>
