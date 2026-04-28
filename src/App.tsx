@@ -21,6 +21,7 @@ import UploadDados from "./pages/UploadDados";
 import TabelaST from "./pages/TabelaST";
 import UploadST from "./pages/UploadST";
 import PropostasAprovadas from "./pages/PropostasAprovadas";
+import PedidosPendentes from "./pages/PedidosPendentes";
 import AnaliseGeral from "./pages/AnaliseGeral";
 import NotFound from "./pages/NotFound";
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/simulador" element={<Simulador />} />
             <Route path="/propostas" element={<SimuladorPropostas />} />
             <Route path="/propostas-aprovadas" element={<PropostasAprovadas />} />
+            <Route path="/pedidos-pendentes" element={<PedidosPendentes />} />
             <Route path="/tabela-st" element={<TabelaST />} />
             <Route path="/comparativo-livros" element={<ComparativoLivros />} />
             <Route path="/transferencia" element={<Transferencia />} />
