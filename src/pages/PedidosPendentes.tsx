@@ -41,7 +41,7 @@ interface Row {
   total: number;
 }
 
-const toNum = (v: any): number => {
+const toNum = (v: unknown): number => {
   if (v === null || v === undefined || v === "") return 0;
   if (typeof v === "number") return v;
   const s = String(v).replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "");
@@ -61,14 +61,18 @@ const PedidosPendentes = () => {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object") setData(parsed);
       }
-    } catch (_) {}
+    } catch {
+      setData({});
+    }
     try {
       const m = localStorage.getItem("vilasales_livro_metrics");
       if (m) {
         const parsed = JSON.parse(m);
         if (parsed && typeof parsed === "object") setMetrics(parsed);
       }
-    } catch (_) {}
+    } catch {
+      setMetrics({});
+    }
   }, []);
 
   const rows = useMemo<Row[]>(() => {
