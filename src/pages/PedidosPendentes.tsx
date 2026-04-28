@@ -74,52 +74,29 @@ const PedidosPendentes = () => {
   const rows = useMemo<Row[]>(() => {
     const map = new Map<string, Row>();
 
-    // 1) Lê os produtos completos (descrição + bu) do vilasales_data
+    // Usa como base apenas os produtos cruzados pela Análise de Custos, que já
+    // vêm filtrados pela planilha de produtos enviada no upload.
     for (const fid of FILIAL_COLS.map((f) => f.id)) {
       const list = Array.isArray(data?.[fid]) ? data[fid] : [];
       for (const p of list) {
         const codigo = String(p?.seqProd ?? "").trim();
         if (!codigo) continue;
-        let row = map.get(codigo);
-        if (!row) {
-          row = {
-            bu: String(p?.bu ?? "").trim(),
-            codigo,
-            descricao: String(p?.descricao ?? "").trim(),
-            pend: {},
-            total: 0,
-          };
-          map.set(codigo, row);
-        } else {
-          if (!row.descricao && p?.descricao) row.descricao = String(p.descricao);
-          if (!row.bu && p?.bu) row.bu = String(p.bu);
-        }
-        const pend = toNum(p?.pendCmp);
-        if (pend) {
-          row.pend[fid] = (row.pend[fid] || 0) + pend;
-        }
+        const row = map.get(codigo) ?? {
+          bu: "",
+          codigo,
+          descricao: "",
+          pend: {},
+          total: 0,
+        };
+
+        row.bu ||= String(p?.bu ?? "").trim().toUpperCase();
+        row.descricao ||= String(p?.descricao ?? "").trim();
+        row.pend[fid] = toNum(metrics?.[fid]?.[codigo]?.pendCmp ?? p?.pendCmp);
+        map.set(codigo, row);
       }
     }
 
-    // 2) Complementa com livro_metrics (mais completo, inclui SKUs sem cruzamento)
-    for (const fid of FILIAL_COLS.map((f) => f.id)) {
-      const lm = metrics?.[fid];
-      if (!lm || typeof lm !== "object") continue;
-      for (const [codigo, mrow] of Object.entries(lm)) {
-        const cod = String(codigo).trim();
-        if (!cod) continue;
-        const pend = toNum(mrow?.pendCmp);
-        if (!pend) continue;
-        let row = map.get(cod);
-        if (!row) {
-          row = { bu: "", codigo: cod, descricao: "", pend: {}, total: 0 };
-          map.set(cod, row);
-        }
-        if (!row.pend[fid]) row.pend[fid] = pend;
-      }
-    }
-
-    // 3) Calcula total e mantém só os que têm alguma pendência > 0
+    // Calcula total e mantém só os produtos da base que têm alguma pendência > 0
     const out: Row[] = [];
     for (const r of map.values()) {
       const total = FILIAL_COLS.reduce((s, f) => s + (r.pend[f.id] || 0), 0);
