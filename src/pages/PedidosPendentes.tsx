@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Package } from "lucide-react";
+import { Search, Package, FileSpreadsheet } from "lucide-react";
+import * as XLSX from "xlsx";
 import PageHeader from "@/components/PageHeader";
 import { Input } from "@/components/ui/input";
 
