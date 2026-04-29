@@ -217,13 +217,13 @@ const PedidosPendentes = () => {
                 </colgroup>
                 <thead className="sticky top-0 z-10 bg-muted/90 backdrop-blur">
                   <tr>
-                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary">
                       BU
                     </th>
-                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary">
                       Código
                     </th>
-                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary">
                       Descrição
                     </th>
                     {FILIAL_COLS.map((f) => (
@@ -239,13 +239,13 @@ const PedidosPendentes = () => {
                 <tbody className="divide-y divide-border">
                   {filtered.map((r) => (
                     <tr key={r.codigo} className="h-12 hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2 font-semibold text-card-foreground whitespace-nowrap">
+                      <td className="px-3 py-2 font-semibold text-card-foreground whitespace-nowrap bg-secondary/40">
                         {r.bu || "—"}
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs text-card-foreground whitespace-nowrap">
+                      <td className="px-3 py-2 font-mono text-xs text-card-foreground whitespace-nowrap bg-secondary/40">
                         {r.codigo}
                       </td>
-                      <td className="px-3 py-2 text-card-foreground align-middle">
+                      <td className="px-3 py-2 text-card-foreground align-middle bg-secondary/40">
                         <div className="line-clamp-2 leading-snug break-words" title={r.descricao}>
                           {r.descricao || "—"}
                         </div>
