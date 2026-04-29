@@ -53,6 +53,7 @@ const PedidosPendentes = () => {
   const [data, setData] = useState<FilialData>({});
   const [metrics, setMetrics] = useState<LivroMetricsData>({});
   const [search, setSearch] = useState("");
+  const [buFilter, setBuFilter] = useState<"ALL" | "HC" | "FR">("ALL");
 
   useEffect(() => {
     try {
@@ -113,14 +114,16 @@ const PedidosPendentes = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter(
-      (r) =>
+    return rows.filter((r) => {
+      if (buFilter !== "ALL" && r.bu.toUpperCase() !== buFilter) return false;
+      if (!q) return true;
+      return (
         r.codigo.toLowerCase().includes(q) ||
         r.descricao.toLowerCase().includes(q) ||
         r.bu.toLowerCase().includes(q)
-    );
-  }, [rows, search]);
+      );
+    });
+  }, [rows, search, buFilter]);
 
   const totals = useMemo(() => {
     const t: Record<string, number> = {};
@@ -168,6 +171,26 @@ const PedidosPendentes = () => {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-4"
         >
+          <div className="flex flex-wrap items-center gap-2">
+            {([
+              { id: "ALL", label: "Todas BU" },
+              { id: "HC", label: "HC" },
+              { id: "FR", label: "FR" },
+            ] as const).map((b) => (
+              <button
+                key={b.id}
+                onClick={() => setBuFilter(b.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  buFilter === b.id
+                    ? "bg-primary text-primary-foreground shadow-[var(--shadow-card)]"
+                    : "bg-card text-card-foreground hover:bg-muted"
+                }`}
+              >
+                {b.label}
+              </button>
+            ))}
+          </div>
+
           <div className="flex items-center gap-3 bg-card rounded-xl p-3 shadow-[var(--shadow-card)]">
             <Search className="w-4 h-4 text-muted-foreground ml-2" />
             <Input
