@@ -114,14 +114,16 @@ const PedidosPendentes = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter(
-      (r) =>
+    return rows.filter((r) => {
+      if (buFilter !== "ALL" && r.bu.toUpperCase() !== buFilter) return false;
+      if (!q) return true;
+      return (
         r.codigo.toLowerCase().includes(q) ||
         r.descricao.toLowerCase().includes(q) ||
         r.bu.toLowerCase().includes(q)
-    );
-  }, [rows, search]);
+      );
+    });
+  }, [rows, search, buFilter]);
 
   const totals = useMemo(() => {
     const t: Record<string, number> = {};
