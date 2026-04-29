@@ -229,7 +229,7 @@ const PedidosPendentes = () => {
                     {FILIAL_COLS.map((f) => (
                       <th
                         key={f.id}
-                        className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap"
+                        className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap bg-muted-foreground/20"
                       >
                         {f.label}
                       </th>
