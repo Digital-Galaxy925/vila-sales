@@ -239,13 +239,13 @@ const PedidosPendentes = () => {
                 <tbody className="divide-y divide-border">
                   {filtered.map((r) => (
                     <tr key={r.codigo} className="h-12 hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2 font-semibold text-card-foreground whitespace-nowrap">
+                      <td className="px-3 py-2 font-semibold text-card-foreground whitespace-nowrap bg-secondary/40">
                         {r.bu || "—"}
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs text-card-foreground whitespace-nowrap">
+                      <td className="px-3 py-2 font-mono text-xs text-card-foreground whitespace-nowrap bg-secondary/40">
                         {r.codigo}
                       </td>
-                      <td className="px-3 py-2 text-card-foreground align-middle">
+                      <td className="px-3 py-2 text-card-foreground align-middle bg-secondary/40">
                         <div className="line-clamp-2 leading-snug break-words" title={r.descricao}>
                           {r.descricao || "—"}
                         </div>
