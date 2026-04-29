@@ -53,6 +53,7 @@ const PedidosPendentes = () => {
   const [data, setData] = useState<FilialData>({});
   const [metrics, setMetrics] = useState<LivroMetricsData>({});
   const [search, setSearch] = useState("");
+  const [buFilter, setBuFilter] = useState<"ALL" | "HC" | "FR">("ALL");
 
   useEffect(() => {
     try {
