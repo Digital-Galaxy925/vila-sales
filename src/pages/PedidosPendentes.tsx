@@ -143,6 +143,24 @@ const PedidosPendentes = () => {
   const hasAnyData =
     Object.keys(data || {}).length > 0 || Object.keys(metrics || {}).length > 0;
 
+  const handleExportExcel = () => {
+    if (filtered.length === 0) return;
+    const header = ["BU", "Código", "Descrição", ...FILIAL_COLS.map((f) => f.label.toUpperCase())];
+    const body = filtered.map((r) => [
+      r.bu,
+      r.codigo,
+      r.descricao,
+      ...FILIAL_COLS.map((f) => r.pend[f.id] || 0),
+    ]);
+    const totalRow = ["", "", "Total", ...FILIAL_COLS.map((f) => totals[f.id] || 0)];
+    const ws = XLSX.utils.aoa_to_sheet([header, ...body, totalRow]);
+    ws["!cols"] = [{ wch: 8 }, { wch: 12 }, { wch: 60 }, ...FILIAL_COLS.map(() => ({ wch: 16 }))];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pedidos Pendentes");
+    const ts = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `pedidos-pendentes-${ts}.xlsx`);
+  };
+
   return (
     <div>
       <PageHeader
