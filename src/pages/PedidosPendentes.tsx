@@ -217,13 +217,13 @@ const PedidosPendentes = () => {
                 </colgroup>
                 <thead className="sticky top-0 z-10 bg-muted/90 backdrop-blur">
                   <tr>
-                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary">
                       BU
                     </th>
-                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary">
                       Código
                     </th>
-                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-secondary">
                       Descrição
                     </th>
                     {FILIAL_COLS.map((f) => (
