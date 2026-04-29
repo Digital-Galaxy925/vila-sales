@@ -172,24 +172,34 @@ const PedidosPendentes = () => {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-4"
         >
-          <div className="flex flex-wrap items-center gap-2">
-            {([
-              { id: "ALL", label: "Todas BU" },
-              { id: "HC", label: "HC" },
-              { id: "FR", label: "FR" },
-            ] as const).map((b) => (
-              <button
-                key={b.id}
-                onClick={() => setBuFilter(b.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  buFilter === b.id
-                    ? "bg-primary text-primary-foreground shadow-[var(--shadow-card)]"
-                    : "bg-card text-card-foreground hover:bg-muted"
-                }`}
-              >
-                {b.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {([
+                { id: "ALL", label: "Todas BU" },
+                { id: "HC", label: "HC" },
+                { id: "FR", label: "FR" },
+              ] as const).map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => setBuFilter(b.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    buFilter === b.id
+                      ? "bg-primary text-primary-foreground shadow-[var(--shadow-card)]"
+                      : "bg-card text-card-foreground hover:bg-muted"
+                  }`}
+                >
+                  {b.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleExportExcel}
+              disabled={filtered.length === 0}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-[var(--shadow-card)]"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Exportar Excel
+            </button>
           </div>
 
           <div className="flex items-center gap-3 bg-card rounded-xl p-3 shadow-[var(--shadow-card)]">
