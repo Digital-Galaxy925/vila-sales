@@ -239,13 +239,13 @@ const PedidosPendentes = () => {
                 <tbody className="divide-y divide-border">
                   {filtered.map((r) => (
                     <tr key={r.codigo} className="h-12 hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2 font-semibold text-card-foreground whitespace-nowrap">
+                      <td className="px-3 py-2 text-sm font-normal text-card-foreground whitespace-nowrap">
                         {r.bu || "—"}
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs text-card-foreground whitespace-nowrap">
+                      <td className="px-3 py-2 text-sm font-normal text-card-foreground whitespace-nowrap">
                         {r.codigo}
                       </td>
-                      <td className="px-3 py-2 text-card-foreground align-middle">
+                      <td className="px-3 py-2 text-sm font-normal text-card-foreground align-middle">
                         <div className="line-clamp-2 leading-snug break-words" title={r.descricao}>
                           {r.descricao || "—"}
                         </div>
@@ -253,7 +253,7 @@ const PedidosPendentes = () => {
                       {FILIAL_COLS.map((f) => (
                         <td
                           key={f.id}
-                          className="px-3 py-2 text-right tabular-nums text-card-foreground whitespace-nowrap"
+                          className="px-3 py-2 text-sm font-normal text-right tabular-nums text-card-foreground whitespace-nowrap"
                         >
                           {fmt(r.pend[f.id] || 0)}
                         </td>
