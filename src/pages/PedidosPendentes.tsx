@@ -235,30 +235,30 @@ const PedidosPendentes = () => {
 
           <div className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
             <div className="max-h-[calc(100vh-240px)] overflow-auto">
-              <table className="w-full min-w-[1180px] table-fixed text-sm">
+              <table className="w-full min-w-[1060px] table-fixed text-xs">
                 <colgroup>
-                  <col className="w-20" />
-                  <col className="w-32" />
-                  <col className="w-[520px]" />
+                  <col className="w-16" />
+                  <col className="w-24" />
+                  <col className="w-[460px]" />
                   {FILIAL_COLS.map((f) => (
-                    <col key={f.id} className="w-36" />
+                    <col key={f.id} className="w-28" />
                   ))}
                 </colgroup>
                 <thead className="sticky top-0 z-10 bg-muted/90 backdrop-blur">
                   <tr>
-                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted-foreground/20">
+                    <th className="px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted-foreground/20">
                       BU
                     </th>
-                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted-foreground/20">
+                    <th className="px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted-foreground/20">
                       Código
                     </th>
-                    <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted-foreground/20">
+                    <th className="px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted-foreground/20">
                       Descrição
                     </th>
                     {FILIAL_COLS.map((f) => (
                       <th
                         key={f.id}
-                        className="px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap bg-muted-foreground/20"
+                        className="px-2 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap bg-muted-foreground/20"
                       >
                         {f.label}
                       </th>
@@ -267,14 +267,14 @@ const PedidosPendentes = () => {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filtered.map((r) => (
-                    <tr key={r.codigo} className="h-12 hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2 text-sm font-normal text-card-foreground whitespace-nowrap">
+                    <tr key={r.codigo} className="h-9 hover:bg-muted/30 transition-colors">
+                      <td className="px-2 py-1.5 text-xs font-normal text-card-foreground whitespace-nowrap">
                         {r.bu || "—"}
                       </td>
-                      <td className="px-3 py-2 text-sm font-normal text-card-foreground whitespace-nowrap">
+                      <td className="px-2 py-1.5 text-xs font-normal text-card-foreground whitespace-nowrap">
                         {r.codigo}
                       </td>
-                      <td className="px-3 py-2 text-sm font-normal text-card-foreground align-middle">
+                      <td className="px-2 py-1.5 text-xs font-normal text-card-foreground align-middle">
                         <div className="line-clamp-2 leading-snug break-words" title={r.descricao}>
                           {r.descricao || "—"}
                         </div>
@@ -282,7 +282,7 @@ const PedidosPendentes = () => {
                       {FILIAL_COLS.map((f) => (
                         <td
                           key={f.id}
-                          className="px-3 py-2 text-sm font-normal text-right tabular-nums text-card-foreground whitespace-nowrap"
+                          className="px-2 py-1.5 text-xs font-normal text-right tabular-nums text-card-foreground whitespace-nowrap"
                         >
                           {fmt(r.pend[f.id] || 0)}
                         </td>
@@ -292,13 +292,13 @@ const PedidosPendentes = () => {
                 </tbody>
                 <tfoot className="sticky bottom-0 bg-muted/90 font-semibold backdrop-blur">
                   <tr>
-                    <td className="px-3 py-2 text-card-foreground" colSpan={3}>
+                    <td className="px-2 py-1.5 text-xs text-card-foreground" colSpan={3}>
                       Total
                     </td>
                     {FILIAL_COLS.map((f) => (
                       <td
                         key={f.id}
-                        className="px-3 py-2 text-right tabular-nums text-card-foreground whitespace-nowrap"
+                        className="px-2 py-1.5 text-xs text-right tabular-nums text-card-foreground whitespace-nowrap"
                       >
                         {fmt(totals[f.id])}
                       </td>
