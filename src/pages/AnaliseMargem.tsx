@@ -12,6 +12,7 @@ import MarginBadge from "@/components/MarginBadge";
 import AlertCard from "@/components/AlertCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface Product {
   seqProd: string;
