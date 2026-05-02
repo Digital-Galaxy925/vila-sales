@@ -45,15 +45,12 @@ const AnaliseMargem = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [minMargem, setMinMargem] = useState(17);
   const [activeFilter, setActiveFilter] = useState<"all" | "abaixo" | "acima" | "minima" | "critical" | "warning">("all");
+  const { get } = useAppData();
 
   const data: DataMap = useMemo(() => {
-    try {
-      const raw = localStorage.getItem("vilasales_data");
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
-    }
-  }, []);
+    const raw = get<DataMap>("vilasales_data");
+    return raw && typeof raw === "object" ? raw : {};
+  }, [get]);
 
   const hasData = Object.keys(data).length > 0;
 
