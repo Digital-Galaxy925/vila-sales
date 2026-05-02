@@ -119,6 +119,36 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
+  // Hidrata `vilasales_data` a partir do Supabase no boot caso o cache local
+  // esteja vazio (ex.: usuário acessando de outra máquina/navegador).
+  useEffect(() => {
+    let cancelled = false;
+    const current = readKey("vilasales_data") as Record<string, unknown> | null;
+    const isEmpty =
+      !current || (typeof current === "object" && Object.keys(current).length === 0);
+    if (!isEmpty) return;
+
+    (async () => {
+      try {
+        const { loadLivrosFromSupabase } = await import("@/lib/livrosSync");
+        const remote = await loadLivrosFromSupabase();
+        if (cancelled || !remote) return;
+        try {
+          localStorage.setItem("vilasales_data", JSON.stringify(remote));
+        } catch {
+          /* ignore */
+        }
+        notifyAppDataChanged("vilasales_data");
+      } catch (e) {
+        console.warn("[AppData] hydrate falhou:", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (!e.key) {

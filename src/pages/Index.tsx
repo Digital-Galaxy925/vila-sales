@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { notifyAppDataChanged } from "@/contexts/AppDataContext";
+import { saveLivrosToSupabase, clearLivrosFromSupabase } from "@/lib/livrosSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Filial = "01" | "11" | "12" | "14" | "501" | "502";
@@ -2291,6 +2292,8 @@ export default function Index() {
       localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
     } catch (_) {}
     notifyAppDataChanged();
+    // Espelha no Supabase (não bloqueia a UI)
+    clearLivrosFromSupabase().catch((e) => console.warn("clearLivros:", e));
   }, []);
 
   const processFiles = useCallback(async () => {
@@ -2634,6 +2637,10 @@ export default function Index() {
       setLastUpdate(updateTime);
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
       notifyAppDataChanged();
+      // Espelha no Supabase (em background — não bloqueia a navegação)
+      saveLivrosToSupabase(newData).catch((e) =>
+        console.warn("saveLivros:", e?.message || e)
+      );
       setShowUpload(false);
       setActiveModule("cruzamento");
 
@@ -2734,8 +2741,10 @@ export default function Index() {
               try {
                 localStorage.removeItem("vilasales_data");
                 localStorage.removeItem("vilasales_lastUpdate");
+                localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
               } catch (_) {}
               notifyAppDataChanged();
+              clearLivrosFromSupabase().catch((e) => console.warn("clearLivros:", e));
             }}
             style={{
               padding: "10px 24px",

@@ -12,6 +12,7 @@ import MarginBadge from "@/components/MarginBadge";
 import AlertCard from "@/components/AlertCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface Product {
   seqProd: string;
@@ -44,15 +45,12 @@ const AnaliseMargem = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [minMargem, setMinMargem] = useState(17);
   const [activeFilter, setActiveFilter] = useState<"all" | "abaixo" | "acima" | "minima" | "critical" | "warning">("all");
+  const { get } = useAppData();
 
   const data: DataMap = useMemo(() => {
-    try {
-      const raw = localStorage.getItem("vilasales_data");
-      return raw ? JSON.parse(raw) : {};
-    } catch {
-      return {};
-    }
-  }, []);
+    const raw = get<DataMap>("vilasales_data");
+    return raw && typeof raw === "object" ? raw : {};
+  }, [get]);
 
   const hasData = Object.keys(data).length > 0;
 

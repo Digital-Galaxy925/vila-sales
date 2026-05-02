@@ -20,6 +20,7 @@ import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
+import { useAppData } from "@/contexts/AppDataContext";
 
 const num = (v: any): number => {
   if (typeof v === "number") return v;
@@ -60,16 +61,13 @@ const MIN_MARGIN = 17;
 
 const AnaliseGeral = () => {
   const [filial, setFilial] = useState("all");
+  const { get } = useAppData();
 
   const allData = useMemo(() => {
-    try {
-      const raw = JSON.parse(localStorage.getItem("vilasales_data") || "{}");
-      if (!raw || typeof raw !== "object") return {};
-      return raw;
-    } catch {
-      return {};
-    }
-  }, []);
+    const raw = get<Record<string, unknown>>("vilasales_data");
+    if (!raw || typeof raw !== "object") return {};
+    return raw;
+  }, [get]);
 
   const filialSummaries = useMemo((): FilialSummary[] => {
     return FILIAL_CONFIG.map((fc) => {

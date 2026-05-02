@@ -8,6 +8,7 @@ import DataTable from "@/components/DataTable";
 import AlertCard from "@/components/AlertCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface Product {
   familia: string;
@@ -117,41 +118,38 @@ const AnaliseEstoque = () => {
   const [ddvFilter, setDdvFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "excessivo" | "ruptura">("all");
   const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
+  const { get } = useAppData();
 
   const allProducts = useMemo(() => {
-    try {
-      const raw = JSON.parse(localStorage.getItem("vilasales_data") || "{}");
-      if (!raw || typeof raw !== "object") return [];
-      // FilialData is { [filial: string]: Product[] }
-      const products: any[] = [];
-      Object.entries(raw).forEach(([filialKey, arr]: [string, any]) => {
-        if (Array.isArray(arr)) {
-          arr.forEach((p: any) => {
-            const estoque = num(p.estoque);
-            const custoLiq = num(p.custoLiq);
-            const embCmp = num(p.embCmp) || 1;
-            const ddv = num(p.ddv);
-            const atual = num(p.atual);
-            products.push({
-              ...p,
-              estoque,
-              custoLiq,
-              embCmp,
-              atual,
-              ddv,
-              filialNome: filialNames[p.filial || filialKey] || p.filial || filialKey,
-              valorEstoque: estoque * embCmp * custoLiq,
-              valorEstoqueVenda: estoque * embCmp * atual,
-              status: getStatus(ddv, estoque),
-            });
+    const raw = get<Record<string, unknown>>("vilasales_data");
+    if (!raw || typeof raw !== "object") return [];
+    // FilialData is { [filial: string]: Product[] }
+    const products: any[] = [];
+    Object.entries(raw).forEach(([filialKey, arr]: [string, any]) => {
+      if (Array.isArray(arr)) {
+        arr.forEach((p: any) => {
+          const estoque = num(p.estoque);
+          const custoLiq = num(p.custoLiq);
+          const embCmp = num(p.embCmp) || 1;
+          const ddv = num(p.ddv);
+          const atual = num(p.atual);
+          products.push({
+            ...p,
+            estoque,
+            custoLiq,
+            embCmp,
+            atual,
+            ddv,
+            filialNome: filialNames[p.filial || filialKey] || p.filial || filialKey,
+            valorEstoque: estoque * embCmp * custoLiq,
+            valorEstoqueVenda: estoque * embCmp * atual,
+            status: getStatus(ddv, estoque),
           });
-        }
-      });
-      return products;
-    } catch {
-      return [];
-    }
-  }, []);
+        });
+      }
+    });
+    return products;
+  }, [get]);
 
   const baseFiltered = useMemo(() => {
     let list = allProducts;
