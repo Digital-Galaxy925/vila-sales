@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { useAppDataKey } from "@/contexts/AppDataContext";
 import { Package, AlertTriangle, Clock, Search, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import KpiCard from "@/components/KpiCard";
@@ -8,7 +9,6 @@ import DataTable from "@/components/DataTable";
 import AlertCard from "@/components/AlertCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAppData } from "@/contexts/AppDataContext";
 
 interface Product {
   familia: string;
@@ -102,8 +102,8 @@ const columns = [
           v === "Alto" || v === "Sem Estoque"
             ? "bg-destructive/10 text-destructive"
             : v === "Baixo"
-            ? "bg-warning/10 text-warning"
-            : "bg-success/10 text-success"
+              ? "bg-warning/10 text-warning"
+              : "bg-success/10 text-success"
         }`}
       >
         {v}
@@ -118,38 +118,42 @@ const AnaliseEstoque = () => {
   const [ddvFilter, setDdvFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "excessivo" | "ruptura">("all");
   const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
-  const { get } = useAppData();
+
+  const rawData = useAppDataKey<Record<string, any[]>>("vilasales_data");
 
   const allProducts = useMemo(() => {
-    const raw = get<Record<string, unknown>>("vilasales_data");
-    if (!raw || typeof raw !== "object") return [];
-    // FilialData is { [filial: string]: Product[] }
-    const products: any[] = [];
-    Object.entries(raw).forEach(([filialKey, arr]: [string, any]) => {
-      if (Array.isArray(arr)) {
-        arr.forEach((p: any) => {
-          const estoque = num(p.estoque);
-          const custoLiq = num(p.custoLiq);
-          const embCmp = num(p.embCmp) || 1;
-          const ddv = num(p.ddv);
-          const atual = num(p.atual);
-          products.push({
-            ...p,
-            estoque,
-            custoLiq,
-            embCmp,
-            atual,
-            ddv,
-            filialNome: filialNames[p.filial || filialKey] || p.filial || filialKey,
-            valorEstoque: estoque * embCmp * custoLiq,
-            valorEstoqueVenda: estoque * embCmp * atual,
-            status: getStatus(ddv, estoque),
+    try {
+      const raw = rawData ?? {};
+      if (!raw || typeof raw !== "object") return [];
+      const products: any[] = [];
+      Object.entries(raw).forEach(([filialKey, arr]: [string, any]) => {
+        if (Array.isArray(arr)) {
+          arr.forEach((p: any) => {
+            const estoque = num(p.estoque);
+            const custoLiq = num(p.custoLiq);
+            const embCmp = num(p.embCmp) || 1;
+            const ddv = num(p.ddv);
+            const atual = num(p.atual);
+            products.push({
+              ...p,
+              estoque,
+              custoLiq,
+              embCmp,
+              atual,
+              ddv,
+              filialNome: filialNames[p.filial || filialKey] || p.filial || filialKey,
+              valorEstoque: estoque * embCmp * custoLiq,
+              valorEstoqueVenda: estoque * embCmp * atual,
+              status: getStatus(ddv, estoque),
+            });
           });
-        });
-      }
-    });
-    return products;
-  }, [get]);
+        }
+      });
+      return products;
+    } catch {
+      return [];
+    }
+  }, [rawData]);
 
   const baseFiltered = useMemo(() => {
     let list = allProducts;
@@ -162,9 +166,7 @@ const AnaliseEstoque = () => {
     if (search.trim()) {
       const term = search.trim().toLowerCase();
       list = list.filter(
-        (p: any) =>
-          (p.seqProd || "").toLowerCase().includes(term) ||
-          (p.descricao || "").toLowerCase().includes(term)
+        (p: any) => (p.seqProd || "").toLowerCase().includes(term) || (p.descricao || "").toLowerCase().includes(term),
       );
     }
     if (ddvFilter.trim()) {
@@ -177,7 +179,10 @@ const AnaliseEstoque = () => {
   }, [allProducts, filial, search, ddvFilter, buFilter]);
 
   const excessivo = useMemo(() => baseFiltered.filter((p: any) => p.ddv > 90).length, [baseFiltered]);
-  const ruptura = useMemo(() => baseFiltered.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7).length, [baseFiltered]);
+  const ruptura = useMemo(
+    () => baseFiltered.filter((p: any) => p.estoque > 0 && p.ddv > 0 && p.ddv < 7).length,
+    [baseFiltered],
+  );
 
   const filtered = useMemo(() => {
     let list = baseFiltered;
@@ -190,7 +195,10 @@ const AnaliseEstoque = () => {
   }, [baseFiltered, statusFilter]);
 
   const totalValor = useMemo(() => filtered.reduce((s: number, p: any) => s + p.valorEstoque, 0), [filtered]);
-  const totalValorVenda = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0), [filtered]);
+  const totalValorVenda = useMemo(
+    () => filtered.reduce((s: number, p: any) => s + (p.valorEstoqueVenda || 0), 0),
+    [filtered],
+  );
   const totalVolumeCaixas = useMemo(() => filtered.reduce((s: number, p: any) => s + (p.estoque || 0), 0), [filtered]);
   const avgDdv = useMemo(() => {
     const withStock = filtered.filter((p: any) => p.estoque > 0);
@@ -199,18 +207,18 @@ const AnaliseEstoque = () => {
 
   const exportToExcel = useCallback(() => {
     const rows = filtered.map((p: any) => ({
-      "CD": p.filialNome,
-      "BU": p.bu || "",
-      "Código": p.seqProd,
-      "Descrição": p.descricao,
+      CD: p.filialNome,
+      BU: p.bu || "",
+      Código: p.seqProd,
+      Descrição: p.descricao,
       "Unid/CX": p.embCmp,
-      "Estoque": p.estoque,
+      Estoque: p.estoque,
       "Cobertura (dias)": p.ddv,
       "Preço de Custo": p.custoLiq,
       "Preço de Venda": p.atual,
       "Valor Estoque Custo": p.valorEstoque,
       "Valor Estoque Venda": p.valorEstoqueVenda,
-      "Status": p.status,
+      Status: p.status,
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
     const colWidths = Object.keys(rows[0] || {}).map((k) => ({ wch: Math.max(k.length, 15) }));
@@ -255,7 +263,9 @@ const AnaliseEstoque = () => {
         <FilialSelector selected={filial} onChange={setFilial} />
         <div className="bg-card rounded-xl shadow-[var(--shadow-card)] px-4 py-3 flex items-center gap-3">
           <Clock className="w-4 h-4 text-primary" />
-          <label className="text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">Cobertura máx. (DDV)</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase whitespace-nowrap">
+            Cobertura máx. (DDV)
+          </label>
           <Input
             type="number"
             placeholder="Ex: 30"
@@ -270,22 +280,58 @@ const AnaliseEstoque = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
         <KpiCard title="Valor Total Estoque Custo" value={fmtAbrev(totalValor)} icon={Package} variant="primary" />
         <KpiCard title="Valor Total Estoque Venda" value={fmtAbrev(totalValorVenda)} icon={Package} variant="info" />
-        <KpiCard title="Volume Total (Caixas)" value={totalVolumeCaixas.toLocaleString("pt-BR")} icon={Package} variant="success" />
+        <KpiCard
+          title="Volume Total (Caixas)"
+          value={totalVolumeCaixas.toLocaleString("pt-BR")}
+          icon={Package}
+          variant="success"
+        />
         <KpiCard title="Cobertura Média" value={`${avgDdv} dias`} icon={Clock} variant="purple" />
-        <div onClick={() => setStatusFilter(statusFilter === "excessivo" ? "all" : "excessivo")} className={`cursor-pointer rounded-xl transition-all ${statusFilter === "excessivo" ? "ring-2 ring-destructive" : ""}`}>
-          <KpiCard title="Estoque Excessivo" value={`${excessivo} SKUs`} subtitle="> 90 dias" icon={AlertTriangle} variant="destructive" />
+        <div
+          onClick={() => setStatusFilter(statusFilter === "excessivo" ? "all" : "excessivo")}
+          className={`cursor-pointer rounded-xl transition-all ${statusFilter === "excessivo" ? "ring-2 ring-destructive" : ""}`}
+        >
+          <KpiCard
+            title="Estoque Excessivo"
+            value={`${excessivo} SKUs`}
+            subtitle="> 90 dias"
+            icon={AlertTriangle}
+            variant="destructive"
+          />
         </div>
-        <div onClick={() => setStatusFilter(statusFilter === "ruptura" ? "all" : "ruptura")} className={`cursor-pointer rounded-xl transition-all ${statusFilter === "ruptura" ? "ring-2 ring-warning" : ""}`}>
-          <KpiCard title="Ruptura Iminente" value={`${ruptura} SKUs`} subtitle="< 7 dias" icon={AlertTriangle} variant="warning" />
+        <div
+          onClick={() => setStatusFilter(statusFilter === "ruptura" ? "all" : "ruptura")}
+          className={`cursor-pointer rounded-xl transition-all ${statusFilter === "ruptura" ? "ring-2 ring-warning" : ""}`}
+        >
+          <KpiCard
+            title="Ruptura Iminente"
+            value={`${ruptura} SKUs`}
+            subtitle="< 7 dias"
+            icon={AlertTriangle}
+            variant="warning"
+          />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        <div onClick={() => setStatusFilter(statusFilter === "excessivo" ? "all" : "excessivo")} className="cursor-pointer">
-          <AlertCard type="critical" title="Estoque Excessivo" description="Produtos com cobertura superior a 90 dias — capital parado" count={excessivo} />
+        <div
+          onClick={() => setStatusFilter(statusFilter === "excessivo" ? "all" : "excessivo")}
+          className="cursor-pointer"
+        >
+          <AlertCard
+            type="critical"
+            title="Estoque Excessivo"
+            description="Produtos com cobertura superior a 90 dias — capital parado"
+            count={excessivo}
+          />
         </div>
         <div onClick={() => setStatusFilter(statusFilter === "ruptura" ? "all" : "ruptura")} className="cursor-pointer">
-          <AlertCard type="warning" title="Ruptura Iminente" description="Produtos com menos de 7 dias de cobertura" count={ruptura} />
+          <AlertCard
+            type="warning"
+            title="Ruptura Iminente"
+            description="Produtos com menos de 7 dias de cobertura"
+            count={ruptura}
+          />
         </div>
       </div>
 
