@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
+import { notifyAppDataChanged } from "@/contexts/AppDataContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Filial = "01" | "11" | "12" | "14" | "501" | "502";
@@ -2289,6 +2290,7 @@ export default function Index() {
       localStorage.removeItem("vilasales_lastUpdate");
       localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
     } catch (_) {}
+    notifyAppDataChanged();
   }, []);
 
   const processFiles = useCallback(async () => {
@@ -2631,6 +2633,7 @@ export default function Index() {
       const updateTime = new Date().toLocaleString("pt-BR");
       setLastUpdate(updateTime);
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
+      notifyAppDataChanged();
       setShowUpload(false);
       setActiveModule("cruzamento");
 
@@ -2732,6 +2735,7 @@ export default function Index() {
                 localStorage.removeItem("vilasales_data");
                 localStorage.removeItem("vilasales_lastUpdate");
               } catch (_) {}
+              notifyAppDataChanged();
             }}
             style={{
               padding: "10px 24px",
