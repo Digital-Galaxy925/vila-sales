@@ -62,6 +62,39 @@ export type Database = {
         }
         Relationships: []
       }
+      livros_data: {
+        Row: {
+          created_at: string
+          data_upload: string
+          file_name: string
+          filial: string
+          id: string
+          produtos: Json
+          row_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_upload?: string
+          file_name?: string
+          filial: string
+          id?: string
+          produtos?: Json
+          row_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_upload?: string
+          file_name?: string
+          filial?: string
+          id?: string
+          produtos?: Json
+          row_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       propostas_aprovadas: {
         Row: {
           bu: string
