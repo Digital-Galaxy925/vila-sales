@@ -2292,6 +2292,8 @@ export default function Index() {
       localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
     } catch (_) {}
     notifyAppDataChanged();
+    // Espelha no Supabase (não bloqueia a UI)
+    clearLivrosFromSupabase().catch((e) => console.warn("clearLivros:", e));
   }, []);
 
   const processFiles = useCallback(async () => {
