@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Package, FileSpreadsheet } from "lucide-react";
 import * as XLSX from "xlsx";
 import PageHeader from "@/components/PageHeader";
 import { Input } from "@/components/ui/input";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface Product {
   seqProd?: string;
@@ -51,31 +52,11 @@ const toNum = (v: unknown): number => {
 };
 
 const PedidosPendentes = () => {
-  const [data, setData] = useState<FilialData>({});
-  const [metrics, setMetrics] = useState<LivroMetricsData>({});
+  const { get } = useAppData();
+  const data = (get<FilialData>("vilasales_data") ?? {}) as FilialData;
+  const metrics = (get<LivroMetricsData>("vilasales_livro_metrics") ?? {}) as LivroMetricsData;
   const [search, setSearch] = useState("");
   const [buFilter, setBuFilter] = useState<"ALL" | "HC" | "FR">("ALL");
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("vilasales_data");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") setData(parsed);
-      }
-    } catch {
-      setData({});
-    }
-    try {
-      const m = localStorage.getItem("vilasales_livro_metrics");
-      if (m) {
-        const parsed = JSON.parse(m);
-        if (parsed && typeof parsed === "object") setMetrics(parsed);
-      }
-    } catch {
-      setMetrics({});
-    }
-  }, []);
 
   const rows = useMemo<Row[]>(() => {
     const map = new Map<string, Row>();
