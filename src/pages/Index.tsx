@@ -2637,6 +2637,10 @@ export default function Index() {
       setLastUpdate(updateTime);
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
       notifyAppDataChanged();
+      // Espelha no Supabase (em background — não bloqueia a navegação)
+      saveLivrosToSupabase(newData).catch((e) =>
+        console.warn("saveLivros:", e?.message || e)
+      );
       setShowUpload(false);
       setActiveModule("cruzamento");
 
