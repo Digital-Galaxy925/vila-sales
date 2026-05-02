@@ -20,6 +20,7 @@ import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
+import { useAppData } from "@/contexts/AppDataContext";
 
 const num = (v: any): number => {
   if (typeof v === "number") return v;
