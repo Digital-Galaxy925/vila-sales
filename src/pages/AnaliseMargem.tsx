@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { useAppDataKey } from "@/contexts/AppDataContext";
 import { TrendingUp, TrendingDown, AlertTriangle, Target, Search, Download, FileText } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { motion } from "framer-motion";
@@ -12,7 +13,6 @@ import MarginBadge from "@/components/MarginBadge";
 import AlertCard from "@/components/AlertCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAppData } from "@/contexts/AppDataContext";
 
 interface Product {
   seqProd: string;
@@ -44,13 +44,11 @@ const AnaliseMargem = () => {
   const [buFilter, setBuFilter] = useState<"all" | "HC" | "FR">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [minMargem, setMinMargem] = useState(17);
-  const [activeFilter, setActiveFilter] = useState<"all" | "abaixo" | "acima" | "minima" | "critical" | "warning">("all");
-  const { get } = useAppData();
+  const [activeFilter, setActiveFilter] = useState<"all" | "abaixo" | "acima" | "minima" | "critical" | "warning">(
+    "all",
+  );
 
-  const data: DataMap = useMemo(() => {
-    const raw = get<DataMap>("vilasales_data");
-    return raw && typeof raw === "object" ? raw : {};
-  }, [get]);
+  const data: DataMap = (useAppDataKey<DataMap>("vilasales_data") ?? {}) as DataMap;
 
   const hasData = Object.keys(data).length > 0;
 
@@ -80,9 +78,7 @@ const AnaliseMargem = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       allProducts = allProducts.filter(
-        (p) =>
-          p.seqProd?.toLowerCase().includes(term) ||
-          p.descricao?.toLowerCase().includes(term)
+        (p) => p.seqProd?.toLowerCase().includes(term) || p.descricao?.toLowerCase().includes(term),
       );
     }
 
@@ -143,7 +139,10 @@ const AnaliseMargem = () => {
 
   // Alerts
   const criticalCount = useMemo(() => products.filter((p) => p.margemCalc < 10).length, [products]);
-  const warningCount = useMemo(() => products.filter((p) => p.margemCalc >= 10 && p.margemCalc < minMargem).length, [products, minMargem]);
+  const warningCount = useMemo(
+    () => products.filter((p) => p.margemCalc >= 10 && p.margemCalc < minMargem).length,
+    [products, minMargem],
+  );
 
   // Table: filtered by active card
   const filteredProducts = useMemo(() => {
@@ -171,26 +170,36 @@ const AnaliseMargem = () => {
     warning: `Produtos com Margem 10-${minMargem}%`,
   };
 
-  const columns: { key: string; label: string; align?: "left" | "center" | "right"; render?: (v: any) => React.ReactNode }[] = [
+  const columns: {
+    key: string;
+    label: string;
+    align?: "left" | "center" | "right";
+    render?: (v: any) => React.ReactNode;
+  }[] = [
     { key: "filialNome", label: "CD" },
     { key: "bu", label: "BU", align: "center" as const },
     { key: "seqProd", label: "Código" },
     { key: "descricao", label: "Descrição" },
     { key: "custoLiq", label: "Custo", align: "right" as const, render: (v: number) => `R$ ${v.toFixed(2)}` },
     { key: "atual", label: "Venda", align: "right" as const, render: (v: number) => `R$ ${v.toFixed(2)}` },
-    { key: "promoc", label: "Promocional", align: "right" as const, render: (v: number) => v > 0 ? `R$ ${v.toFixed(2)}` : "—" },
+    {
+      key: "promoc",
+      label: "Promocional",
+      align: "right" as const,
+      render: (v: number) => (v > 0 ? `R$ ${v.toFixed(2)}` : "—"),
+    },
     { key: "margemCalc", label: "Margem", align: "center" as const, render: (v: number) => <MarginBadge value={v} /> },
   ];
 
   const exportToExcel = useCallback(() => {
     const rows = filteredProducts.map((p: any) => ({
-      "CD": p.filialNome || "",
-      "BU": p.bu || "",
-      "Código": p.seqProd,
-      "Descrição": p.descricao,
-      "Custo": p.custoLiq,
-      "Venda": p.atual,
-      "Promocional": p.promoc || 0,
+      CD: p.filialNome || "",
+      BU: p.bu || "",
+      Código: p.seqProd,
+      Descrição: p.descricao,
+      Custo: p.custoLiq,
+      Venda: p.atual,
+      Promocional: p.promoc || 0,
       "Margem (%)": parseFloat(p.margemCalc.toFixed(2)),
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -325,18 +334,38 @@ const AnaliseMargem = () => {
           </div>
 
           {/* Alerts */}
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-            <div onClick={() => setActiveFilter(activeFilter === "critical" ? "all" : "critical")} className={`cursor-pointer rounded-xl transition-all ${activeFilter === "critical" ? "ring-2 ring-destructive" : ""}`}>
-              <AlertCard type="critical" title="Margens < 10%" description="Ação urgente: produtos com margem abaixo de 10%" count={criticalCount} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+            <div
+              onClick={() => setActiveFilter(activeFilter === "critical" ? "all" : "critical")}
+              className={`cursor-pointer rounded-xl transition-all ${activeFilter === "critical" ? "ring-2 ring-destructive" : ""}`}
+            >
+              <AlertCard
+                type="critical"
+                title="Margens < 10%"
+                description="Ação urgente: produtos com margem abaixo de 10%"
+                count={criticalCount}
+              />
             </div>
-            <div onClick={() => setActiveFilter(activeFilter === "warning" ? "all" : "warning")} className={`cursor-pointer rounded-xl transition-all ${activeFilter === "warning" ? "ring-2 ring-warning" : ""}`}>
-              <AlertCard type="warning" title={`Margens 10-${minMargem}%`} description={`Revisar precificação: produtos entre 10% e ${minMargem}%`} count={warningCount} />
+            <div
+              onClick={() => setActiveFilter(activeFilter === "warning" ? "all" : "warning")}
+              className={`cursor-pointer rounded-xl transition-all ${activeFilter === "warning" ? "ring-2 ring-warning" : ""}`}
+            >
+              <AlertCard
+                type="warning"
+                title={`Margens 10-${minMargem}%`}
+                description={`Revisar precificação: produtos entre 10% e ${minMargem}%`}
+                count={warningCount}
+              />
             </div>
           </div>
 
-
           {/* Search + Table */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden"
+          >
             <div className="px-5 py-4 border-b border-border flex items-center justify-between flex-wrap gap-3">
               <h3 className="text-sm font-heading font-semibold text-card-foreground">
                 {filterLabels[activeFilter]} — {filteredProducts.length} itens
@@ -387,9 +416,7 @@ const AnaliseMargem = () => {
                             key={col.key}
                             className={`px-4 py-3 text-sm text-card-foreground text-${col.align || "left"}`}
                           >
-                            {col.render
-                              ? col.render((row as any)[col.key])
-                              : (row as any)[col.key]}
+                            {col.render ? col.render((row as any)[col.key]) : (row as any)[col.key]}
                           </td>
                         ))}
                       </tr>
