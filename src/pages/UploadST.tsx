@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { notifyAppDataChanged } from "@/contexts/AppDataContext";
 
 const UploadST = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -52,6 +53,7 @@ const UploadST = () => {
 
       // Keep localStorage as fallback for TabelaST during transition
       localStorage.setItem("st_data", JSON.stringify(rows));
+      notifyAppDataChanged("st_data");
 
       setRowCount(rows.length);
       setLoaded(true);
@@ -80,6 +82,7 @@ const UploadST = () => {
   const removeFile = async () => {
     await supabase.from("st_data").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     localStorage.removeItem("st_data");
+    notifyAppDataChanged("st_data");
     setFile(null);
     setLoaded(false);
     setRowCount(0);
