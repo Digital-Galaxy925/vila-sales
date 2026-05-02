@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
+import { useAppDataKey } from "@/contexts/AppDataContext";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -20,7 +21,6 @@ import KpiCard from "@/components/KpiCard";
 import FilialSelector from "@/components/FilialSelector";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import { useAppData } from "@/contexts/AppDataContext";
 
 const num = (v: any): number => {
   if (typeof v === "number") return v;
@@ -61,13 +61,8 @@ const MIN_MARGIN = 17;
 
 const AnaliseGeral = () => {
   const [filial, setFilial] = useState("all");
-  const { get } = useAppData();
 
-  const allData = useMemo(() => {
-    const raw = get<Record<string, unknown>>("vilasales_data");
-    if (!raw || typeof raw !== "object") return {};
-    return raw;
-  }, [get]);
+  const allData = (useAppDataKey<Record<string, any[]>>("vilasales_data") ?? {}) as Record<string, any[]>;
 
   const filialSummaries = useMemo((): FilialSummary[] => {
     return FILIAL_CONFIG.map((fc) => {
@@ -84,7 +79,18 @@ const AnaliseGeral = () => {
       });
 
       if (products.length === 0) {
-        return { id: fc.id, label: fc.label, totalProdutos: 0, margemMedia: 0, estoqueCusto: 0, estoqueVenda: 0, ddvMedio: 0, abaixoMargem: 0, ruptura: 0, abaixo10dias: 0 };
+        return {
+          id: fc.id,
+          label: fc.label,
+          totalProdutos: 0,
+          margemMedia: 0,
+          estoqueCusto: 0,
+          estoqueVenda: 0,
+          ddvMedio: 0,
+          abaixoMargem: 0,
+          ruptura: 0,
+          abaixo10dias: 0,
+        };
       }
 
       let totalEstCusto = 0;
@@ -156,19 +162,19 @@ const AnaliseGeral = () => {
 
   const exportToExcel = useCallback(() => {
     const rows = filialSummaries.map((f) => ({
-      "Filial": f.label,
+      Filial: f.label,
       "Total Produtos": f.totalProdutos,
       "Margem Média (%)": f.margemMedia,
       "Estoque Custo (R$)": f.estoqueCusto,
       "Estoque Venda (R$)": f.estoqueVenda,
       "DDV Médio (dias)": f.ddvMedio,
       "Margem < 17%": f.abaixoMargem,
-      "Ruptura": f.ruptura,
+      Ruptura: f.ruptura,
       "Estoque < 10 dias": f.abaixo10dias,
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
-    const fmtMoeda = 'R$ #,##0.00';
-    const fmtPerc = '0.0%';
+    const fmtMoeda = "R$ #,##0.00";
+    const fmtPerc = "0.0%";
     const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
     for (let R = range.s.r + 1; R <= range.e.r; R++) {
       for (const C of [3, 4]) {
@@ -194,7 +200,19 @@ const AnaliseGeral = () => {
     doc.setFontSize(9);
     doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")}`, 14, 25);
 
-    const head = [["Filial", "Produtos", "Margem Média", "Est. Custo", "Est. Venda", "DDV Médio", "Margem<17%", "Ruptura", "Est.<10d"]];
+    const head = [
+      [
+        "Filial",
+        "Produtos",
+        "Margem Média",
+        "Est. Custo",
+        "Est. Venda",
+        "DDV Médio",
+        "Margem<17%",
+        "Ruptura",
+        "Est.<10d",
+      ],
+    ];
     const body = filialSummaries.map((f) => [
       f.label,
       f.totalProdutos,
@@ -284,7 +302,9 @@ const AnaliseGeral = () => {
       </div>
 
       {/* Filial Summary Cards */}
-      <h3 className="text-sm font-heading font-semibold text-foreground mb-4 uppercase tracking-wider">Resumo por Filial</h3>
+      <h3 className="text-sm font-heading font-semibold text-foreground mb-4 uppercase tracking-wider">
+        Resumo por Filial
+      </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         {filialSummaries.map((f, i) => (
           <motion.div
@@ -305,7 +325,9 @@ const AnaliseGeral = () => {
               {/* Margem Média */}
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-muted-foreground uppercase tracking-wider">Margem Média</span>
-                <span className={`text-sm font-bold ${f.margemMedia >= MIN_MARGIN ? "text-success" : "text-destructive"}`}>
+                <span
+                  className={`text-sm font-bold ${f.margemMedia >= MIN_MARGIN ? "text-success" : "text-destructive"}`}
+                >
                   {f.margemMedia.toFixed(1)}%
                 </span>
               </div>
@@ -335,7 +357,9 @@ const AnaliseGeral = () => {
                     <TrendingDown className="w-3.5 h-3.5 text-destructive" />
                     <span className="text-[11px] text-muted-foreground">Margem &lt; 17%</span>
                   </div>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${f.abaixoMargem > 0 ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success"}`}>
+                  <span
+                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${f.abaixoMargem > 0 ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success"}`}
+                  >
                     {f.abaixoMargem}
                   </span>
                 </div>
@@ -346,7 +370,9 @@ const AnaliseGeral = () => {
                     <ShieldAlert className="w-3.5 h-3.5 text-warning" />
                     <span className="text-[11px] text-muted-foreground">Ruptura</span>
                   </div>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${f.ruptura > 0 ? "bg-warning/10 text-warning" : "bg-success/10 text-success"}`}>
+                  <span
+                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${f.ruptura > 0 ? "bg-warning/10 text-warning" : "bg-success/10 text-success"}`}
+                  >
                     {f.ruptura}
                   </span>
                 </div>
@@ -357,7 +383,9 @@ const AnaliseGeral = () => {
                     <Clock className="w-3.5 h-3.5 text-warning" />
                     <span className="text-[11px] text-muted-foreground">Est. &lt; 10 dias</span>
                   </div>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${f.abaixo10dias > 0 ? "bg-warning/10 text-warning" : "bg-success/10 text-success"}`}>
+                  <span
+                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${f.abaixo10dias > 0 ? "bg-warning/10 text-warning" : "bg-success/10 text-success"}`}
+                  >
                     {f.abaixo10dias}
                   </span>
                 </div>
@@ -375,9 +403,7 @@ const AnaliseGeral = () => {
           transition={{ delay: 0.3 }}
           className="bg-card rounded-xl shadow-[var(--shadow-card)] p-5 mb-8"
         >
-          <h3 className="text-sm font-heading font-semibold text-card-foreground mb-4">
-            Margem Média por Filial
-          </h3>
+          <h3 className="text-sm font-heading font-semibold text-card-foreground mb-4">Margem Média por Filial</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={barData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 15%, 90%)" />
@@ -391,7 +417,13 @@ const AnaliseGeral = () => {
                 }}
               />
               <Bar dataKey="margem" radius={[6, 6, 0, 0]} fill="hsl(192, 85%, 40%)">
-                <LabelList dataKey="margem" position="top" fontSize={11} fontWeight={600} formatter={(v: number) => `${v}%`} />
+                <LabelList
+                  dataKey="margem"
+                  position="top"
+                  fontSize={11}
+                  fontWeight={600}
+                  formatter={(v: number) => `${v}%`}
+                />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
