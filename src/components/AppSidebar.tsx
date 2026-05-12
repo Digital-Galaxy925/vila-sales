@@ -26,6 +26,7 @@ const navItems = [
   { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
+  { to: "/simulador-massivo", label: "Simulador de Ofertas Massivas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
   { to: "/propostas-aprovadas", label: "Propostas Aprovadas", icon: FileText },
   { to: "/pedidos-pendentes", label: "Pedidos Pendentes", icon: FileText },
