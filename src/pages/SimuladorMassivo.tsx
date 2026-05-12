@@ -306,7 +306,7 @@ export default function SimuladorMassivo() {
           </div>
 
           {/* Totais */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 12 }}>
             <KpiCard label="Volume Total (CX)" value={totalVolume.toLocaleString("pt-BR")} color="#374151" />
             <KpiCard label="Total Unidades" value={totalUnidades.toLocaleString("pt-BR")} color="#374151" />
             <KpiCard label="Valor Total do Pedido" value={fmt(totalPedido)} color="#7c3aed" highlight />
@@ -316,6 +316,25 @@ export default function SimuladorMassivo() {
               color={margemFinal >= 0.17 ? "#16a34a" : margemFinal >= 0.10 ? "#d97706" : "#dc2626"}
               sub={totalPedido > 0 ? `Lucro: ${fmt(lucroTotal)}` : undefined}
               highlight
+            />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+            <KpiCard
+              label={`Investimento Total (p/ margem ${fmtPct(margemDesejada)})`}
+              value={fmt(totalInvestimento)}
+              color={totalInvestimento > 0 ? "#dc2626" : "#16a34a"}
+              sub={
+                totalInvestimento > 0
+                  ? "Valor a investir por unidade somado em todas as ofertas"
+                  : "Margem desejada já atendida em todas as ofertas"
+              }
+              highlight
+            />
+            <KpiCard
+              label="% de Investimento sobre Pedido"
+              value={totalPedido > 0 ? fmtPct(pctInvestimento) : "—"}
+              color="#d97706"
+              sub={totalPedido > 0 ? `${fmt(totalInvestimento)} / ${fmt(totalPedido)}` : undefined}
             />
           </div>
         </>
