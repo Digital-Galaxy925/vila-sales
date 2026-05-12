@@ -307,7 +307,7 @@ export default function SimuladorMassivo() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
             <KpiCard
-              label={`Investimento Total (p/ margem ${fmtPct(margemDesejada)})`}
+              label="Investimento Total (margem por linha)"
               value={fmt(totalInvestimento)}
               color={totalInvestimento > 0 ? "#dc2626" : "#16a34a"}
               sub={
