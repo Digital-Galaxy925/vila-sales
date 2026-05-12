@@ -81,6 +81,8 @@ export default function SimuladorMassivo() {
   const hasData = Object.keys(data).length > 0;
 
   const [ofertas, setOfertas] = useState<Oferta[]>([novaOferta()]);
+  const [margemDesejadaStr, setMargemDesejadaStr] = useState("17");
+  const margemDesejada = (parseFloat(margemDesejadaStr.replace(",", ".")) || 0) / 100;
 
   const findProduto = (codigo: string, filial: string): Product | null => {
     if (!codigo.trim()) return null;
@@ -103,16 +105,21 @@ export default function SimuladorMassivo() {
       const custoTotal = totalUnid * custo;
       const lucro = totalSellOut - custoTotal;
       const margem = totalSellOut > 0 ? lucro / totalSellOut : 0;
-      return { oferta: o, produto, custo, qtdPorCx, volume, preco, totalUnid, totalSellOut, custoTotal, lucro, margem };
+      // Investimento necessário para atingir margem desejada
+      const investUnit = preco > 0 && produto ? Math.max(0, custo - preco * (1 - margemDesejada)) : 0;
+      const investTotal = investUnit * totalUnid;
+      return { oferta: o, produto, custo, qtdPorCx, volume, preco, totalUnid, totalSellOut, custoTotal, lucro, margem, investUnit, investTotal };
     });
-  }, [ofertas, data]);
+  }, [ofertas, data, margemDesejada]);
 
   const totalVolume = linhas.reduce((s, l) => s + l.volume, 0);
   const totalUnidades = linhas.reduce((s, l) => s + l.totalUnid, 0);
   const totalPedido = linhas.reduce((s, l) => s + l.totalSellOut, 0);
   const totalCusto = linhas.reduce((s, l) => s + l.custoTotal, 0);
+  const totalInvestimento = linhas.reduce((s, l) => s + l.investTotal, 0);
   const lucroTotal = totalPedido - totalCusto;
   const margemFinal = totalPedido > 0 ? lucroTotal / totalPedido : 0;
+  const pctInvestimento = totalPedido > 0 ? totalInvestimento / totalPedido : 0;
 
   const updateOferta = (id: string, patch: Partial<Oferta>) => {
     setOfertas((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
@@ -172,9 +179,23 @@ export default function SimuladorMassivo() {
             >
               Limpar Tudo
             </button>
-            <span style={{ marginLeft: "auto", fontSize: 12, color: "#6b7280" }}>
-              {ofertas.length} / {MAX_OFERTAS} ofertas
-            </span>
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <label style={{ fontSize: 11, fontWeight: 500, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4 }}>
+                  Margem Desejada (%)
+                </label>
+                <input
+                  type="text"
+                  value={margemDesejadaStr}
+                  onChange={(e) => setMargemDesejadaStr(e.target.value)}
+                  placeholder="17"
+                  style={{ ...miniInput, width: 70 }}
+                />
+              </div>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                {ofertas.length} / {MAX_OFERTAS} ofertas
+              </span>
+            </div>
           </div>
 
           {/* Tabela de ofertas */}
@@ -194,6 +215,8 @@ export default function SimuladorMassivo() {
                     <th style={th}>Total Unid.</th>
                     <th style={th}>Sell Out</th>
                     <th style={th}>Margem</th>
+                    <th style={th}>Invest./Un</th>
+                    <th style={th}>Invest. Total</th>
                     <th style={th}></th>
                   </tr>
                 </thead>
@@ -253,6 +276,12 @@ export default function SimuladorMassivo() {
                         <td style={{ ...td, color: corMarg, fontWeight: 600 }}>
                           {l.totalSellOut > 0 ? fmtPct(l.margem) : "—"}
                         </td>
+                        <td style={{ ...td, color: l.investUnit > 0 ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
+                          {l.preco > 0 && l.produto ? fmt(l.investUnit) : "—"}
+                        </td>
+                        <td style={{ ...td, color: l.investTotal > 0 ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
+                          {l.preco > 0 && l.produto ? fmt(l.investTotal) : "—"}
+                        </td>
                         <td style={td}>
                           <button
                             onClick={() => removeOferta(l.oferta.id)}
@@ -277,7 +306,7 @@ export default function SimuladorMassivo() {
           </div>
 
           {/* Totais */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 12 }}>
             <KpiCard label="Volume Total (CX)" value={totalVolume.toLocaleString("pt-BR")} color="#374151" />
             <KpiCard label="Total Unidades" value={totalUnidades.toLocaleString("pt-BR")} color="#374151" />
             <KpiCard label="Valor Total do Pedido" value={fmt(totalPedido)} color="#7c3aed" highlight />
@@ -287,6 +316,25 @@ export default function SimuladorMassivo() {
               color={margemFinal >= 0.17 ? "#16a34a" : margemFinal >= 0.10 ? "#d97706" : "#dc2626"}
               sub={totalPedido > 0 ? `Lucro: ${fmt(lucroTotal)}` : undefined}
               highlight
+            />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+            <KpiCard
+              label={`Investimento Total (p/ margem ${fmtPct(margemDesejada)})`}
+              value={fmt(totalInvestimento)}
+              color={totalInvestimento > 0 ? "#dc2626" : "#16a34a"}
+              sub={
+                totalInvestimento > 0
+                  ? "Valor a investir por unidade somado em todas as ofertas"
+                  : "Margem desejada já atendida em todas as ofertas"
+              }
+              highlight
+            />
+            <KpiCard
+              label="% de Investimento sobre Pedido"
+              value={totalPedido > 0 ? fmtPct(pctInvestimento) : "—"}
+              color="#d97706"
+              sub={totalPedido > 0 ? `${fmt(totalInvestimento)} / ${fmt(totalPedido)}` : undefined}
             />
           </div>
         </>
