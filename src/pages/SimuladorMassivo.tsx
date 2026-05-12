@@ -276,6 +276,12 @@ export default function SimuladorMassivo() {
                         <td style={{ ...td, color: corMarg, fontWeight: 600 }}>
                           {l.totalSellOut > 0 ? fmtPct(l.margem) : "—"}
                         </td>
+                        <td style={{ ...td, color: l.investUnit > 0 ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
+                          {l.preco > 0 && l.produto ? fmt(l.investUnit) : "—"}
+                        </td>
+                        <td style={{ ...td, color: l.investTotal > 0 ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
+                          {l.preco > 0 && l.produto ? fmt(l.investTotal) : "—"}
+                        </td>
                         <td style={td}>
                           <button
                             onClick={() => removeOferta(l.oferta.id)}
