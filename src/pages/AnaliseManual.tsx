@@ -58,28 +58,34 @@ const AnaliseManual = () => {
   const rawData = useAppDataKey<Record<string, any[]>>("vilasales_data");
   const hasBaseData = rawData && Object.keys(rawData).length > 0;
 
-  const handleFile = async (file: File) => {
+  const handleFiles = async (fileList: FileList | File[]) => {
     setError("");
+    const files = Array.from(fileList);
+    if (files.length === 0) return;
     try {
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "array" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-      const extracted: string[] = [];
-      rows.forEach((row) => {
-        if (!Array.isArray(row)) return;
-        row.forEach((cell) => {
-          const c = normCod(cell);
-          if (c && /^\d+$/.test(c)) extracted.push(c);
+      const allCodes: string[] = [];
+      for (const file of files) {
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+        rows.forEach((row) => {
+          if (!Array.isArray(row)) return;
+          row.forEach((cell) => {
+            const c = normCod(cell);
+            if (c && /^\d+$/.test(c)) allCodes.push(c);
+          });
         });
-      });
-      const unique = Array.from(new Set(extracted));
+      }
+      const unique = Array.from(new Set(allCodes));
       if (unique.length === 0) {
-        setError("Nenhum código de produto encontrado na planilha.");
+        setError("Nenhum código de produto encontrado nos arquivos selecionados.");
         return;
       }
       setCodes(unique);
-      setFileName(file.name);
+      setFileName(
+        files.length === 1 ? files[0].name : `${files.length} arquivos selecionados`
+      );
       setSelectedFilial(null);
     } catch (e: any) {
       setError("Erro ao ler a planilha: " + (e?.message ?? "desconhecido"));
@@ -89,8 +95,7 @@ const AnaliseManual = () => {
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleFile(file);
+    if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
   };
 
   const clearFile = () => {
@@ -200,10 +205,10 @@ const AnaliseManual = () => {
                 ref={inputRef}
                 type="file"
                 accept=".xlsx,.xls,.csv"
+                multiple
                 className="hidden"
                 onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleFile(f);
+                  if (e.target.files?.length) handleFiles(e.target.files);
                 }}
               />
             </div>
