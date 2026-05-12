@@ -65,6 +65,7 @@ const novaOferta = (): Oferta => ({
   filial: "01",
   volume: "",
   preco: "",
+  margem: "17",
 });
 
 export default function SimuladorMassivo() {
