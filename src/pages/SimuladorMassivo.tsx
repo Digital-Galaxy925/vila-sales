@@ -46,7 +46,7 @@ const FILIAIS = [
   { id: "502", nome: "Focomix MG" },
 ];
 
-const MAX_OFERTAS = 10;
+const MAX_OFERTAS = 20;
 
 const fmt = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
