@@ -81,6 +81,8 @@ export default function SimuladorMassivo() {
   const hasData = Object.keys(data).length > 0;
 
   const [ofertas, setOfertas] = useState<Oferta[]>([novaOferta()]);
+  const [margemDesejadaStr, setMargemDesejadaStr] = useState("17");
+  const margemDesejada = (parseFloat(margemDesejadaStr.replace(",", ".")) || 0) / 100;
 
   const findProduto = (codigo: string, filial: string): Product | null => {
     if (!codigo.trim()) return null;
@@ -103,16 +105,21 @@ export default function SimuladorMassivo() {
       const custoTotal = totalUnid * custo;
       const lucro = totalSellOut - custoTotal;
       const margem = totalSellOut > 0 ? lucro / totalSellOut : 0;
-      return { oferta: o, produto, custo, qtdPorCx, volume, preco, totalUnid, totalSellOut, custoTotal, lucro, margem };
+      // Investimento necessário para atingir margem desejada
+      const investUnit = preco > 0 && produto ? Math.max(0, custo - preco * (1 - margemDesejada)) : 0;
+      const investTotal = investUnit * totalUnid;
+      return { oferta: o, produto, custo, qtdPorCx, volume, preco, totalUnid, totalSellOut, custoTotal, lucro, margem, investUnit, investTotal };
     });
-  }, [ofertas, data]);
+  }, [ofertas, data, margemDesejada]);
 
   const totalVolume = linhas.reduce((s, l) => s + l.volume, 0);
   const totalUnidades = linhas.reduce((s, l) => s + l.totalUnid, 0);
   const totalPedido = linhas.reduce((s, l) => s + l.totalSellOut, 0);
   const totalCusto = linhas.reduce((s, l) => s + l.custoTotal, 0);
+  const totalInvestimento = linhas.reduce((s, l) => s + l.investTotal, 0);
   const lucroTotal = totalPedido - totalCusto;
   const margemFinal = totalPedido > 0 ? lucroTotal / totalPedido : 0;
+  const pctInvestimento = totalPedido > 0 ? totalInvestimento / totalPedido : 0;
 
   const updateOferta = (id: string, patch: Partial<Oferta>) => {
     setOfertas((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)));
