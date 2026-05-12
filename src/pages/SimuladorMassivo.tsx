@@ -264,6 +264,15 @@ export default function SimuladorMassivo() {
                         <td style={{ ...td, color: corMarg, fontWeight: 600 }}>
                           {l.totalSellOut > 0 ? fmtPct(l.margem) : "—"}
                         </td>
+                        <td style={td}>
+                          <input
+                            type="text"
+                            value={l.oferta.margem}
+                            onChange={(e) => updateOferta(l.oferta.id, { margem: e.target.value })}
+                            placeholder="17"
+                            style={{ ...miniInput, width: 70 }}
+                          />
+                        </td>
                         <td style={{ ...td, color: l.investUnit > 0 ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
                           {l.preco > 0 && l.produto ? fmt(l.investUnit) : "—"}
                         </td>
