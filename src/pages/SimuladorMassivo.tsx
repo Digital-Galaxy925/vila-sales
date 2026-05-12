@@ -83,8 +83,6 @@ export default function SimuladorMassivo() {
   const hasData = Object.keys(data).length > 0;
 
   const [ofertas, setOfertas] = useState<Oferta[]>([novaOferta()]);
-  const [margemDesejadaStr, setMargemDesejadaStr] = useState("17");
-  const margemDesejada = (parseFloat(margemDesejadaStr.replace(",", ".")) || 0) / 100;
 
   const findProduto = (codigo: string, filial: string): Product | null => {
     if (!codigo.trim()) return null;
@@ -102,17 +100,18 @@ export default function SimuladorMassivo() {
       const qtdPorCx = produto ? parseFloat(produto.embCmp) || 1 : 1;
       const volume = parseFloat(o.volume.replace(",", ".")) || 0;
       const preco = parseFloat(o.preco.replace(",", ".")) || 0;
+      const margemDesejada = (parseFloat((o.margem || "0").replace(",", ".")) || 0) / 100;
       const totalUnid = volume * qtdPorCx;
       const totalSellOut = totalUnid * preco;
       const custoTotal = totalUnid * custo;
       const lucro = totalSellOut - custoTotal;
       const margem = totalSellOut > 0 ? lucro / totalSellOut : 0;
-      // Investimento necessário para atingir margem desejada
+      // Investimento necessário para atingir a margem desejada desta linha
       const investUnit = preco > 0 && produto ? Math.max(0, custo - preco * (1 - margemDesejada)) : 0;
       const investTotal = investUnit * totalUnid;
-      return { oferta: o, produto, custo, qtdPorCx, volume, preco, totalUnid, totalSellOut, custoTotal, lucro, margem, investUnit, investTotal };
+      return { oferta: o, produto, custo, qtdPorCx, volume, preco, margemDesejada, totalUnid, totalSellOut, custoTotal, lucro, margem, investUnit, investTotal };
     });
-  }, [ofertas, data, margemDesejada]);
+  }, [ofertas, data]);
 
   const totalVolume = linhas.reduce((s, l) => s + l.volume, 0);
   const totalUnidades = linhas.reduce((s, l) => s + l.totalUnid, 0);
