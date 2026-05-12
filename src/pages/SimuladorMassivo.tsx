@@ -215,6 +215,8 @@ export default function SimuladorMassivo() {
                     <th style={th}>Total Unid.</th>
                     <th style={th}>Sell Out</th>
                     <th style={th}>Margem</th>
+                    <th style={th}>Invest./Un</th>
+                    <th style={th}>Invest. Total</th>
                     <th style={th}></th>
                   </tr>
                 </thead>
