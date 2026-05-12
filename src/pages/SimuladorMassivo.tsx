@@ -120,6 +120,10 @@ export default function SimuladorMassivo() {
   const totalInvestimento = linhas.reduce((s, l) => s + l.investTotal, 0);
   const lucroTotal = totalPedido - totalCusto;
   const margemFinal = totalPedido > 0 ? lucroTotal / totalPedido : 0;
+  const margemFinalComSellout = totalPedido > 0
+    ? linhas.reduce((s, l) => s + l.totalSellOut * l.margemDesejada, 0) / totalPedido
+    : 0;
+  const lucroComSellout = totalPedido * margemFinalComSellout;
   const pctInvestimento = totalPedido > 0 ? totalInvestimento / totalPedido : 0;
 
   const updateOferta = (id: string, patch: Partial<Oferta>) => {
@@ -318,18 +322,18 @@ export default function SimuladorMassivo() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
             <KpiCard
               label="Margem Final com Sellout"
-              value={totalPedido > 0 ? fmtPct((lucroTotal + totalInvestimento) / totalPedido) : "—"}
+              value={totalPedido > 0 ? fmtPct(margemFinalComSellout) : "—"}
               color={
-                totalPedido > 0 && (lucroTotal + totalInvestimento) / totalPedido >= 0.17
+                totalPedido > 0 && margemFinalComSellout >= 0.17
                   ? "#16a34a"
-                  : totalPedido > 0 && (lucroTotal + totalInvestimento) / totalPedido >= 0.10
+                  : totalPedido > 0 && margemFinalComSellout >= 0.10
                   ? "#d97706"
                   : "#dc2626"
               }
               sub={
                 totalPedido > 0
-                  ? `Lucro c/ investimento: ${fmt(lucroTotal + totalInvestimento)}`
-                  : "Margem ponderada considerando o investimento por linha"
+                  ? `Ponderada por valor: ${fmt(lucroComSellout)}`
+                  : "Margem ponderada pelo valor de cada linha"
               }
               highlight
             />
