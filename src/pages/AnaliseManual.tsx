@@ -205,10 +205,10 @@ const AnaliseManual = () => {
                 ref={inputRef}
                 type="file"
                 accept=".xlsx,.xls,.csv"
+                multiple
                 className="hidden"
                 onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleFile(f);
+                  if (e.target.files?.length) handleFiles(e.target.files);
                 }}
               />
             </div>
