@@ -34,6 +34,7 @@ interface Oferta {
   filial: string;
   volume: string;
   preco: string;
+  margem: string;
 }
 
 const FILIAIS = [
@@ -64,6 +65,7 @@ const novaOferta = (): Oferta => ({
   filial: "01",
   volume: "",
   preco: "",
+  margem: "17",
 });
 
 export default function SimuladorMassivo() {
@@ -81,8 +83,6 @@ export default function SimuladorMassivo() {
   const hasData = Object.keys(data).length > 0;
 
   const [ofertas, setOfertas] = useState<Oferta[]>([novaOferta()]);
-  const [margemDesejadaStr, setMargemDesejadaStr] = useState("17");
-  const margemDesejada = (parseFloat(margemDesejadaStr.replace(",", ".")) || 0) / 100;
 
   const findProduto = (codigo: string, filial: string): Product | null => {
     if (!codigo.trim()) return null;
@@ -100,17 +100,18 @@ export default function SimuladorMassivo() {
       const qtdPorCx = produto ? parseFloat(produto.embCmp) || 1 : 1;
       const volume = parseFloat(o.volume.replace(",", ".")) || 0;
       const preco = parseFloat(o.preco.replace(",", ".")) || 0;
+      const margemDesejada = (parseFloat((o.margem || "0").replace(",", ".")) || 0) / 100;
       const totalUnid = volume * qtdPorCx;
       const totalSellOut = totalUnid * preco;
       const custoTotal = totalUnid * custo;
       const lucro = totalSellOut - custoTotal;
       const margem = totalSellOut > 0 ? lucro / totalSellOut : 0;
-      // Investimento necessário para atingir margem desejada
+      // Investimento necessário para atingir a margem desejada desta linha
       const investUnit = preco > 0 && produto ? Math.max(0, custo - preco * (1 - margemDesejada)) : 0;
       const investTotal = investUnit * totalUnid;
-      return { oferta: o, produto, custo, qtdPorCx, volume, preco, totalUnid, totalSellOut, custoTotal, lucro, margem, investUnit, investTotal };
+      return { oferta: o, produto, custo, qtdPorCx, volume, preco, margemDesejada, totalUnid, totalSellOut, custoTotal, lucro, margem, investUnit, investTotal };
     });
-  }, [ofertas, data, margemDesejada]);
+  }, [ofertas, data]);
 
   const totalVolume = linhas.reduce((s, l) => s + l.volume, 0);
   const totalUnidades = linhas.reduce((s, l) => s + l.totalUnid, 0);
@@ -179,23 +180,9 @@ export default function SimuladorMassivo() {
             >
               Limpar Tudo
             </button>
-            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ fontSize: 11, fontWeight: 500, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4 }}>
-                  Margem Desejada (%)
-                </label>
-                <input
-                  type="text"
-                  value={margemDesejadaStr}
-                  onChange={(e) => setMargemDesejadaStr(e.target.value)}
-                  placeholder="17"
-                  style={{ ...miniInput, width: 70 }}
-                />
-              </div>
-              <span style={{ fontSize: 12, color: "#6b7280" }}>
-                {ofertas.length} / {MAX_OFERTAS} ofertas
-              </span>
-            </div>
+            <span style={{ marginLeft: "auto", fontSize: 12, color: "#6b7280" }}>
+              {ofertas.length} / {MAX_OFERTAS} ofertas
+            </span>
           </div>
 
           {/* Tabela de ofertas */}
@@ -215,6 +202,7 @@ export default function SimuladorMassivo() {
                     <th style={th}>Total Unid.</th>
                     <th style={th}>Sell Out</th>
                     <th style={th}>Margem</th>
+                    <th style={th}>Margem Desej. (%)</th>
                     <th style={th}>Invest./Un</th>
                     <th style={th}>Invest. Total</th>
                     <th style={th}></th>
@@ -276,6 +264,15 @@ export default function SimuladorMassivo() {
                         <td style={{ ...td, color: corMarg, fontWeight: 600 }}>
                           {l.totalSellOut > 0 ? fmtPct(l.margem) : "—"}
                         </td>
+                        <td style={td}>
+                          <input
+                            type="text"
+                            value={l.oferta.margem}
+                            onChange={(e) => updateOferta(l.oferta.id, { margem: e.target.value })}
+                            placeholder="17"
+                            style={{ ...miniInput, width: 70 }}
+                          />
+                        </td>
                         <td style={{ ...td, color: l.investUnit > 0 ? "#dc2626" : "#16a34a", fontWeight: 600 }}>
                           {l.preco > 0 && l.produto ? fmt(l.investUnit) : "—"}
                         </td>
@@ -320,7 +317,7 @@ export default function SimuladorMassivo() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
             <KpiCard
-              label={`Investimento Total (p/ margem ${fmtPct(margemDesejada)})`}
+              label="Investimento Total (margem por linha)"
               value={fmt(totalInvestimento)}
               color={totalInvestimento > 0 ? "#dc2626" : "#16a34a"}
               sub={
