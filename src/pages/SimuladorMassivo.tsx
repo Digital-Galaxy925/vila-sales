@@ -318,18 +318,18 @@ export default function SimuladorMassivo() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
             <KpiCard
               label="Margem Final com Sellout"
-              value={totalPedido > 0 ? fmtPct((lucroTotal - totalInvestimento) / totalPedido) : "—"}
+              value={totalPedido > 0 ? fmtPct((lucroTotal + totalInvestimento) / totalPedido) : "—"}
               color={
-                totalPedido > 0 && (lucroTotal - totalInvestimento) / totalPedido >= 0.17
+                totalPedido > 0 && (lucroTotal + totalInvestimento) / totalPedido >= 0.17
                   ? "#16a34a"
-                  : totalPedido > 0 && (lucroTotal - totalInvestimento) / totalPedido >= 0.10
+                  : totalPedido > 0 && (lucroTotal + totalInvestimento) / totalPedido >= 0.10
                   ? "#d97706"
                   : "#dc2626"
               }
               sub={
                 totalPedido > 0
-                  ? `Lucro líq.: ${fmt(lucroTotal - totalInvestimento)}`
-                  : "Margem após descontar investimentos"
+                  ? `Lucro c/ investimento: ${fmt(lucroTotal + totalInvestimento)}`
+                  : "Margem ponderada considerando o investimento por linha"
               }
               highlight
             />
