@@ -34,6 +34,7 @@ interface Oferta {
   filial: string;
   volume: string;
   preco: string;
+  margem: string;
 }
 
 const FILIAIS = [
