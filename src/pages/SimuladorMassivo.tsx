@@ -315,7 +315,24 @@ export default function SimuladorMassivo() {
               highlight
             />
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+            <KpiCard
+              label="Margem Final com Sellout"
+              value={totalPedido > 0 ? fmtPct((lucroTotal - totalInvestimento) / totalPedido) : "—"}
+              color={
+                totalPedido > 0 && (lucroTotal - totalInvestimento) / totalPedido >= 0.17
+                  ? "#16a34a"
+                  : totalPedido > 0 && (lucroTotal - totalInvestimento) / totalPedido >= 0.10
+                  ? "#d97706"
+                  : "#dc2626"
+              }
+              sub={
+                totalPedido > 0
+                  ? `Lucro líq.: ${fmt(lucroTotal - totalInvestimento)}`
+                  : "Margem após descontar investimentos"
+              }
+              highlight
+            />
             <KpiCard
               label="Investimento Total (margem por linha)"
               value={fmt(totalInvestimento)}
