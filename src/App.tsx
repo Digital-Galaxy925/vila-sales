@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
+import AnaliseManual from "./pages/AnaliseManual";
 import Simulador from "./pages/Simulador";
 import SimuladorPropostas from "./pages/SimuladorPropostas";
 import AnaliseGerencial from "./pages/AnaliseGerencial";
@@ -36,7 +37,7 @@ const App = () => (
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/" element={<AnaliseGeral />} />
-            <Route path="/manual" element={<Index />} />
+            <Route path="/manual" element={<AnaliseManual />} />
             <Route path="/gerencial" element={<AnaliseGerencial />} />
             <Route path="/simulador" element={<Simulador />} />
             <Route path="/propostas" element={<SimuladorPropostas />} />
