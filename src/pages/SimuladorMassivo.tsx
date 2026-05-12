@@ -180,23 +180,9 @@ export default function SimuladorMassivo() {
             >
               Limpar Tudo
             </button>
-            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ fontSize: 11, fontWeight: 500, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4 }}>
-                  Margem Desejada (%)
-                </label>
-                <input
-                  type="text"
-                  value={margemDesejadaStr}
-                  onChange={(e) => setMargemDesejadaStr(e.target.value)}
-                  placeholder="17"
-                  style={{ ...miniInput, width: 70 }}
-                />
-              </div>
-              <span style={{ fontSize: 12, color: "#6b7280" }}>
-                {ofertas.length} / {MAX_OFERTAS} ofertas
-              </span>
-            </div>
+            <span style={{ marginLeft: "auto", fontSize: 12, color: "#6b7280" }}>
+              {ofertas.length} / {MAX_OFERTAS} ofertas
+            </span>
           </div>
 
           {/* Tabela de ofertas */}
