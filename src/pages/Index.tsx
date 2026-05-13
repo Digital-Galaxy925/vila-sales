@@ -1256,12 +1256,17 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
                   {/* DDV */}
                   <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", whiteSpace: "nowrap" }}>
-                    <span style={{
-                      fontWeight: 600, fontSize: 13,
-                      color: !p.ddv ? "#9ca3af" : p.ddv < 7 ? "#dc2626" : p.ddv > 40 ? "#0071e3" : "#16a34a",
-                    }}>
-                      {p.ddv ? `${p.ddv} d` : "–"}
-                    </span>
+                    {(() => {
+                      const ddv = ddvFromLivro(p.filial, p.seqProd);
+                      return (
+                        <span style={{
+                          fontWeight: 600, fontSize: 13,
+                          color: !ddv ? "#9ca3af" : ddv < 7 ? "#dc2626" : ddv > 40 ? "#0071e3" : "#16a34a",
+                        }}>
+                          {ddv ? `${ddv} d` : "–"}
+                        </span>
+                      );
+                    })()}
                   </td>
 
                   {/* Custo Liq */}
