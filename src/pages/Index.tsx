@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
-import { notifyAppDataChanged, useAppDataKey } from "@/contexts/AppDataContext";
-import { saveLivrosToSupabase, clearLivrosFromSupabase } from "@/lib/livrosSync";
+import { notifyAppDataChanged } from "@/contexts/AppDataContext";
+import { saveLivrosToSupabase, clearLivrosFromSupabase, loadLivrosFromSupabase } from "@/lib/livrosSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Filial = "01" | "11" | "12" | "14" | "501" | "502";
@@ -1255,7 +1255,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                           fontWeight: 600, fontSize: 13,
                           color: !ddv ? "#9ca3af" : ddv < 7 ? "#dc2626" : ddv > 40 ? "#0071e3" : "#16a34a",
                         }}>
-                          {ddv ? `${ddv} d` : "–"}
+                          {ddv.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}
                         </span>
                       );
                     })()}
@@ -2288,6 +2288,26 @@ export default function Index() {
   const [lastUpdate, setLastUpdate] = useState<string | null>(() => {
     return localStorage.getItem("vilasales_lastUpdate") || null;
   });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadLivrosFromSupabase()
+      .then((remote) => {
+        if (cancelled || !remote || !Object.values(remote).some((arr) => Array.isArray(arr) && arr.length > 0)) return;
+        setData(remote as FilialData);
+        setShowUpload(false);
+        try {
+          localStorage.setItem("vilasales_data", JSON.stringify(remote));
+        } catch (_) {}
+        notifyAppDataChanged("vilasales_data");
+      })
+      .catch((e) => console.warn("loadLivros:", e?.message || e));
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleFiles = useCallback((newFiles: Partial<UploadedFiles>, unrecognized: string[]) => {
     setFiles((prev) => ({ ...prev, ...newFiles }));
