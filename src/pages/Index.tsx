@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
-import { notifyAppDataChanged } from "@/contexts/AppDataContext";
+import { notifyAppDataChanged, useAppDataKey } from "@/contexts/AppDataContext";
 import { saveLivrosToSupabase, clearLivrosFromSupabase } from "@/lib/livrosSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
