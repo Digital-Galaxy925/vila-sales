@@ -1246,6 +1246,16 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                     {p.estoque === 0 && <span style={{ marginLeft: 6, fontSize: 10, color: "#dc2626" }}>RUPTURA</span>}
                   </td>
 
+                  {/* DDV */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", whiteSpace: "nowrap" }}>
+                    <span style={{
+                      fontWeight: 600, fontSize: 13,
+                      color: !p.ddv ? "#9ca3af" : p.ddv < 7 ? "#dc2626" : p.ddv > 40 ? "#0071e3" : "#16a34a",
+                    }}>
+                      {p.ddv ? `${p.ddv} d` : "–"}
+                    </span>
+                  </td>
+
                   {/* Custo Liq */}
                   <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", color: "#9ca3af", whiteSpace: "nowrap" }}>
                     R$ {p.custoLiq.toFixed(2)}
