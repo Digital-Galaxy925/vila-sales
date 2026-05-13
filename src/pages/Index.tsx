@@ -616,14 +616,6 @@ const isFoods = (bu: string) => { const b = bu.toUpperCase(); return b === "FOOD
 
 // ─── Step 3: Cross Analysis Table ────────────────────────────────────────────
 function CrossAnalysis({ data }: { data: FilialData }) {
-  const livroMetrics = useAppDataKey<LivroMetricsData>("vilasales_livro_metrics");
-  // Mapeamento estrito filial → livro de origem do DDV
-  // 01→01, 11→11, 12→12, 14→14, 501→501, 502→502
-  const ddvFromLivro = (filial: string, seqProd: string): number => {
-    const livro = livroMetrics?.[filial];
-    if (!livro) return 0;
-    return livro[String(seqProd)]?.ddv ?? 0;
-  };
   const [selectedFilial, setSelectedFilial] = useState<Filial | "all">("all");
   const [selectedBU, setSelectedBU] = useState<"all" | "FOODS" | "HC">("all");
   const [search, setSearch] = useState("");
@@ -1257,7 +1249,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                   {/* DDV */}
                   <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", whiteSpace: "nowrap" }}>
                     {(() => {
-                      const ddv = ddvFromLivro(p.filial, p.seqProd);
+                      const ddv = num(p.ddv);
                       return (
                         <span style={{
                           fontWeight: 600, fontSize: 13,
