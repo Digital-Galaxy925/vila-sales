@@ -1135,6 +1135,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                 Unid/CX
               </th>
               <ThBtn col="estoque">Estoque</ThBtn>
+              <th style={{ padding: "11px 16px", textAlign: "right", color: "#6b7280", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
+                DDV
+              </th>
               <ThBtn col="custoLiq">Custo Liq</ThBtn>
               <ThBtn col="sellout">Sell Out</ThBtn>
               <ThBtn col="atual">Preço Venda</ThBtn>
@@ -1241,6 +1244,16 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                       {p.estoque.toLocaleString("pt-BR")}
                     </span>
                     {p.estoque === 0 && <span style={{ marginLeft: 6, fontSize: 10, color: "#dc2626" }}>RUPTURA</span>}
+                  </td>
+
+                  {/* DDV */}
+                  <td style={{ padding: "10px 16px", textAlign: "right", fontFamily: "monospace", whiteSpace: "nowrap" }}>
+                    <span style={{
+                      fontWeight: 600, fontSize: 13,
+                      color: !p.ddv ? "#9ca3af" : p.ddv < 7 ? "#dc2626" : p.ddv > 40 ? "#0071e3" : "#16a34a",
+                    }}>
+                      {p.ddv ? `${p.ddv} d` : "–"}
+                    </span>
                   </td>
 
                   {/* Custo Liq */}
