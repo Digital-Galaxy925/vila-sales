@@ -1135,6 +1135,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
                 Unid/CX
               </th>
               <ThBtn col="estoque">Estoque</ThBtn>
+              <th style={{ padding: "11px 16px", textAlign: "right", color: "#6b7280", fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>
+                DDV
+              </th>
               <ThBtn col="custoLiq">Custo Liq</ThBtn>
               <ThBtn col="sellout">Sell Out</ThBtn>
               <ThBtn col="atual">Preço Venda</ThBtn>
