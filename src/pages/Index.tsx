@@ -2289,6 +2289,26 @@ export default function Index() {
     return localStorage.getItem("vilasales_lastUpdate") || null;
   });
 
+  useEffect(() => {
+    let cancelled = false;
+
+    loadLivrosFromSupabase()
+      .then((remote) => {
+        if (cancelled || !remote || !Object.values(remote).some((arr) => Array.isArray(arr) && arr.length > 0)) return;
+        setData(remote as FilialData);
+        setShowUpload(false);
+        try {
+          localStorage.setItem("vilasales_data", JSON.stringify(remote));
+        } catch (_) {}
+        notifyAppDataChanged("vilasales_data");
+      })
+      .catch((e) => console.warn("loadLivros:", e?.message || e));
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleFiles = useCallback((newFiles: Partial<UploadedFiles>, unrecognized: string[]) => {
     setFiles((prev) => ({ ...prev, ...newFiles }));
     setUnrecognizedFiles(unrecognized);
