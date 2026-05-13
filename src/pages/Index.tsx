@@ -737,7 +737,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
 
   // Export XLSX
   const exportXLSX = () => {
-    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Promoção (R$)","Margem (%)","Status Margem","Margem com Sell Out (%)","Adicionar Sell Out (R$)","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)","Análise"];
+    const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","DDV (dias)","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Promoção (R$)","Margem (%)","Status Margem","Margem com Sell Out (%)","Adicionar Sell Out (R$)","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)","Análise"];
     const rows = filtered.map((p) => {
       const key = `${p.filial}-${p.seqProd}`;
       // Margem com Sell Out
@@ -772,6 +772,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.descricao,
         p.embCmp || "",
         p.estoque,
+        p.ddv,
         p.custoLiq,
         p.sellout,
         p.atual,
@@ -798,9 +799,9 @@ function CrossAnalysis({ data }: { data: FilialData }) {
     // Aplicar formatação de moeda e porcentagem
     const fmtMoeda = 'R$ #,##0.00';
     const fmtPerc = '0.00%';
-    // Índices das colunas (0-based): 7=Custo, 8=Sellout, 9=Venda, 10=Promo, 11=Margem, 13=MargSellout, 14=AddSellout, 15=MargDesejada, 16=PrecoFuturo, 17=PrecoDesejado, 18=MargFutura, 19=DescPromo, 20=PrecoFutFinal
-    const moedaCols = [7, 8, 9, 10, 14, 16, 17, 20];
-    const percCols = [11, 13, 15, 18, 19];
+    // Índices das colunas (0-based): 8=Custo, 9=Sellout, 10=Venda, 11=Promo, 12=Margem, 14=MargSellout, 15=AddSellout, 16=MargDesejada, 17=PrecoFuturo, 18=PrecoDesejado, 19=MargFutura, 20=DescPromo, 21=PrecoFutFinal
+    const moedaCols = [8, 9, 10, 11, 15, 17, 18, 21];
+    const percCols = [12, 14, 16, 19, 20];
     const range = XLSX.utils.decode_range(ws["!ref"] || "A1");
     for (let R = range.s.r + 1; R <= range.e.r; R++) {
       for (const C of moedaCols) {
