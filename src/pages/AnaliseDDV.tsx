@@ -165,6 +165,16 @@ const AnaliseDDV = () => {
     });
   }, [items, lookup]);
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return enriched;
+    return enriched.filter(
+      (p) =>
+        p.codigo.toLowerCase().includes(q) ||
+        p.descricao.toLowerCase().includes(q),
+    );
+  }, [enriched, search]);
+
   const exportExcel = () => {
     if (enriched.length === 0) return;
     const headerTop = ["CODIGO", "DESCRIÇÃO"];
