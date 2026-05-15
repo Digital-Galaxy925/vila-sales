@@ -585,6 +585,9 @@ export default function SimuladorMassivo() {
                           <td style={cellStyle}>
                             {(p.estoque ?? 0).toLocaleString("pt-BR")}
                           </td>
+                          <td style={cellStyle}>
+                            {(parseFloat(p.embCmp) || 1).toLocaleString("pt-BR")}
+                          </td>
                           <td style={cellStyle}>{fmt(p.custoLiq)}</td>
                           <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
                           <td style={cellStyle}>{fmt(p.atual)}</td>
