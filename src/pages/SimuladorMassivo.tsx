@@ -692,6 +692,21 @@ export default function SimuladorMassivo() {
                                     ? fmt(sellOutAjustado)
                                     : "—"}
                                 </td>
+                                <td
+                                  style={{
+                                    ...cellStyle,
+                                    color:
+                                      sellOutAjustado > 0
+                                        ? "#0f172a"
+                                        : "#9ca3af",
+                                    fontWeight:
+                                      sellOutAjustado > 0 ? 600 : 400,
+                                  }}
+                                >
+                                  {sellOutAjustado > 0
+                                    ? fmt(sellOutAjustado * un)
+                                    : "—"}
+                                </td>
                               </>
                             );
                           })()}
