@@ -721,7 +721,7 @@ export default function SimuladorMassivo() {
                               </>
                             );
                           })()}
-                          <td style={cellStyle}>{fmt(sellOutNecUn)}</td>
+                          
                           <td style={cellStyle}>
                             {vol.toLocaleString("pt-BR")}
                           </td>
