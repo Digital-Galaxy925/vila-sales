@@ -606,6 +606,88 @@ export default function SimuladorMassivo() {
                           >
                             {fmtPct(margProposta)}
                           </td>
+                          {(() => {
+                            const margAjustNum =
+                              parseFloat(
+                                s.margemAjustada.replace(",", "."),
+                              ) || 0;
+                            const margAjustFrac = margAjustNum / 100;
+                            const sellOutAjustado =
+                              margAjustFrac > 0 && margAjustFrac < 1
+                                ? p.custoLiq / (1 - margAjustFrac)
+                                : 0;
+                            const corMAjust =
+                              margAjustFrac >= 0.17
+                                ? "#16a34a"
+                                : margAjustFrac >= 0.1
+                                  ? "#d97706"
+                                  : "#dc2626";
+                            return (
+                              <>
+                                <td
+                                  style={{ ...cellStyle, padding: "6px 8px" }}
+                                >
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 4,
+                                    }}
+                                  >
+                                    <input
+                                      type="text"
+                                      value={s.margemAjustada}
+                                      onChange={(e) =>
+                                        handleMargemAjustada(
+                                          s.id,
+                                          e.target.value,
+                                        )
+                                      }
+                                      placeholder="0"
+                                      style={{
+                                        width: 60,
+                                        padding: "5px 8px",
+                                        borderRadius: 6,
+                                        border: "1px solid #d1d5db",
+                                        fontSize: 12,
+                                        textAlign: "right",
+                                        outline: "none",
+                                        color:
+                                          margAjustFrac > 0
+                                            ? corMAjust
+                                            : "#1f2937",
+                                        fontWeight:
+                                          margAjustFrac > 0 ? 600 : 400,
+                                      }}
+                                    />
+                                    <span
+                                      style={{
+                                        color: "#6b7280",
+                                        fontSize: 12,
+                                      }}
+                                    >
+                                      %
+                                    </span>
+                                  </div>
+                                </td>
+                                <td
+                                  style={{
+                                    ...cellStyle,
+                                    color:
+                                      sellOutAjustado > 0
+                                        ? "#0f172a"
+                                        : "#9ca3af",
+                                    fontWeight:
+                                      sellOutAjustado > 0 ? 600 : 400,
+                                  }}
+                                >
+                                  {sellOutAjustado > 0
+                                    ? fmt(sellOutAjustado)
+                                    : "—"}
+                                </td>
+                              </>
+                            );
+                          })()}
                           <td style={cellStyle}>{fmt(sellOutNecUn)}</td>
                           <td style={cellStyle}>
                             {vol.toLocaleString("pt-BR")}
