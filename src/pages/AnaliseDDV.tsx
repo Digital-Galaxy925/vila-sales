@@ -179,9 +179,14 @@ const AnaliseDDV = () => {
           cells[code] = { estoque: 0, ddv: 0 };
         }
       });
+      // Filial 502: estoque vem do livro 502, mas DDV vem do livro 510
+      if (cells["502"]) {
+        const m510 = metrics510[key];
+        cells["502"] = { estoque: cells["502"].estoque, ddv: m510?.ddv ?? 0 };
+      }
       return { codigo: it.codigo, descricao, cells };
     });
-  }, [items, lookup]);
+  }, [items, lookup, metrics510]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
