@@ -145,6 +145,8 @@ const AnaliseDDV = () => {
     }
   };
 
+  const [search, setSearch] = useState("");
+
   const enriched = useMemo(() => {
     return items.map((it) => {
       const key = normCode(it.codigo);
@@ -162,6 +164,16 @@ const AnaliseDDV = () => {
       return { codigo: it.codigo, descricao, cells };
     });
   }, [items, lookup]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return enriched;
+    return enriched.filter(
+      (p) =>
+        p.codigo.toLowerCase().includes(q) ||
+        p.descricao.toLowerCase().includes(q),
+    );
+  }, [enriched, search]);
 
   const exportExcel = () => {
     if (enriched.length === 0) return;
@@ -243,12 +255,21 @@ const AnaliseDDV = () => {
       />
 
       <div className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
-        <div className="px-5 py-3 border-b border-border flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground">
-            {enriched.length > 0
-              ? `Resultado · ${enriched.length} produto${enriched.length !== 1 ? "s" : ""}`
-              : "Aguardando upload — envie uma planilha .xlsx, .xls ou .csv com a coluna CODIGO"}
+        <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-4">
+          <h3 className="text-sm font-semibold text-foreground shrink-0">
+            {filtered.length > 0
+              ? `Resultado · ${filtered.length} produto${filtered.length !== 1 ? "s" : ""}`
+              : enriched.length > 0
+                ? "Nenhum produto corresponde à busca"
+                : "Aguardando upload — envie uma planilha .xlsx, .xls ou .csv com a coluna CODIGO"}
           </h3>
+          <input
+            type="text"
+            placeholder="Buscar código ou descrição..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex h-9 w-full max-w-xs rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
@@ -280,7 +301,7 @@ const AnaliseDDV = () => {
               </tr>
             </thead>
             <tbody>
-              {enriched.length === 0
+              {filtered.length === 0
                 ? Array.from({ length: 8 }).map((_, idx) => (
                     <tr key={`empty-${idx}`}>
                       <td className="px-3 py-2 border border-border sticky left-0 bg-card">&nbsp;</td>
@@ -293,7 +314,7 @@ const AnaliseDDV = () => {
                       ))}
                     </tr>
                   ))
-                : enriched.map((p, idx) => (
+                : filtered.map((p, idx) => (
                     <tr key={`${p.codigo}-${idx}`} className="hover:bg-muted/20">
                       <td className="px-3 py-2 text-foreground font-mono text-xs border border-border sticky left-0 bg-card">
                         {p.codigo}
