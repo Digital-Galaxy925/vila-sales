@@ -501,6 +501,7 @@ export default function SimuladorMassivo() {
                         "CODIGO",
                         "DESCRIÇÃO",
                         "ESTOQUE",
+                        "UNID/CX",
                         "CUSTO",
                         "SELL OUT",
                         "PREÇO ATUAL",
@@ -510,6 +511,7 @@ export default function SimuladorMassivo() {
                         "MARGEM PROPOSTA",
                         "MARGEM AJUSTADA",
                         "SELL OUT AJUSTADO",
+                        "INVESTIMENTO TOTAL",
                         "SELL OUT NECESSÁRIO",
                         "VOLUME",
                         "VALOR PEDIDO",
@@ -582,6 +584,9 @@ export default function SimuladorMassivo() {
                           <td style={cellStyle}>{p.descricao}</td>
                           <td style={cellStyle}>
                             {(p.estoque ?? 0).toLocaleString("pt-BR")}
+                          </td>
+                          <td style={cellStyle}>
+                            {(parseFloat(p.embCmp) || 1).toLocaleString("pt-BR")}
                           </td>
                           <td style={cellStyle}>{fmt(p.custoLiq)}</td>
                           <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
@@ -685,6 +690,21 @@ export default function SimuladorMassivo() {
                                 >
                                   {sellOutAjustado > 0
                                     ? fmt(sellOutAjustado)
+                                    : "—"}
+                                </td>
+                                <td
+                                  style={{
+                                    ...cellStyle,
+                                    color:
+                                      sellOutAjustado > 0
+                                        ? "#0f172a"
+                                        : "#9ca3af",
+                                    fontWeight:
+                                      sellOutAjustado > 0 ? 600 : 400,
+                                  }}
+                                >
+                                  {sellOutAjustado > 0
+                                    ? fmt(sellOutAjustado * un)
                                     : "—"}
                                 </td>
                               </>
