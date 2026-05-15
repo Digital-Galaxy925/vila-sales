@@ -599,9 +599,9 @@ export default function SimuladorMassivo() {
                             {(parseFloat(p.embCmp) || 1).toLocaleString("pt-BR")}
                           </td>
                           <td style={cellStyle}>{fmt(p.custoLiq)}</td>
+                          <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
                           <td style={cellStyle}>{fmt(p.atual)}</td>
                           <td style={cellStyle}>{fmt(promo)}</td>
-                          <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
                           <td
                             style={{
                               ...cellStyle,
