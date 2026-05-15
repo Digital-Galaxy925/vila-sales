@@ -66,25 +66,60 @@ const AnaliseDDV = () => {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type: "array" });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
-    const parsed: RowItem[] = [];
-    const seen = new Set<string>();
-    rows.forEach((r) => {
-      const codigo = String(
-        findCol(r, ["CODIGO", "CÓDIGO", "COD", "SEQ.PROD", "SEQPROD", "SEQ_PROD", "PRODUTO", "SKU"]) || "",
-      ).trim();
-      if (!codigo) return;
-      const key = normCode(codigo);
-      if (seen.has(key)) return;
-      seen.add(key);
-      const descricao = String(findCol(r, ["DESCRIÇÃO", "DESCRICAO", "DESC", "PRODUTO_DESC", "NOME"]) || "");
-      parsed.push({ codigo, descricao });
-    });
-    setItems(parsed);
-    if (inputRef.current) inputRef.current.value = "";
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const aoa: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", blankrows: false });
+
+      const isCodeHeader = (v: any) =>
+        /^(c[oó]digo|cod|sku|seq\.?\s*prod|produto)$/i.test(String(v ?? "").trim());
+      const isDescHeader = (v: any) =>
+        /^(descri[cç][aã]o|desc|nome|produto[_\s]?desc)$/i.test(String(v ?? "").trim());
+
+      let headerRow = -1;
+      let codeCol = -1;
+      let descCol = -1;
+      for (let i = 0; i < Math.min(aoa.length, 20); i++) {
+        const row = aoa[i] || [];
+        const cIdx = row.findIndex(isCodeHeader);
+        if (cIdx !== -1) {
+          headerRow = i;
+          codeCol = cIdx;
+          descCol = row.findIndex(isDescHeader);
+          break;
+        }
+      }
+      if (codeCol === -1) {
+        headerRow = -1;
+        codeCol = 0;
+        descCol = 1;
+      }
+
+      const parsed: RowItem[] = [];
+      const seen = new Set<string>();
+      for (let i = headerRow + 1; i < aoa.length; i++) {
+        const row = aoa[i] || [];
+        const raw = row[codeCol];
+        if (raw == null || String(raw).trim() === "") continue;
+        const codigo = String(raw).trim();
+        if (!/\d/.test(codigo)) continue;
+        const key = normCode(codigo);
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        const descricao = descCol >= 0 ? String(row[descCol] ?? "").trim() : "";
+        parsed.push({ codigo, descricao });
+      }
+
+      if (parsed.length === 0) {
+        alert("Nenhum código encontrado na planilha. Garanta uma coluna 'CODIGO' ou códigos na primeira coluna.");
+      }
+      setItems(parsed);
+    } catch (err: any) {
+      alert("Erro ao ler planilha: " + (err?.message || err));
+    } finally {
+      if (inputRef.current) inputRef.current.value = "";
+    }
   };
 
   const enriched = useMemo(() => {
@@ -175,96 +210,98 @@ const AnaliseDDV = () => {
         }
       />
 
-      {items.length === 0 ? (
-        <div className="bg-card rounded-xl shadow-[var(--shadow-card)] p-12 text-center">
-          <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-sm text-muted-foreground mb-2">
-            Envie uma planilha .xlsx, .xls ou .csv contendo uma coluna <strong>CODIGO</strong>
-            {" "}(e opcionalmente <strong>DESCRIÇÃO</strong>).
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Os dados de Estoque e DDV serão buscados nos livros já carregados de cada CD.
-          </p>
+      <div className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
+        <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-foreground">
+            {enriched.length > 0
+              ? `Resultado · ${enriched.length} produto${enriched.length !== 1 ? "s" : ""}`
+              : "Aguardando upload — envie uma planilha .xlsx, .xls ou .csv com a coluna CODIGO"}
+          </h3>
         </div>
-      ) : (
-        <div className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
-          <div className="px-5 py-3 border-b border-border flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">
-              Resultado · {enriched.length} produto{enriched.length !== 1 ? "s" : ""}
-            </h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-muted/40">
-                  <th rowSpan={2} className="px-3 py-2 text-left text-xs font-bold text-foreground border border-border sticky left-0 bg-muted/40 z-10">
-                    CODIGO
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-muted/40">
+                <th rowSpan={2} className="px-3 py-2 text-left text-xs font-bold text-foreground border border-border sticky left-0 bg-muted/40 z-10">
+                  CODIGO
+                </th>
+                <th rowSpan={2} className="px-3 py-2 text-left text-xs font-bold text-foreground border border-border min-w-[260px]">
+                  DESCRIÇÃO
+                </th>
+                {FILIAIS.map((f) => (
+                  <th key={f.code} colSpan={2} className="px-3 py-2 text-center text-xs font-bold text-foreground border border-border whitespace-nowrap">
+                    {f.label}
                   </th>
-                  <th rowSpan={2} className="px-3 py-2 text-left text-xs font-bold text-foreground border border-border min-w-[260px]">
-                    DESCRIÇÃO
-                  </th>
-                  {FILIAIS.map((f) => (
-                    <th key={f.code} colSpan={2} className="px-3 py-2 text-center text-xs font-bold text-foreground border border-border whitespace-nowrap">
-                      {f.label}
-                    </th>
-                  ))}
-                </tr>
-                <tr className="bg-muted/30">
-                  {FILIAIS.map((f) => (
-                    <Fragment key={f.code}>
-                      <th className="px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground border border-border">
-                        ESTOQUE
-                      </th>
-                      <th className="px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground border border-border">
-                        DDV
-                      </th>
-                    </Fragment>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {enriched.map((p, idx) => (
-                  <tr key={`${p.codigo}-${idx}`} className="hover:bg-muted/20">
-                    <td className="px-3 py-2 text-foreground font-mono text-xs border border-border sticky left-0 bg-card">
-                      {p.codigo}
-                    </td>
-                    <td className="px-3 py-2 text-foreground border border-border">
-                      {p.descricao || <span className="text-muted-foreground italic">—</span>}
-                    </td>
-                    {FILIAIS.map((f) => {
-                      const c = p.cells[f.code];
-                      return (
-                        <Fragment key={f.code}>
-                          <td
-                            className={`px-3 py-2 text-right border border-border tabular-nums ${
-                              c.estoque === 0 ? "text-muted-foreground" : "text-foreground"
-                            }`}
-                          >
-                            {c.estoque.toLocaleString("pt-BR")}
-                          </td>
-                          <td
-                            className={`px-3 py-2 text-right border border-border tabular-nums ${
-                              c.ddv === 0
-                                ? "text-muted-foreground"
-                                : c.ddv < 7
-                                  ? "text-warning font-semibold"
-                                  : c.ddv > 90
-                                    ? "text-destructive font-semibold"
-                                    : "text-foreground"
-                            }`}
-                          >
-                            {c.ddv.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}
-                          </td>
-                        </Fragment>
-                      );
-                    })}
-                  </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </tr>
+              <tr className="bg-muted/30">
+                {FILIAIS.map((f) => (
+                  <Fragment key={f.code}>
+                    <th className="px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground border border-border">
+                      ESTOQUE
+                    </th>
+                    <th className="px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground border border-border">
+                      DDV
+                    </th>
+                  </Fragment>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {enriched.length === 0
+                ? Array.from({ length: 8 }).map((_, idx) => (
+                    <tr key={`empty-${idx}`}>
+                      <td className="px-3 py-2 border border-border sticky left-0 bg-card">&nbsp;</td>
+                      <td className="px-3 py-2 border border-border">&nbsp;</td>
+                      {FILIAIS.map((f) => (
+                        <Fragment key={f.code}>
+                          <td className="px-3 py-2 border border-border">&nbsp;</td>
+                          <td className="px-3 py-2 border border-border">&nbsp;</td>
+                        </Fragment>
+                      ))}
+                    </tr>
+                  ))
+                : enriched.map((p, idx) => (
+                    <tr key={`${p.codigo}-${idx}`} className="hover:bg-muted/20">
+                      <td className="px-3 py-2 text-foreground font-mono text-xs border border-border sticky left-0 bg-card">
+                        {p.codigo}
+                      </td>
+                      <td className="px-3 py-2 text-foreground border border-border">
+                        {p.descricao || <span className="text-muted-foreground italic">—</span>}
+                      </td>
+                      {FILIAIS.map((f) => {
+                        const c = p.cells[f.code];
+                        return (
+                          <Fragment key={f.code}>
+                            <td
+                              className={`px-3 py-2 text-right border border-border tabular-nums ${
+                                c.estoque === 0 ? "text-muted-foreground" : "text-foreground"
+                              }`}
+                            >
+                              {c.estoque.toLocaleString("pt-BR")}
+                            </td>
+                            <td
+                              className={`px-3 py-2 text-right border border-border tabular-nums ${
+                                c.ddv === 0
+                                  ? "text-muted-foreground"
+                                  : c.ddv < 7
+                                    ? "text-warning font-semibold"
+                                    : c.ddv > 90
+                                      ? "text-destructive font-semibold"
+                                      : "text-foreground"
+                              }`}
+                            >
+                              {c.ddv.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}
+                            </td>
+                          </Fragment>
+                        );
+                      })}
+                    </tr>
+                  ))}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
   );
 };
