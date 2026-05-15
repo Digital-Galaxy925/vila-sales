@@ -755,6 +755,76 @@ export default function SimuladorMassivo() {
                       );
                     })}
                   </tbody>
+                  {(() => {
+                    const tot = simulacoes.reduce(
+                      (acc, s) => {
+                        const p = s.produto!;
+                        const pv =
+                          parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
+                        const vol =
+                          parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
+                        const qpc = parseFloat(p.embCmp) || 1;
+                        const un = vol * qpc;
+                        const margAjustFrac =
+                          (parseFloat(s.margemAjustada.replace(",", ".")) || 0) /
+                          100;
+                        const investUnit =
+                          margAjustFrac > 0 && margAjustFrac < 1 && pv > 0
+                            ? p.custoLiq - pv * (1 - margAjustFrac)
+                            : 0;
+                        const investTot = investUnit > 0 ? investUnit * un : 0;
+                        const valPed = un * pv;
+                        acc.volume += vol;
+                        acc.invest += investTot;
+                        acc.valor += valPed;
+                        return acc;
+                      },
+                      { volume: 0, invest: 0, valor: 0 },
+                    );
+                    const pct = tot.valor > 0 ? tot.invest / tot.valor : 0;
+                    const footCell: React.CSSProperties = {
+                      padding: "10px 10px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#0f172a",
+                      borderTop: "2px solid #1e3a5f",
+                      background: "#f1f5f9",
+                      whiteSpace: "nowrap",
+                    };
+                    return (
+                      <tfoot>
+                        <tr>
+                          <td
+                            colSpan={16}
+                            style={{
+                              ...footCell,
+                              textAlign: "right",
+                              textTransform: "uppercase",
+                              letterSpacing: 0.4,
+                              fontSize: 11,
+                              color: "#374151",
+                            }}
+                          >
+                            Total
+                          </td>
+                          <td style={footCell}>
+                            {tot.volume.toLocaleString("pt-BR")}
+                          </td>
+                          <td style={footCell}>{fmt(tot.invest)}</td>
+                          <td style={footCell}>{fmt(tot.valor)}</td>
+                          <td
+                            style={{
+                              ...footCell,
+                              color: pct > 0.1 ? "#dc2626" : "#0f172a",
+                            }}
+                          >
+                            {fmtPct(pct)}
+                          </td>
+                          <td style={footCell}></td>
+                        </tr>
+                      </tfoot>
+                    );
+                  })()}
                 </table>
               </div>
             )}
