@@ -7,6 +7,7 @@ import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 
 import Simulador from "./pages/Simulador";
+import SimuladorMassivo from "./pages/SimuladorMassivo";
 import SimuladorPropostas from "./pages/SimuladorPropostas";
 import AnaliseGerencial from "./pages/AnaliseGerencial";
 import ComparativoLivros from "./pages/ComparativoLivros";
