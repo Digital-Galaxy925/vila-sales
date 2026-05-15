@@ -7,6 +7,7 @@ import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 
 import Simulador from "./pages/Simulador";
+import SimuladorMassivo from "./pages/SimuladorMassivo";
 import SimuladorPropostas from "./pages/SimuladorPropostas";
 import AnaliseGerencial from "./pages/AnaliseGerencial";
 import ComparativoLivros from "./pages/ComparativoLivros";
@@ -41,7 +42,7 @@ const App = () => (
             <Route path="/manual" element={<Index />} />
             <Route path="/gerencial" element={<AnaliseGerencial />} />
             <Route path="/simulador" element={<Simulador />} />
-            <Route path="/simulador-massivo" element={<Simulador />} />
+            <Route path="/simulador-massivo" element={<SimuladorMassivo />} />
             <Route path="/propostas" element={<SimuladorPropostas />} />
             <Route path="/propostas-aprovadas" element={<PropostasAprovadas />} />
             <Route path="/pedidos-pendentes" element={<PedidosPendentes />} />
