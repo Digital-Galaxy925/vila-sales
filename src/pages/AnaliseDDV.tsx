@@ -300,12 +300,6 @@ const AnaliseDDV = () => {
                 ? "Nenhum produto corresponde à busca"
                 : "Aguardando upload — envie uma planilha .xlsx, .xls ou .csv com a coluna CODIGO"}
           </h3>
-          {enriched.length > 0 && (
-            <Button onClick={exportExcel} variant="outline" size="sm" className="font-semibold shrink-0">
-              <Download className="w-4 h-4 mr-1.5" />
-              Exportar Excel
-            </Button>
-          )}
           <input
             type="text"
             placeholder="Buscar código ou descrição..."
