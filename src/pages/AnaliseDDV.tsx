@@ -207,6 +207,15 @@ const AnaliseDDV = () => {
               className="hidden"
             />
             <Button
+              onClick={fetchLivros}
+              variant="outline"
+              className="font-semibold"
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Atualizar Livros
+            </Button>
+            <Button
               onClick={() => inputRef.current?.click()}
               className="bg-primary text-primary-foreground font-semibold"
             >
