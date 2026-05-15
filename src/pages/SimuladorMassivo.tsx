@@ -472,8 +472,8 @@ export default function SimuladorMassivo() {
                   fontSize: 13,
                 }}
               >
-                Nenhuma simulação adicionada. Preencha os campos acima e clique
-                em <strong>+ Adicionar</strong>.
+                Nenhuma simulação salva. Preencha os campos acima e clique
+                em <strong>💾 Salvar</strong>.
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
