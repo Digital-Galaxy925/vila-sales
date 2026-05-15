@@ -181,8 +181,10 @@ const AnaliseDDV = () => {
       });
       // Filial 502: estoque vem do livro 502, mas DDV vem do livro 510
       if (cells["502"]) {
+        const found510 = lookup["510"]?.get(key);
         const m510 = metrics510[key];
-        cells["502"] = { estoque: cells["502"].estoque, ddv: m510?.ddv ?? 0 };
+        const ddv510 = found510?.ddv ?? m510?.ddv ?? 0;
+        cells["502"] = { estoque: cells["502"].estoque, ddv: ddv510 };
       }
       return { codigo: it.codigo, descricao, cells };
     });
