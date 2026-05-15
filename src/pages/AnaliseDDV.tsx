@@ -73,7 +73,9 @@ const AnaliseDDV = () => {
       const aoa: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", blankrows: false });
 
       const isCodeHeader = (v: any) =>
-        /^(c[oó]digo|cod|sku|seq\.?\s*prod|produto)$/i.test(String(v ?? "").trim());
+        /^(c[oó]d(igo)?(\s*(produto|prod|item|sku))?|sku|seq\.?\s*prod|produto)$/i.test(
+          String(v ?? "").trim(),
+        );
       const isDescHeader = (v: any) =>
         /^(descri[cç][aã]o|desc|nome|produto[_\s]?desc)$/i.test(String(v ?? "").trim());
 
@@ -102,7 +104,10 @@ const AnaliseDDV = () => {
         const row = aoa[i] || [];
         const raw = row[codeCol];
         if (raw == null || String(raw).trim() === "") continue;
-        const codigo = String(raw).trim();
+        const codigo =
+          typeof raw === "number"
+            ? String(Math.trunc(raw))
+            : String(raw).trim().replace(/\.0+$/, "");
         if (!/\d/.test(codigo)) continue;
         const key = normCode(codigo);
         if (!key || seen.has(key)) continue;
