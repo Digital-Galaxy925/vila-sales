@@ -224,6 +224,18 @@ const AnaliseDDV = () => {
       merges.push({ s: { r: 0, c }, e: { r: 0, c: c + 1 } });
     });
     ws["!merges"] = merges;
+    // Format: estoque as integer with thousand separator, ddv with 2 decimals
+    const totalRows = enriched.length + 2;
+    FILIAIS.forEach((_, i) => {
+      const estCol = 2 + i * 2;
+      const ddvCol = estCol + 1;
+      for (let r = 2; r < totalRows; r++) {
+        const estAddr = XLSX.utils.encode_cell({ r, c: estCol });
+        const ddvAddr = XLSX.utils.encode_cell({ r, c: ddvCol });
+        if (ws[estAddr]) { ws[estAddr].t = "n"; ws[estAddr].z = "#,##0"; }
+        if (ws[ddvAddr]) { ws[ddvAddr].t = "n"; ws[ddvAddr].z = "#,##0.00"; }
+      }
+    });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Análise DDV");
     XLSX.writeFile(wb, "analise_ddv.xlsx");
