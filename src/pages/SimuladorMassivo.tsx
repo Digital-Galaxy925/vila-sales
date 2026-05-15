@@ -291,7 +291,7 @@ export default function SimuladorMassivo() {
                   whiteSpace: "nowrap",
                 }}
               >
-                + Adicionar
+                💾 Salvar
               </button>
             </div>
 
@@ -472,8 +472,8 @@ export default function SimuladorMassivo() {
                   fontSize: 13,
                 }}
               >
-                Nenhuma simulação adicionada. Preencha os campos acima e clique
-                em <strong>+ Adicionar</strong>.
+                Nenhuma simulação salva. Preencha os campos acima e clique
+                em <strong>💾 Salvar</strong>.
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
@@ -485,32 +485,38 @@ export default function SimuladorMassivo() {
                   }}
                 >
                   <thead>
-                    <tr style={{ background: "#f8fafc" }}>
+                    <tr style={{ background: "#1e3a5f" }}>
                       {[
-                        "Código",
-                        "Descrição",
-                        "Filial",
-                        "Custo",
-                        "Preço Venda",
-                        "Volume CX",
-                        "Unid/CX",
-                        "Total Un",
-                        "Margem Real",
-                        "Sell Out",
-                        "Lucro",
+                        "BU",
+                        "CD",
+                        "FAMILIA",
+                        "CODIGO",
+                        "DESCRIÇÃO",
+                        "ESTOQUE",
+                        "CUSTO",
+                        "SELL OUT",
+                        "PREÇO ATUAL",
+                        "PREÇO PROMOCIONAL",
+                        "MARGEM ATUAL",
+                        "PROPOSTA",
+                        "MARGEM PROPOSTA",
+                        "SELL OUT NECESSÁRIO",
+                        "VOLUME",
+                        "VALOR PEDIDO",
+                        "% INVESTIMENTO",
                         "",
                       ].map((h) => (
                         <th
                           key={h}
                           style={{
-                            padding: "10px 12px",
+                            padding: "8px 10px",
                             textAlign: "left",
-                            fontSize: 11,
-                            fontWeight: 600,
-                            color: "#6b7280",
+                            fontSize: 10.5,
+                            fontWeight: 700,
+                            color: "#fff",
                             textTransform: "uppercase",
-                            letterSpacing: 0.4,
-                            borderBottom: "1px solid #e5e7eb",
+                            letterSpacing: 0.3,
+                            borderRight: "1px solid #34548a",
                             whiteSpace: "nowrap",
                           }}
                         >
@@ -528,13 +534,28 @@ export default function SimuladorMassivo() {
                         parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
                       const qpc = parseFloat(p.embCmp) || 1;
                       const un = vol * qpc;
-                      const margem = pv > 0 ? (pv - p.custoLiq) / pv : 0;
-                      const sellOut = un * pv;
-                      const lucro = un * (pv - p.custoLiq);
-                      const corMarg =
-                        margem >= 0.17
+                      const promo = p.promoc ?? 0;
+                      const precoRef = promo > 0 ? promo : p.atual;
+                      const margAtual =
+                        precoRef > 0 ? (precoRef - p.custoLiq) / precoRef : 0;
+                      const margProposta = pv > 0 ? (pv - p.custoLiq) / pv : 0;
+                      const sellOutNecUn = Math.max(0, p.custoLiq - pv);
+                      const sellOutNecTotal = sellOutNecUn * un;
+                      const valorPedido = un * pv;
+                      const pctInvestimento =
+                        valorPedido > 0 ? sellOutNecTotal / valorPedido : 0;
+                      const filialNome =
+                        FILIAIS.find((f) => f.id === s.filial)?.nome ?? s.filial;
+                      const corMA =
+                        margAtual >= 0.17
                           ? "#16a34a"
-                          : margem >= 0.1
+                          : margAtual >= 0.1
+                            ? "#d97706"
+                            : "#dc2626";
+                      const corMP =
+                        margProposta >= 0.17
+                          ? "#16a34a"
+                          : margProposta >= 0.1
                             ? "#d97706"
                             : "#dc2626";
                       return (
@@ -542,38 +563,53 @@ export default function SimuladorMassivo() {
                           key={s.id}
                           style={{ borderBottom: "1px solid #f1f5f9" }}
                         >
+                          <td style={cellStyle}>{p.bu || "—"}</td>
+                          <td style={cellStyle}>{filialNome}</td>
+                          <td style={cellStyle}>{p.familia || "—"}</td>
                           <td style={cellStyle}>
                             <strong>{s.codigo}</strong>
                           </td>
                           <td style={cellStyle}>{p.descricao}</td>
-                          <td style={cellStyle}>{s.filial}</td>
+                          <td style={cellStyle}>
+                            {(p.estoque ?? 0).toLocaleString("pt-BR")}
+                          </td>
                           <td style={cellStyle}>{fmt(p.custoLiq)}</td>
+                          <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
+                          <td style={cellStyle}>{fmt(p.atual)}</td>
+                          <td style={cellStyle}>{fmt(promo)}</td>
+                          <td
+                            style={{
+                              ...cellStyle,
+                              color: corMA,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {fmtPct(margAtual)}
+                          </td>
                           <td style={cellStyle}>{fmt(pv)}</td>
+                          <td
+                            style={{
+                              ...cellStyle,
+                              color: corMP,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {fmtPct(margProposta)}
+                          </td>
+                          <td style={cellStyle}>{fmt(sellOutNecUn)}</td>
                           <td style={cellStyle}>
                             {vol.toLocaleString("pt-BR")}
                           </td>
-                          <td style={cellStyle}>{qpc}</td>
-                          <td style={cellStyle}>
-                            {un.toLocaleString("pt-BR")}
-                          </td>
+                          <td style={cellStyle}>{fmt(valorPedido)}</td>
                           <td
                             style={{
                               ...cellStyle,
-                              color: corMarg,
+                              color:
+                                pctInvestimento > 0.1 ? "#dc2626" : "#374151",
                               fontWeight: 600,
                             }}
                           >
-                            {fmtPct(margem)}
-                          </td>
-                          <td style={cellStyle}>{fmt(sellOut)}</td>
-                          <td
-                            style={{
-                              ...cellStyle,
-                              color: lucro >= 0 ? "#16a34a" : "#dc2626",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {fmt(lucro)}
+                            {fmtPct(pctInvestimento)}
                           </td>
                           <td style={cellStyle}>
                             <button
