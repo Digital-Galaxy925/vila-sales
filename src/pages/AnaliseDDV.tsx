@@ -39,15 +39,33 @@ interface RowItem {
 
 const AnaliseDDV = () => {
   const [rawData, setRawData] = useState<FilialDataMap | null>(null);
+  const [metrics510, setMetrics510] = useState<Record<string, { ddv: number; estoque: number }>>({});
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<RowItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const loadMetrics510 = () => {
+    try {
+      const raw = localStorage.getItem("vilasales_livro_metrics");
+      if (!raw) return setMetrics510({});
+      const all = JSON.parse(raw) || {};
+      const f510 = all["510"] || {};
+      const out: Record<string, { ddv: number; estoque: number }> = {};
+      Object.entries(f510).forEach(([cod, v]: [string, any]) => {
+        out[normCode(cod)] = { ddv: num(v?.ddv), estoque: num(v?.estoque) };
+      });
+      setMetrics510(out);
+    } catch {
+      setMetrics510({});
+    }
+  };
 
   const fetchLivros = async () => {
     setLoading(true);
     try {
       const remote = await loadLivrosFromSupabase();
       setRawData(remote || {});
+      loadMetrics510();
     } catch (e) {
       console.error("[AnaliseDDV] erro ao carregar livros:", e);
       setRawData({});
