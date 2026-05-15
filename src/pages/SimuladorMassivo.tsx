@@ -34,6 +34,7 @@ interface Simulacao {
   volumeCaixas: string;
   precoVendaDesejado: string;
   produto: Product | null;
+  margemAjustada: string;
 }
 
 const FILIAIS = [
