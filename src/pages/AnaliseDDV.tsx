@@ -38,9 +38,27 @@ interface RowItem {
 }
 
 const AnaliseDDV = () => {
-  const rawData = useAppDataKey<Record<string, any[]>>("vilasales_data");
+  const [rawData, setRawData] = useState<FilialDataMap | null>(null);
+  const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<RowItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const fetchLivros = async () => {
+    setLoading(true);
+    try {
+      const remote = await loadLivrosFromSupabase();
+      setRawData(remote || {});
+    } catch (e) {
+      console.error("[AnaliseDDV] erro ao carregar livros:", e);
+      setRawData({});
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLivros();
+  }, []);
 
   // Build lookup: filial -> code(normalized) -> { estoque, ddv, descricao }
   const lookup = useMemo(() => {
