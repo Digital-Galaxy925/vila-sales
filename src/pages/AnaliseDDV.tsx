@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { Upload, Download, Trash2 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
@@ -211,14 +211,14 @@ const AnaliseDDV = () => {
                 </tr>
                 <tr className="bg-muted/30">
                   {FILIAIS.map((f) => (
-                    <>
-                      <th key={`${f.code}-e`} className="px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground border border-border">
+                    <Fragment key={f.code}>
+                      <th className="px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground border border-border">
                         ESTOQUE
                       </th>
-                      <th key={`${f.code}-d`} className="px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground border border-border">
+                      <th className="px-3 py-1.5 text-center text-[11px] font-semibold text-muted-foreground border border-border">
                         DDV
                       </th>
-                    </>
+                    </Fragment>
                   ))}
                 </tr>
               </thead>
@@ -234,9 +234,8 @@ const AnaliseDDV = () => {
                     {FILIAIS.map((f) => {
                       const c = p.cells[f.code];
                       return (
-                        <>
+                        <Fragment key={f.code}>
                           <td
-                            key={`${f.code}-e`}
                             className={`px-3 py-2 text-right border border-border tabular-nums ${
                               c.estoque === 0 ? "text-muted-foreground" : "text-foreground"
                             }`}
@@ -244,7 +243,6 @@ const AnaliseDDV = () => {
                             {c.estoque.toLocaleString("pt-BR")}
                           </td>
                           <td
-                            key={`${f.code}-d`}
                             className={`px-3 py-2 text-right border border-border tabular-nums ${
                               c.ddv === 0
                                 ? "text-muted-foreground"
@@ -257,7 +255,7 @@ const AnaliseDDV = () => {
                           >
                             {c.ddv.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}
                           </td>
-                        </>
+                        </Fragment>
                       );
                     })}
                   </tr>
