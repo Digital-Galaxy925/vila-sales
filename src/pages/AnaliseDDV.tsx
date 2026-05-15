@@ -273,7 +273,7 @@ const AnaliseDDV = () => {
             </Button>
             {items.length > 0 && (
               <>
-                <Button onClick={exportExcel} variant="outline" className="font-semibold">
+                <Button onClick={exportExcel} className="font-semibold text-white bg-[#217346] hover:bg-[#1a5c38]">
                   <Download className="w-4 h-4 mr-2" />
                   Exportar Excel
                 </Button>
