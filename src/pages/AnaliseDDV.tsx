@@ -1,9 +1,9 @@
-import { Fragment, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
-import { Upload, Download, Trash2 } from "lucide-react";
+import { Upload, Download, Trash2, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import { useAppDataKey } from "@/contexts/AppDataContext";
+import { loadLivrosFromSupabase, type FilialDataMap } from "@/lib/livrosSync";
 
 const FILIAIS: { code: string; label: string }[] = [
   { code: "501", label: "FOCOMIX SP - 501" },
