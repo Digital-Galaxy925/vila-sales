@@ -503,7 +503,6 @@ export default function SimuladorMassivo() {
                         "ESTOQUE",
                         "UNID/CX",
                         "CUSTO",
-                        "SELL OUT",
                         "PREÇO ATUAL",
                         "PREÇO PROMOCIONAL",
                         "SELL OUT ATUAL",
@@ -600,10 +599,9 @@ export default function SimuladorMassivo() {
                             {(parseFloat(p.embCmp) || 1).toLocaleString("pt-BR")}
                           </td>
                           <td style={cellStyle}>{fmt(p.custoLiq)}</td>
-                          <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
                           <td style={cellStyle}>{fmt(p.atual)}</td>
                           <td style={cellStyle}>{fmt(promo)}</td>
-                          <td style={cellStyle}>{fmt(sellOutNecUn)}</td>
+                          <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
                           <td
                             style={{
                               ...cellStyle,
