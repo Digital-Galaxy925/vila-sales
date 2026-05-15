@@ -503,7 +503,6 @@ export default function SimuladorMassivo() {
                         "ESTOQUE",
                         "UNID/CX",
                         "CUSTO",
-                        "SELL OUT",
                         "PREÇO ATUAL",
                         "PREÇO PROMOCIONAL",
                         "SELL OUT ATUAL",
