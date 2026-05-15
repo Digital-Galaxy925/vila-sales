@@ -506,13 +506,13 @@ export default function SimuladorMassivo() {
                         "SELL OUT",
                         "PREÇO ATUAL",
                         "PREÇO PROMOCIONAL",
+                        "SELL OUT ATUAL",
                         "MARGEM ATUAL",
                         "PROPOSTA",
                         "MARGEM PROPOSTA",
                         "MARGEM AJUSTADA",
                         "SELL OUT AJUSTADO",
                         "INVESTIMENTO TOTAL",
-                        "SELL OUT NECESSÁRIO",
                         "VOLUME",
                         "VALOR PEDIDO",
                         "% INVESTIMENTO",
@@ -603,6 +603,7 @@ export default function SimuladorMassivo() {
                           <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
                           <td style={cellStyle}>{fmt(p.atual)}</td>
                           <td style={cellStyle}>{fmt(promo)}</td>
+                          <td style={cellStyle}>{fmt(sellOutNecUn)}</td>
                           <td
                             style={{
                               ...cellStyle,
@@ -721,7 +722,7 @@ export default function SimuladorMassivo() {
                               </>
                             );
                           })()}
-                          <td style={cellStyle}>{fmt(sellOutNecUn)}</td>
+                          
                           <td style={cellStyle}>
                             {vol.toLocaleString("pt-BR")}
                           </td>
