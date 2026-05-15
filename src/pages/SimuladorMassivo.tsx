@@ -702,6 +702,9 @@ export default function SimuladorMassivo() {
                                     ? fmt(sellOutAjustado)
                                     : "—"}
                                 </td>
+                                <td style={cellStyle}>
+                                  {vol.toLocaleString("pt-BR")}
+                                </td>
                                 <td
                                   style={{
                                     ...cellStyle,
@@ -721,9 +724,6 @@ export default function SimuladorMassivo() {
                             );
                           })()}
                           
-                          <td style={cellStyle}>
-                            {vol.toLocaleString("pt-BR")}
-                          </td>
                           <td style={cellStyle}>{fmt(valorPedido)}</td>
                           <td
                             style={{
