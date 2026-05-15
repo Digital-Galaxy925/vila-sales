@@ -25,6 +25,7 @@ const navItems = [
   { to: "/manual", label: "Análise de Custos", icon: BarChart3 },
   { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
+  { to: "/analise-ddv", label: "Análise DDV", icon: Clock },
   { to: "/simulador", label: "Simulador de Ofertas", icon: SlidersHorizontal },
   { to: "/simulador-massivo", label: "Simulador de Ofertas Massivas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
