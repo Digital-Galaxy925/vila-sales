@@ -554,8 +554,19 @@ export default function SimuladorMassivo() {
                       const sellOutNecUn = Math.max(0, p.custoLiq - pv);
                       const sellOutNecTotal = sellOutNecUn * un;
                       const valorPedido = un * pv;
+                      const margAjustNumRow =
+                        parseFloat(s.margemAjustada.replace(",", ".")) || 0;
+                      const margAjustFracRow = margAjustNumRow / 100;
+                      const investUnitAjustRow =
+                        margAjustFracRow > 0 && margAjustFracRow < 1 && pv > 0
+                          ? p.custoLiq - pv * (1 - margAjustFracRow)
+                          : 0;
+                      const investTotalAjustRow =
+                        investUnitAjustRow > 0 ? investUnitAjustRow * un : 0;
                       const pctInvestimento =
-                        valorPedido > 0 ? sellOutNecTotal / valorPedido : 0;
+                        valorPedido > 0 && investTotalAjustRow > 0
+                          ? investTotalAjustRow / valorPedido
+                          : 0;
                       const filialNome =
                         FILIAIS.find((f) => f.id === s.filial)?.nome ?? s.filial;
                       const corMA =
