@@ -1,9 +1,9 @@
-import { Fragment, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
-import { Upload, Download, Trash2 } from "lucide-react";
+import { Upload, Download, Trash2, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
-import { useAppDataKey } from "@/contexts/AppDataContext";
+import { loadLivrosFromSupabase, type FilialDataMap } from "@/lib/livrosSync";
 
 const FILIAIS: { code: string; label: string }[] = [
   { code: "501", label: "FOCOMIX SP - 501" },
@@ -38,9 +38,27 @@ interface RowItem {
 }
 
 const AnaliseDDV = () => {
-  const rawData = useAppDataKey<Record<string, any[]>>("vilasales_data");
+  const [rawData, setRawData] = useState<FilialDataMap | null>(null);
+  const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<RowItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const fetchLivros = async () => {
+    setLoading(true);
+    try {
+      const remote = await loadLivrosFromSupabase();
+      setRawData(remote || {});
+    } catch (e) {
+      console.error("[AnaliseDDV] erro ao carregar livros:", e);
+      setRawData({});
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLivros();
+  }, []);
 
   // Build lookup: filial -> code(normalized) -> { estoque, ddv, descricao }
   const lookup = useMemo(() => {
@@ -188,6 +206,15 @@ const AnaliseDDV = () => {
               onChange={handleUpload}
               className="hidden"
             />
+            <Button
+              onClick={fetchLivros}
+              variant="outline"
+              className="font-semibold"
+              disabled={loading}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Atualizar Livros
+            </Button>
             <Button
               onClick={() => inputRef.current?.click()}
               className="bg-primary text-primary-foreground font-semibold"
