@@ -612,10 +612,12 @@ export default function SimuladorMassivo() {
                                 s.margemAjustada.replace(",", "."),
                               ) || 0;
                             const margAjustFrac = margAjustNum / 100;
-                            const sellOutAjustado =
-                              margAjustFrac > 0 && margAjustFrac < 1
-                                ? p.custoLiq / (1 - margAjustFrac)
+                            const investUnitAjust =
+                              margAjustFrac > 0 && margAjustFrac < 1 && pv > 0
+                                ? p.custoLiq - pv * (1 - margAjustFrac)
                                 : 0;
+                            const sellOutAjustado =
+                              investUnitAjust > 0 ? investUnitAjust * un : 0;
                             const corMAjust =
                               margAjustFrac >= 0.17
                                 ? "#16a34a"
