@@ -66,25 +66,60 @@ const AnaliseDDV = () => {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type: "array" });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
-    const parsed: RowItem[] = [];
-    const seen = new Set<string>();
-    rows.forEach((r) => {
-      const codigo = String(
-        findCol(r, ["CODIGO", "CÓDIGO", "COD", "SEQ.PROD", "SEQPROD", "SEQ_PROD", "PRODUTO", "SKU"]) || "",
-      ).trim();
-      if (!codigo) return;
-      const key = normCode(codigo);
-      if (seen.has(key)) return;
-      seen.add(key);
-      const descricao = String(findCol(r, ["DESCRIÇÃO", "DESCRICAO", "DESC", "PRODUTO_DESC", "NOME"]) || "");
-      parsed.push({ codigo, descricao });
-    });
-    setItems(parsed);
-    if (inputRef.current) inputRef.current.value = "";
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const aoa: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", blankrows: false });
+
+      const isCodeHeader = (v: any) =>
+        /^(c[oó]digo|cod|sku|seq\.?\s*prod|produto)$/i.test(String(v ?? "").trim());
+      const isDescHeader = (v: any) =>
+        /^(descri[cç][aã]o|desc|nome|produto[_\s]?desc)$/i.test(String(v ?? "").trim());
+
+      let headerRow = -1;
+      let codeCol = -1;
+      let descCol = -1;
+      for (let i = 0; i < Math.min(aoa.length, 20); i++) {
+        const row = aoa[i] || [];
+        const cIdx = row.findIndex(isCodeHeader);
+        if (cIdx !== -1) {
+          headerRow = i;
+          codeCol = cIdx;
+          descCol = row.findIndex(isDescHeader);
+          break;
+        }
+      }
+      if (codeCol === -1) {
+        headerRow = -1;
+        codeCol = 0;
+        descCol = 1;
+      }
+
+      const parsed: RowItem[] = [];
+      const seen = new Set<string>();
+      for (let i = headerRow + 1; i < aoa.length; i++) {
+        const row = aoa[i] || [];
+        const raw = row[codeCol];
+        if (raw == null || String(raw).trim() === "") continue;
+        const codigo = String(raw).trim();
+        if (!/\d/.test(codigo)) continue;
+        const key = normCode(codigo);
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        const descricao = descCol >= 0 ? String(row[descCol] ?? "").trim() : "";
+        parsed.push({ codigo, descricao });
+      }
+
+      if (parsed.length === 0) {
+        alert("Nenhum código encontrado na planilha. Garanta uma coluna 'CODIGO' ou códigos na primeira coluna.");
+      }
+      setItems(parsed);
+    } catch (err: any) {
+      alert("Erro ao ler planilha: " + (err?.message || err));
+    } finally {
+      if (inputRef.current) inputRef.current.value = "";
+    }
   };
 
   const enriched = useMemo(() => {
