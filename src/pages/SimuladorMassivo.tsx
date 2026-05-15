@@ -617,7 +617,7 @@ export default function SimuladorMassivo() {
                                 ? p.custoLiq - pv * (1 - margAjustFrac)
                                 : 0;
                             const sellOutAjustado =
-                              investUnitAjust > 0 ? investUnitAjust * un : 0;
+                              investUnitAjust > 0 ? investUnitAjust : 0;
                             const corMAjust =
                               margAjustFrac >= 0.17
                                 ? "#16a34a"
