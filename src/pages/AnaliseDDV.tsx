@@ -145,6 +145,8 @@ const AnaliseDDV = () => {
     }
   };
 
+  const [search, setSearch] = useState("");
+
   const enriched = useMemo(() => {
     return items.map((it) => {
       const key = normCode(it.codigo);
