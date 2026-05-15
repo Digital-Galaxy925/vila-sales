@@ -134,6 +134,12 @@ export default function SimuladorMassivo() {
     setSimulacoes((prev) => prev.filter((s) => s.id !== id));
   };
 
+  const handleMargemAjustada = (id: string, value: string) => {
+    setSimulacoes((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, margemAjustada: value } : s)),
+    );
+  };
+
   const handleLimpar = () => setSimulacoes([]);
 
   // Totais consolidados
