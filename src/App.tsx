@@ -42,7 +42,7 @@ const App = () => (
             <Route path="/manual" element={<Index />} />
             <Route path="/gerencial" element={<AnaliseGerencial />} />
             <Route path="/simulador" element={<Simulador />} />
-            <Route path="/simulador-massivo" element={<Simulador />} />
+            <Route path="/simulador-massivo" element={<SimuladorMassivo />} />
             <Route path="/propostas" element={<SimuladorPropostas />} />
             <Route path="/propostas-aprovadas" element={<PropostasAprovadas />} />
             <Route path="/pedidos-pendentes" element={<PedidosPendentes />} />
