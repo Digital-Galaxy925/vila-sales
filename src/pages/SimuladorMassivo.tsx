@@ -121,6 +121,7 @@ export default function SimuladorMassivo() {
         volumeCaixas,
         precoVendaDesejado,
         produto: produtoAtual,
+        margemAjustada: "",
       },
       ...prev,
     ]);
