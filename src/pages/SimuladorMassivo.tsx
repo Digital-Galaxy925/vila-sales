@@ -603,6 +603,7 @@ export default function SimuladorMassivo() {
                           <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
                           <td style={cellStyle}>{fmt(p.atual)}</td>
                           <td style={cellStyle}>{fmt(promo)}</td>
+                          <td style={cellStyle}>{fmt(sellOutNecUn)}</td>
                           <td
                             style={{
                               ...cellStyle,
