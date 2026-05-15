@@ -301,7 +301,7 @@ const AnaliseDDV = () => {
               </tr>
             </thead>
             <tbody>
-              {enriched.length === 0
+              {filtered.length === 0
                 ? Array.from({ length: 8 }).map((_, idx) => (
                     <tr key={`empty-${idx}`}>
                       <td className="px-3 py-2 border border-border sticky left-0 bg-card">&nbsp;</td>
@@ -314,7 +314,7 @@ const AnaliseDDV = () => {
                       ))}
                     </tr>
                   ))
-                : enriched.map((p, idx) => (
+                : filtered.map((p, idx) => (
                     <tr key={`${p.codigo}-${idx}`} className="hover:bg-muted/20">
                       <td className="px-3 py-2 text-foreground font-mono text-xs border border-border sticky left-0 bg-card">
                         {p.codigo}
