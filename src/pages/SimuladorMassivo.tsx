@@ -795,7 +795,7 @@ export default function SimuladorMassivo() {
                       <tfoot>
                         <tr>
                           <td
-                            colSpan={13}
+                            colSpan={16}
                             style={{
                               ...footCell,
                               textAlign: "right",
@@ -807,8 +807,6 @@ export default function SimuladorMassivo() {
                           >
                             Total
                           </td>
-                          <td style={footCell}></td>
-                          <td style={footCell}></td>
                           <td style={footCell}>
                             {tot.volume.toLocaleString("pt-BR")}
                           </td>
