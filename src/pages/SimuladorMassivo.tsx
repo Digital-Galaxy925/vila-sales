@@ -300,7 +300,7 @@ export default function SimuladorMassivo() {
                   whiteSpace: "nowrap",
                 }}
               >
-                💾 Adicionar
+                + Adicionar
               </button>
             </div>
 
