@@ -965,7 +965,150 @@ export default function SimuladorMassivo() {
               </div>
             )}
           </div>
+          {/* ─── Alerta de itens não encontrados ─── */}
+          {notFound.length > 0 && (
+            <div
+              style={{
+                marginTop: 16,
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: 10,
+                padding: "14px 18px",
+                fontSize: 13,
+                color: "#991b1b",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 12,
+              }}
+            >
+              <div>
+                <strong style={{ display: "block", marginBottom: 4 }}>
+                  ⚠ {notFound.length}{" "}
+                  {notFound.length === 1
+                    ? "item não foi encontrado"
+                    : "itens não foram encontrados"}{" "}
+                  na filial selecionada:
+                </strong>
+                <span style={{ wordBreak: "break-word" }}>
+                  {notFound.join(", ")}
+                </span>
+              </div>
+              <button
+                onClick={() => setNotFound([])}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#991b1b",
+                  cursor: "pointer",
+                  fontSize: 18,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
         </>
+      )}
+
+      {/* ─── Modal de seleção da filial após upload ─── */}
+      {showFilialModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 42, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 14,
+              padding: 28,
+              width: "100%",
+              maxWidth: 460,
+              boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: "#0f172a",
+                margin: 0,
+                marginBottom: 6,
+              }}
+            >
+              Selecione a filial para simulação
+            </h3>
+            <p
+              style={{
+                fontSize: 13,
+                color: "#64748b",
+                marginTop: 0,
+                marginBottom: 18,
+              }}
+            >
+              Arquivo: <strong>{uploadFileName}</strong> · {pendingRows.length}{" "}
+              {pendingRows.length === 1 ? "item" : "itens"} encontrados
+            </p>
+            <label style={labelStyle}>Filial</label>
+            <select
+              value={uploadFilial}
+              onChange={(e) => setUploadFilial(e.target.value)}
+              style={{ ...inputStyle, marginBottom: 20 }}
+            >
+              {FILIAIS.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.id} – {f.nome}
+                </option>
+              ))}
+            </select>
+            <div
+              style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}
+            >
+              <button
+                onClick={handleCancelUpload}
+                style={{
+                  height: 38,
+                  padding: "0 18px",
+                  borderRadius: 8,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  color: "#374151",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmUpload}
+                style={{
+                  height: 38,
+                  padding: "0 20px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: "#0071e3",
+                  color: "#fff",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                Carregar Itens
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       )}
     </div>
   );
