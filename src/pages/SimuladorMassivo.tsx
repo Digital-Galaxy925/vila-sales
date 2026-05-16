@@ -830,10 +830,6 @@ export default function SimuladorMassivo() {
               </div>
             )}
           </div>
-
-          <div style={{ marginTop: 20 }}>
-            <MarginCalculator />
-          </div>
         </>
       )}
     </div>
