@@ -689,15 +689,17 @@ export default function SimuladorMassivo() {
                   </thead>
                   <tbody>
                     {simulacoes.map((s) => {
-                      const p = s.produto!;
-                      const pv =
-                        parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
-                      const vol =
-                        parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
-                      const qpc = parseFloat(p.embCmp) || 1;
-                      const un = vol * qpc;
-                      const promo = p.promoc ?? 0;
-                      const precoRef = promo > 0 ? promo : p.atual;
+                       const p = s.produto!;
+                       const pvInput =
+                         parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
+                       const vol =
+                         parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
+                       const qpc = parseFloat(p.embCmp) || 1;
+                       const un = vol * qpc;
+                       const promo = p.promoc ?? 0;
+                       const precoRef = promo > 0 ? promo : p.atual;
+                       // Em upload sem preço informado, usa preço de referência (promo/atual)
+                       const pv = pvInput > 0 ? pvInput : (s.viaUpload ? precoRef : 0);
                       const margAtual =
                         precoRef > 0 ? (precoRef - p.custoLiq) / precoRef : 0;
                       const margProposta = pv > 0 ? (pv - p.custoLiq) / pv : 0;
