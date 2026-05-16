@@ -376,24 +376,51 @@ export default function SimuladorMassivo() {
                   disabled={!produtoAtual}
                 />
               </div>
-              <button
-                onClick={handleAdicionar}
-                disabled={!podeAdicionar}
-                style={{
-                  height: 38,
-                  padding: "0 18px",
-                  borderRadius: 8,
-                  border: "none",
-                  background: podeAdicionar ? "#0071e3" : "#cbd5e1",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  cursor: podeAdicionar ? "pointer" : "not-allowed",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                + Adicionar
-              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={handleAdicionar}
+                  disabled={!podeAdicionar}
+                  style={{
+                    height: 38,
+                    padding: "0 18px",
+                    borderRadius: 8,
+                    border: "none",
+                    background: podeAdicionar ? "#0071e3" : "#cbd5e1",
+                    color: "#fff",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: podeAdicionar ? "pointer" : "not-allowed",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  + Adicionar
+                </button>
+                <button
+                  onClick={handleUploadClick}
+                  title="Importar até 300 itens de uma planilha Excel"
+                  style={{
+                    height: 38,
+                    padding: "0 14px",
+                    borderRadius: 8,
+                    border: "1px solid #0071e3",
+                    background: "#fff",
+                    color: "#0071e3",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  ⬆ Upload Planilha
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+              </div>
             </div>
 
             {/* Barra de info do produto digitado */}
