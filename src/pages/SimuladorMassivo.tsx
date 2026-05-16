@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -143,6 +144,97 @@ export default function SimuladorMassivo() {
 
   const handleLimpar = () => setSimulacoes([]);
 
+  // ─── Upload de planilha ─────────────────────────────────────────────────────
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingRows, setPendingRows] = useState<
+    { codigo: string; volume: string; preco: string }[]
+  >([]);
+  const [uploadFilial, setUploadFilial] = useState("01");
+  const [showFilialModal, setShowFilialModal] = useState(false);
+  const [notFound, setNotFound] = useState<string[]>([]);
+  const [uploadFileName, setUploadFileName] = useState("");
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadFileName(file.name);
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        blankrows: false,
+        defval: "",
+      });
+      // Detecta cabeçalho (se primeira célula da col A não for numérica)
+      const first = rows[0]?.[0];
+      const startIdx =
+        first !== undefined &&
+        first !== "" &&
+        isNaN(Number(String(first).replace(",", ".").replace(/\D/g, "")))
+          ? 1
+          : 0;
+      const parsed = rows
+        .slice(startIdx)
+        .map((r) => ({
+          codigo: String(r[0] ?? "").trim(),
+          volume: String(r[1] ?? "").trim(),
+          preco: String(r[2] ?? "").trim().replace(".", ","),
+        }))
+        .filter((r) => r.codigo)
+        .slice(0, 300);
+      if (parsed.length === 0) {
+        alert("Nenhum item válido encontrado na planilha.");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+      setPendingRows(parsed);
+      setNotFound([]);
+      setShowFilialModal(true);
+    } catch (err) {
+      alert("Erro ao ler a planilha. Verifique o formato do arquivo.");
+      console.error(err);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleConfirmUpload = () => {
+    const novas: Simulacao[] = [];
+    const naoEncontrados: string[] = [];
+    pendingRows.forEach((r) => {
+      const prod = findProduto(r.codigo, uploadFilial);
+      if (!prod) {
+        naoEncontrados.push(r.codigo);
+        return;
+      }
+      novas.push({
+        id: crypto.randomUUID(),
+        codigo: r.codigo,
+        filial: uploadFilial,
+        volumeCaixas: r.volume,
+        precoVendaDesejado: r.preco,
+        produto: prod,
+        margemAjustada: "",
+      });
+    });
+    setSimulacoes((prev) => [...novas, ...prev]);
+    setNotFound(naoEncontrados);
+    setShowFilialModal(false);
+    setPendingRows([]);
+  };
+
+  const handleCancelUpload = () => {
+    setShowFilialModal(false);
+    setPendingRows([]);
+    setUploadFileName("");
+  };
+
   // Totais consolidados
   const totais = useMemo(() => {
     let totalSellOut = 0;
@@ -284,24 +376,51 @@ export default function SimuladorMassivo() {
                   disabled={!produtoAtual}
                 />
               </div>
-              <button
-                onClick={handleAdicionar}
-                disabled={!podeAdicionar}
-                style={{
-                  height: 38,
-                  padding: "0 18px",
-                  borderRadius: 8,
-                  border: "none",
-                  background: podeAdicionar ? "#0071e3" : "#cbd5e1",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  cursor: podeAdicionar ? "pointer" : "not-allowed",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                + Adicionar
-              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={handleAdicionar}
+                  disabled={!podeAdicionar}
+                  style={{
+                    height: 38,
+                    padding: "0 18px",
+                    borderRadius: 8,
+                    border: "none",
+                    background: podeAdicionar ? "#0071e3" : "#cbd5e1",
+                    color: "#fff",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: podeAdicionar ? "pointer" : "not-allowed",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  + Adicionar
+                </button>
+                <button
+                  onClick={handleUploadClick}
+                  title="Importar até 300 itens de uma planilha Excel"
+                  style={{
+                    height: 38,
+                    padding: "0 14px",
+                    borderRadius: 8,
+                    border: "1px solid #0071e3",
+                    background: "#fff",
+                    color: "#0071e3",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  ⬆ Upload Planilha
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+              </div>
             </div>
 
             {/* Barra de info do produto digitado */}
@@ -846,7 +965,149 @@ export default function SimuladorMassivo() {
               </div>
             )}
           </div>
+          {/* ─── Alerta de itens não encontrados ─── */}
+          {notFound.length > 0 && (
+            <div
+              style={{
+                marginTop: 16,
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: 10,
+                padding: "14px 18px",
+                fontSize: 13,
+                color: "#991b1b",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 12,
+              }}
+            >
+              <div>
+                <strong style={{ display: "block", marginBottom: 4 }}>
+                  ⚠ {notFound.length}{" "}
+                  {notFound.length === 1
+                    ? "item não foi encontrado"
+                    : "itens não foram encontrados"}{" "}
+                  na filial selecionada:
+                </strong>
+                <span style={{ wordBreak: "break-word" }}>
+                  {notFound.join(", ")}
+                </span>
+              </div>
+              <button
+                onClick={() => setNotFound([])}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#991b1b",
+                  cursor: "pointer",
+                  fontSize: 18,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
         </>
+      )}
+
+      {/* ─── Modal de seleção da filial após upload ─── */}
+      {showFilialModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 23, 42, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 14,
+              padding: 28,
+              width: "100%",
+              maxWidth: 460,
+              boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: "#0f172a",
+                margin: 0,
+                marginBottom: 6,
+              }}
+            >
+              Selecione a filial para simulação
+            </h3>
+            <p
+              style={{
+                fontSize: 13,
+                color: "#64748b",
+                marginTop: 0,
+                marginBottom: 18,
+              }}
+            >
+              Arquivo: <strong>{uploadFileName}</strong> · {pendingRows.length}{" "}
+              {pendingRows.length === 1 ? "item" : "itens"} encontrados
+            </p>
+            <label style={labelStyle}>Filial</label>
+            <select
+              value={uploadFilial}
+              onChange={(e) => setUploadFilial(e.target.value)}
+              style={{ ...inputStyle, marginBottom: 20 }}
+            >
+              {FILIAIS.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.id} – {f.nome}
+                </option>
+              ))}
+            </select>
+            <div
+              style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}
+            >
+              <button
+                onClick={handleCancelUpload}
+                style={{
+                  height: 38,
+                  padding: "0 18px",
+                  borderRadius: 8,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  color: "#374151",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmUpload}
+                style={{
+                  height: 38,
+                  padding: "0 20px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: "#0071e3",
+                  color: "#fff",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                Carregar Itens
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
