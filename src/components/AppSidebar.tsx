@@ -32,6 +32,7 @@ const navItems = [
   { to: "/propostas-aprovadas", label: "Propostas Aprovadas", icon: FileText },
   { to: "/pedidos-pendentes", label: "Pedidos Pendentes", icon: FileText },
   { to: "/comparativo-livros", label: "Comparativo de Livros", icon: GitCompareArrows },
+  { to: "/tabloide", label: "Tablóide", icon: FileText },
   { to: "/transferencia", label: "Transferência", icon: ArrowLeftRight },
   { to: "/transferencia-automatica", label: "Transferência Automática", icon: Zap },
   { to: "/conta-corrente", label: "Conta Corrente", icon: FileText },
