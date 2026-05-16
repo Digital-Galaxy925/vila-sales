@@ -178,20 +178,37 @@ export default function SimuladorMassivo() {
         blankrows: false,
         defval: "",
       });
-      // Detecta cabeçalho (se primeira célula da col A não for numérica)
-      const first = rows[0]?.[0];
-      const startIdx =
-        first !== undefined &&
-        first !== "" &&
-        isNaN(Number(String(first).replace(",", ".").replace(/\D/g, "")))
-          ? 1
-          : 0;
+      // Detecta cabeçalho e mapeia colunas por nome
+      const norm = (v: any) =>
+        String(v ?? "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .trim();
+      const header = rows[0]?.map(norm) ?? [];
+      const hasHeader = header.some((h) =>
+        ["codigo", "sku", "volume", "preco", "qtd", "quantidade"].includes(h),
+      );
+      let idxCod = 0;
+      let idxVol = 1;
+      let idxPreco = 2;
+      if (hasHeader) {
+        const find = (keys: string[]) =>
+          header.findIndex((h) => keys.some((k) => h.includes(k)));
+        const c = find(["codigo", "sku", "cod"]);
+        const v = find(["volume", "quantidade", "qtd", "caixa", "cx"]);
+        const p = find(["preco", "venda", "proposta"]);
+        if (c >= 0) idxCod = c;
+        if (v >= 0) idxVol = v;
+        if (p >= 0) idxPreco = p;
+      }
+      const startIdx = hasHeader ? 1 : 0;
       const parsed = rows
         .slice(startIdx)
         .map((r) => ({
-          codigo: String(r[0] ?? "").trim(),
-          volume: String(r[1] ?? "").trim(),
-          preco: String(r[2] ?? "").trim().replace(".", ","),
+          codigo: String(r[idxCod] ?? "").trim(),
+          volume: String(r[idxVol] ?? "").trim(),
+          preco: String(r[idxPreco] ?? "").trim().replace(".", ","),
         }))
         .filter((r) => r.codigo)
         .slice(0, 300);
