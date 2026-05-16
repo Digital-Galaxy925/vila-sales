@@ -173,13 +173,13 @@ export default function SimuladorMassivo() {
       const buf = await file.arrayBuffer();
       const wb = XLSX.read(buf, { type: "array" });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+      const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, {
         header: 1,
         blankrows: false,
         defval: "",
       });
       // Detecta cabeçalho e mapeia colunas por nome
-      const norm = (v: any) =>
+      const norm = (v: unknown) =>
         String(v ?? "")
           .toLowerCase()
           .normalize("NFD")
@@ -190,7 +190,7 @@ export default function SimuladorMassivo() {
         ["codigo", "sku", "volume", "preco", "qtd", "quantidade"].includes(h),
       );
       let idxCod = 0;
-      let idxVol = 1;
+      let idxVol = -1;
       let idxPreco = 2;
       if (hasHeader) {
         const find = (keys: string[]) =>
@@ -202,12 +202,18 @@ export default function SimuladorMassivo() {
         if (v >= 0) idxVol = v;
         if (p >= 0) idxPreco = p;
       }
+      const toNumericText = (value: unknown) => {
+        const raw = String(value ?? "").trim();
+        if (!raw) return "";
+        const normalized = raw.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
+        return /^-?\d+(\.\d+)?$/.test(normalized) ? raw.replace(".", ",") : "";
+      };
       const startIdx = hasHeader ? 1 : 0;
       const parsed = rows
         .slice(startIdx)
         .map((r) => ({
           codigo: String(r[idxCod] ?? "").trim(),
-          volume: String(r[idxVol] ?? "").trim(),
+          volume: idxVol >= 0 ? toNumericText(r[idxVol]) : "",
           preco: String(r[idxPreco] ?? "").trim().replace(".", ","),
         }))
         .filter((r) => r.codigo)
