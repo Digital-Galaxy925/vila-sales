@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import MarginCalculator from "@/components/MarginCalculator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Product {
