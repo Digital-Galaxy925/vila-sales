@@ -604,21 +604,38 @@ export default function SimuladorMassivo() {
                 Simulações Adicionadas ({simulacoes.length})
               </h3>
               {simulacoes.length > 0 && (
-                <button
-                  onClick={handleLimpar}
-                  style={{
-                    background: "#fff",
-                    border: "1px solid #e5e7eb",
-                    color: "#dc2626",
-                    borderRadius: 8,
-                    padding: "6px 14px",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  Limpar Tudo
-                </button>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={handleExportExcel}
+                    style={{
+                      background: "#16a34a",
+                      border: "1px solid #15803d",
+                      color: "#fff",
+                      borderRadius: 8,
+                      padding: "6px 14px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ⬇ Exportar Excel
+                  </button>
+                  <button
+                    onClick={handleLimpar}
+                    style={{
+                      background: "#fff",
+                      border: "1px solid #e5e7eb",
+                      color: "#dc2626",
+                      borderRadius: 8,
+                      padding: "6px 14px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Limpar Tudo
+                  </button>
+                </div>
               )}
             </div>
 
