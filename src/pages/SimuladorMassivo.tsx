@@ -266,6 +266,59 @@ export default function SimuladorMassivo() {
     setUploadFileName("");
   };
 
+  const handleExportExcel = () => {
+    if (simulacoes.length === 0) return;
+    const data = simulacoes.map((s) => {
+      const p = s.produto!;
+      const pvInput = parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
+      const vol = parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
+      const qpc = parseFloat(p.embCmp) || 1;
+      const un = vol * qpc;
+      const promo = p.promoc ?? 0;
+      const precoRef = promo > 0 ? promo : p.atual;
+      const pv = pvInput > 0 ? pvInput : (s.viaUpload ? precoRef : 0);
+      const margAtual = precoRef > 0 ? (precoRef - p.custoLiq) / precoRef : 0;
+      const margProposta = pv > 0 ? (pv - p.custoLiq) / pv : 0;
+      const valorPedido = un * pv;
+      const margAjustFrac = (parseFloat(s.margemAjustada.replace(",", ".")) || 0) / 100;
+      const investUnit =
+        margAjustFrac > 0 && margAjustFrac < 1 && pv > 0
+          ? p.custoLiq - pv * (1 - margAjustFrac)
+          : 0;
+      const sellOutAjustado = investUnit > 0 ? investUnit : 0;
+      const investTotal = investUnit > 0 ? investUnit * un : 0;
+      const pctInvest = valorPedido > 0 && investTotal > 0 ? investTotal / valorPedido : 0;
+      const filialNome = FILIAIS.find((f) => f.id === s.filial)?.nome ?? s.filial;
+      return {
+        BU: p.bu || "",
+        CD: filialNome,
+        FAMILIA: p.familia || "",
+        CODIGO: s.codigo,
+        DESCRICAO: p.descricao,
+        ESTOQUE: p.estoque ?? 0,
+        "UNID/CX": qpc,
+        CUSTO: p.custoLiq,
+        "SELL OUT ATUAL": p.sellout ?? 0,
+        "PRECO ATUAL": p.atual,
+        "PRECO PROMOCIONAL": promo,
+        "MARGEM ATUAL": margAtual,
+        PROPOSTA: pv,
+        "MARGEM PROPOSTA": margProposta,
+        "MARGEM AJUSTADA": margAjustFrac,
+        "SELL OUT AJUSTADO": sellOutAjustado,
+        VOLUME: vol,
+        "INVESTIMENTO TOTAL": sellOutAjustado * un,
+        "VALOR PEDIDO": valorPedido,
+        "% INVESTIMENTO": pctInvest,
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Simulações");
+    const ts = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `simulador-massivo-${ts}.xlsx`);
+  };
+
   // Totais consolidados
   const totais = useMemo(() => {
     let totalSellOut = 0;
@@ -604,21 +657,38 @@ export default function SimuladorMassivo() {
                 Simulações Adicionadas ({simulacoes.length})
               </h3>
               {simulacoes.length > 0 && (
-                <button
-                  onClick={handleLimpar}
-                  style={{
-                    background: "#fff",
-                    border: "1px solid #e5e7eb",
-                    color: "#dc2626",
-                    borderRadius: 8,
-                    padding: "6px 14px",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  Limpar Tudo
-                </button>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={handleExportExcel}
+                    style={{
+                      background: "#16a34a",
+                      border: "1px solid #15803d",
+                      color: "#fff",
+                      borderRadius: 8,
+                      padding: "6px 14px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ⬇ Exportar Excel
+                  </button>
+                  <button
+                    onClick={handleLimpar}
+                    style={{
+                      background: "#fff",
+                      border: "1px solid #e5e7eb",
+                      color: "#dc2626",
+                      borderRadius: 8,
+                      padding: "6px 14px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Limpar Tudo
+                  </button>
+                </div>
               )}
             </div>
 
