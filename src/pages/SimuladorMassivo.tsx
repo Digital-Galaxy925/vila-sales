@@ -766,6 +766,7 @@ export default function SimuladorMassivo() {
                           parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
                         const qpc = parseFloat(p.embCmp) || 1;
                         const un = vol * qpc;
+                        const margProp = pv > 0 ? (pv - p.custoLiq) / pv : 0;
                         const margAjustFrac =
                           (parseFloat(s.margemAjustada.replace(",", ".")) || 0) /
                           100;
@@ -779,18 +780,18 @@ export default function SimuladorMassivo() {
                         acc.invest += investTot;
                         acc.valor += valPed;
                         acc.margNum += valPed * margAjustFrac;
+                        acc.margPropNum += valPed * margProp;
                         return acc;
                       },
-                      { volume: 0, invest: 0, valor: 0, margNum: 0 },
+                      { volume: 0, invest: 0, valor: 0, margNum: 0, margPropNum: 0 },
                     );
                     const pct = tot.valor > 0 ? tot.invest / tot.valor : 0;
                     const margPond = tot.valor > 0 ? tot.margNum / tot.valor : 0;
-                    const corMP =
-                      margPond >= 0.17
-                        ? "#16a34a"
-                        : margPond >= 0.1
-                          ? "#d97706"
-                          : "#dc2626";
+                    const margPondProp = tot.valor > 0 ? tot.margPropNum / tot.valor : 0;
+                    const colorFor = (m: number) =>
+                      m >= 0.17 ? "#16a34a" : m >= 0.1 ? "#d97706" : "#dc2626";
+                    const corMP = colorFor(margPond);
+                    const corMProp = colorFor(margPondProp);
                     const footCell: React.CSSProperties = {
                       padding: "10px 10px",
                       fontSize: 12,
@@ -804,7 +805,7 @@ export default function SimuladorMassivo() {
                       <tfoot>
                         <tr>
                           <td
-                            colSpan={14}
+                            colSpan={13}
                             style={{
                               ...footCell,
                               textAlign: "right",
@@ -815,6 +816,9 @@ export default function SimuladorMassivo() {
                             }}
                           >
                             Total
+                          </td>
+                          <td style={{ ...footCell, color: corMProp }}>
+                            {(margPondProp * 100).toFixed(2).replace(".", ",")}%
                           </td>
                           <td style={{ ...footCell, color: corMP }}>
                             {(margPond * 100).toFixed(2).replace(".", ",")}%
