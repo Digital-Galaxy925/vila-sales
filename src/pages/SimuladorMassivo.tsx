@@ -143,6 +143,12 @@ export default function SimuladorMassivo() {
     );
   };
 
+  const handleVolumeChange = (id: string, value: string) => {
+    setSimulacoes((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, volumeCaixas: value } : s)),
+    );
+  };
+
   const handleLimpar = () => setSimulacoes([]);
 
   // ─── Upload de planilha ─────────────────────────────────────────────────────
