@@ -37,6 +37,7 @@ interface Simulacao {
   precoVendaDesejado: string;
   produto: Product | null;
   margemAjustada: string;
+  viaUpload?: boolean;
 }
 
 const FILIAIS = [
@@ -142,6 +143,12 @@ export default function SimuladorMassivo() {
     );
   };
 
+  const handleVolumeChange = (id: string, value: string) => {
+    setSimulacoes((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, volumeCaixas: value } : s)),
+    );
+  };
+
   const handleLimpar = () => setSimulacoes([]);
 
   // ─── Upload de planilha ─────────────────────────────────────────────────────
@@ -221,6 +228,7 @@ export default function SimuladorMassivo() {
         precoVendaDesejado: r.preco,
         produto: prod,
         margemAjustada: "",
+        viaUpload: true,
       });
     });
     setSimulacoes((prev) => [...novas, ...prev]);
@@ -823,7 +831,29 @@ export default function SimuladorMassivo() {
                                     : "—"}
                                 </td>
                                 <td style={cellStyle}>
-                                  {vol.toLocaleString("pt-BR")}
+                                  {s.viaUpload ? (
+                                    <input
+                                      type="text"
+                                      value={s.volumeCaixas}
+                                      onChange={(e) =>
+                                        handleVolumeChange(s.id, e.target.value)
+                                      }
+                                      placeholder="0"
+                                      style={{
+                                        width: 70,
+                                        padding: "5px 8px",
+                                        borderRadius: 6,
+                                        border: "1px solid #d1d5db",
+                                        fontSize: 12,
+                                        textAlign: "right",
+                                        outline: "none",
+                                        fontWeight: vol > 0 ? 600 : 400,
+                                        color: vol > 0 ? "#0f172a" : "#1f2937",
+                                      }}
+                                    />
+                                  ) : (
+                                    vol.toLocaleString("pt-BR")
+                                  )}
                                 </td>
                                 <td
                                   style={{
