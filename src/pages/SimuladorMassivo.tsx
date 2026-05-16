@@ -228,6 +228,7 @@ export default function SimuladorMassivo() {
         precoVendaDesejado: r.preco,
         produto: prod,
         margemAjustada: "",
+        viaUpload: true,
       });
     });
     setSimulacoes((prev) => [...novas, ...prev]);
