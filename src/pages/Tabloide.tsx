@@ -1,127 +1,341 @@
 import { useState } from "react";
-import { Search, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Search, Image as ImageIcon, Loader2, Plus, X, Tag, Sparkles } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 
-interface ProductInfo {
-  found: boolean;
-  productId?: string;
-  productName?: string;
-  brand?: string;
-  link?: string;
-  image?: string | null;
+// ─── Types ───────────────────────────────────────────────────────────────────
+interface TabloideProduto {
+  id: string;
+  codigo: string;
+  nome: string;
+  marca?: string;
+  imagem?: string | null;
+  precoDe?: number;
+  precoPor?: number;
+  selo?: string; // ex: "OFERTA", "EXCLUSIVO", "NOVO"
 }
 
+interface TabloideSecao {
+  id: string;
+  nome: string;
+  cor: string; // tailwind bg utility for header accent
+  produtos: TabloideProduto[];
+}
+
+const STORAGE_KEY = "vilasales_tabloide_secoes";
+
+const SECOES_INICIAIS: TabloideSecao[] = [
+  { id: "higiene", nome: "Higiene & Beleza", cor: "bg-pink-500", produtos: [] },
+  { id: "limpeza", nome: "Limpeza", cor: "bg-blue-500", produtos: [] },
+  { id: "alimentos", nome: "Alimentos", cor: "bg-amber-500", produtos: [] },
+  { id: "bebidas", nome: "Bebidas", cor: "bg-emerald-500", produtos: [] },
+];
+
+const brl = (v?: number) =>
+  typeof v === "number"
+    ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+    : "—";
+
+// ─── Card de produto ─────────────────────────────────────────────────────────
+const ProdutoCard = ({
+  produto,
+  onRemove,
+}: {
+  produto: TabloideProduto;
+  onRemove: () => void;
+}) => {
+  const temDesconto =
+    produto.precoDe && produto.precoPor && produto.precoPor < produto.precoDe;
+  const pctOff = temDesconto
+    ? Math.round(((produto.precoDe! - produto.precoPor!) / produto.precoDe!) * 100)
+    : 0;
+
+  return (
+    <div className="group relative bg-card rounded-xl border border-border shadow-[var(--shadow-card)] overflow-hidden hover:shadow-lg transition-all">
+      {produto.selo && (
+        <span className="absolute top-2 left-2 z-10 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-md">
+          {produto.selo}
+        </span>
+      )}
+      {temDesconto && (
+        <span className="absolute top-2 right-2 z-10 bg-destructive text-destructive-foreground text-xs font-bold px-2 py-1 rounded-md shadow-md">
+          -{pctOff}%
+        </span>
+      )}
+      <button
+        onClick={onRemove}
+        className="absolute bottom-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 border border-border rounded-md p-1.5 hover:bg-destructive hover:text-destructive-foreground"
+        title="Remover"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+
+      <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
+        {produto.imagem ? (
+          <img
+            src={produto.imagem}
+            alt={produto.nome}
+            className="w-full h-full object-contain p-3"
+          />
+        ) : (
+          <ImageIcon className="w-10 h-10 text-muted-foreground" />
+        )}
+      </div>
+
+      <div className="p-3 space-y-1">
+        {produto.marca && (
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+            {produto.marca}
+          </p>
+        )}
+        <h4 className="text-sm font-medium text-foreground line-clamp-2 min-h-[2.5rem] leading-snug">
+          {produto.nome}
+        </h4>
+        <p className="text-[10px] text-muted-foreground">Cód. {produto.codigo}</p>
+
+        <div className="pt-2 mt-1 border-t border-border">
+          {temDesconto && (
+            <p className="text-xs text-muted-foreground line-through">
+              {brl(produto.precoDe)}
+            </p>
+          )}
+          <p className="text-lg font-bold text-primary leading-tight">
+            {brl(produto.precoPor ?? produto.precoDe)}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Página ──────────────────────────────────────────────────────────────────
 const Tabloide = () => {
+  const [secoes, setSecoes] = useState<TabloideSecao[]>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) return parsed;
+      }
+    } catch {/* ignore */}
+    return SECOES_INICIAIS;
+  });
+
+  const persist = (next: TabloideSecao[]) => {
+    setSecoes(next);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {/* ignore */}
+  };
+
+  // ─── Modal de adição ───────────────────────────────────────────────────────
+  const [modalSecao, setModalSecao] = useState<string | null>(null);
   const [codigo, setCodigo] = useState("");
+  const [precoDe, setPrecoDe] = useState("");
+  const [precoPor, setPrecoPor] = useState("");
+  const [selo, setSelo] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [info, setInfo] = useState<ProductInfo | null>(null);
 
-  const handleBuscar = async () => {
-    const code = codigo.trim();
-    if (!code) return;
-    setLoading(true);
-    setErro(null);
-    setInfo(null);
+  const abrirModal = (secaoId: string) => {
+    setModalSecao(secaoId);
+    setCodigo(""); setPrecoDe(""); setPrecoPor(""); setSelo(""); setErro(null);
+  };
+
+  const fecharModal = () => setModalSecao(null);
+
+  const handleAdicionar = async () => {
+    if (!codigo.trim() || !modalSecao) return;
+    setLoading(true); setErro(null);
     try {
       const { data, error } = await supabase.functions.invoke("vtex-product-image", {
-        body: { code },
+        body: { code: codigo.trim() },
       });
       if (error) throw error;
       if (!data?.found) {
-        setErro(`Nenhum produto encontrado para o código "${code}".`);
-      } else {
-        setInfo(data as ProductInfo);
+        setErro(`Produto "${codigo}" não encontrado na VTEX.`);
+        setLoading(false);
+        return;
       }
+      const novo: TabloideProduto = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        codigo: codigo.trim(),
+        nome: data.productName || "Sem nome",
+        marca: data.brand || undefined,
+        imagem: data.image || null,
+        precoDe: precoDe ? parseFloat(precoDe.replace(",", ".")) : undefined,
+        precoPor: precoPor ? parseFloat(precoPor.replace(",", ".")) : undefined,
+        selo: selo.trim() || undefined,
+      };
+      persist(
+        secoes.map((s) =>
+          s.id === modalSecao ? { ...s, produtos: [...s.produtos, novo] } : s
+        )
+      );
+      fecharModal();
     } catch (e) {
-      setErro(e instanceof Error ? e.message : "Falha ao consultar o produto.");
+      setErro(e instanceof Error ? e.message : "Falha ao buscar produto.");
     } finally {
       setLoading(false);
     }
   };
 
+  const removerProduto = (secaoId: string, prodId: string) => {
+    persist(
+      secoes.map((s) =>
+        s.id === secaoId ? { ...s, produtos: s.produtos.filter((p) => p.id !== prodId) } : s
+      )
+    );
+  };
+
+  const totalProdutos = secoes.reduce((acc, s) => acc + s.produtos.length, 0);
+
   return (
     <div>
       <PageHeader
         title="Tablóide"
-        description="Consulte a imagem do produto pelo código (VTEX)"
+        description="Monte o tablóide promocional com cards visuais por produto e seções por categoria"
+        actions={
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Sparkles className="w-4 h-4 text-primary" />
+            {totalProdutos} produto{totalProdutos !== 1 ? "s" : ""}
+          </div>
+        }
       />
 
-      <div className="bg-card rounded-xl shadow-[var(--shadow-card)] p-6 max-w-3xl">
-        <label className="text-sm font-medium text-foreground mb-2 block">
-          Código do produto
-        </label>
-        <div className="flex gap-2">
-          <Input
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
-            placeholder="Ex.: 123456"
-            className="flex-1"
-          />
-          <Button onClick={handleBuscar} disabled={loading || !codigo.trim()}>
-            {loading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Search className="w-4 h-4 mr-2" />
-            )}
-            Buscar
-          </Button>
-        </div>
+      <div className="space-y-8">
+        {secoes.map((secao) => (
+          <section key={secao.id} className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
+            {/* Header da seção */}
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <span className={`w-1.5 h-8 rounded-full ${secao.cor}`} />
+                <div>
+                  <h3 className="font-heading text-base font-bold text-foreground flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-muted-foreground" />
+                    {secao.nome}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {secao.produtos.length} item{secao.produtos.length !== 1 ? "ns" : ""}
+                  </p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => abrirModal(secao.id)}>
+                <Plus className="w-4 h-4 mr-1" /> Adicionar produto
+              </Button>
+            </div>
 
-        {erro && (
-          <div className="mt-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm">
-            {erro}
-          </div>
-        )}
-
-        {info?.found && (
-          <div className="mt-6 flex flex-col sm:flex-row gap-6 items-start">
-            <div className="w-64 h-64 bg-muted rounded-lg flex items-center justify-center overflow-hidden border">
-              {info.image ? (
-                <img
-                  src={info.image}
-                  alt={info.productName || "Produto"}
-                  className="w-full h-full object-contain"
-                />
+            {/* Grid de produtos */}
+            <div className="p-4">
+              {secao.produtos.length === 0 ? (
+                <div className="border-2 border-dashed border-border rounded-lg py-10 text-center">
+                  <ImageIcon className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Nenhum produto nesta seção. Clique em <span className="font-medium text-foreground">Adicionar produto</span>.
+                  </p>
+                </div>
               ) : (
-                <div className="text-muted-foreground flex flex-col items-center text-xs">
-                  <ImageIcon className="w-8 h-8 mb-2" />
-                  Sem imagem disponível
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {secao.produtos.map((p) => (
+                    <ProdutoCard
+                      key={p.id}
+                      produto={p}
+                      onRemove={() => removerProduto(secao.id, p.id)}
+                    />
+                  ))}
                 </div>
               )}
             </div>
-            <div className="flex-1 space-y-2">
-              <h3 className="font-heading text-lg font-semibold text-foreground">
-                {info.productName}
+          </section>
+        ))}
+      </div>
+
+      {/* Modal de adição */}
+      {modalSecao && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={fecharModal}>
+          <div
+            className="bg-card rounded-xl shadow-2xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading text-lg font-bold text-foreground">
+                Adicionar produto
               </h3>
-              {info.brand && (
-                <p className="text-sm text-muted-foreground">
-                  Marca: <span className="text-foreground">{info.brand}</span>
-                </p>
+              <button onClick={fecharModal} className="text-muted-foreground hover:text-foreground">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Código do produto *
+                </label>
+                <Input
+                  value={codigo}
+                  onChange={(e) => setCodigo(e.target.value)}
+                  placeholder="Ex.: 123456"
+                  autoFocus
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                    Preço "De"
+                  </label>
+                  <Input
+                    value={precoDe}
+                    onChange={(e) => setPrecoDe(e.target.value)}
+                    placeholder="0,00"
+                    inputMode="decimal"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                    Preço "Por"
+                  </label>
+                  <Input
+                    value={precoPor}
+                    onChange={(e) => setPrecoPor(e.target.value)}
+                    placeholder="0,00"
+                    inputMode="decimal"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Selo (opcional)
+                </label>
+                <Input
+                  value={selo}
+                  onChange={(e) => setSelo(e.target.value)}
+                  placeholder="Ex.: OFERTA, EXCLUSIVO, NOVO"
+                />
+              </div>
+
+              {erro && (
+                <div className="p-2 rounded-md bg-destructive/10 text-destructive text-xs">
+                  {erro}
+                </div>
               )}
-              {info.productId && (
-                <p className="text-xs text-muted-foreground">
-                  ID VTEX: {info.productId}
-                </p>
-              )}
-              {info.link && (
-                <a
-                  href={info.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm text-primary hover:underline inline-block"
-                >
-                  Abrir no site →
-                </a>
-              )}
+
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" className="flex-1" onClick={fecharModal}>
+                  Cancelar
+                </Button>
+                <Button className="flex-1" onClick={handleAdicionar} disabled={loading || !codigo.trim()}>
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4 mr-2" />
+                  )}
+                  Buscar e adicionar
+                </Button>
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
