@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
@@ -106,8 +106,26 @@ export default function SimuladorMassivo() {
   const custoAtual = produtoAtual?.custoLiq ?? 0;
   const precoAtual = parseFloat(precoVendaDesejado.replace(",", ".")) || 0;
 
-  // ─── Lista de simulações ────────────────────────────────────────────────────
-  const [simulacoes, setSimulacoes] = useState<Simulacao[]>([]);
+  // ─── Lista de simulações (persistida em localStorage) ──────────────────────
+  const STORAGE_KEY = "vilasales_simulador_massivo";
+  const [simulacoes, setSimulacoes] = useState<Simulacao[]>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(simulacoes));
+    } catch {
+      /* ignore */
+    }
+  }, [simulacoes]);
 
   const podeAdicionar =
     !!produtoAtual &&
