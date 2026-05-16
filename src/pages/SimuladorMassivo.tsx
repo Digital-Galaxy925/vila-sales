@@ -173,13 +173,13 @@ export default function SimuladorMassivo() {
       const buf = await file.arrayBuffer();
       const wb = XLSX.read(buf, { type: "array" });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+      const rows = XLSX.utils.sheet_to_json<unknown[]>(ws, {
         header: 1,
         blankrows: false,
         defval: "",
       });
       // Detecta cabeçalho e mapeia colunas por nome
-      const norm = (v: any) =>
+      const norm = (v: unknown) =>
         String(v ?? "")
           .toLowerCase()
           .normalize("NFD")
@@ -202,7 +202,7 @@ export default function SimuladorMassivo() {
         if (v >= 0) idxVol = v;
         if (p >= 0) idxPreco = p;
       }
-      const toNumericText = (value: any) => {
+      const toNumericText = (value: unknown) => {
         const raw = String(value ?? "").trim();
         if (!raw) return "";
         const normalized = raw.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
