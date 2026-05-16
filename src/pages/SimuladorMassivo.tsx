@@ -1109,7 +1109,6 @@ export default function SimuladorMassivo() {
           </div>
         </div>
       )}
-      )}
     </div>
   );
 }
