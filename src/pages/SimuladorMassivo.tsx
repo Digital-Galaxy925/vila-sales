@@ -144,6 +144,97 @@ export default function SimuladorMassivo() {
 
   const handleLimpar = () => setSimulacoes([]);
 
+  // ─── Upload de planilha ─────────────────────────────────────────────────────
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingRows, setPendingRows] = useState<
+    { codigo: string; volume: string; preco: string }[]
+  >([]);
+  const [uploadFilial, setUploadFilial] = useState("01");
+  const [showFilialModal, setShowFilialModal] = useState(false);
+  const [notFound, setNotFound] = useState<string[]>([]);
+  const [uploadFileName, setUploadFileName] = useState("");
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadFileName(file.name);
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows: any[][] = XLSX.utils.sheet_to_json(ws, {
+        header: 1,
+        blankrows: false,
+        defval: "",
+      });
+      // Detecta cabeçalho (se primeira célula da col A não for numérica)
+      const first = rows[0]?.[0];
+      const startIdx =
+        first !== undefined &&
+        first !== "" &&
+        isNaN(Number(String(first).replace(",", ".").replace(/\D/g, "")))
+          ? 1
+          : 0;
+      const parsed = rows
+        .slice(startIdx)
+        .map((r) => ({
+          codigo: String(r[0] ?? "").trim(),
+          volume: String(r[1] ?? "").trim(),
+          preco: String(r[2] ?? "").trim().replace(".", ","),
+        }))
+        .filter((r) => r.codigo)
+        .slice(0, 300);
+      if (parsed.length === 0) {
+        alert("Nenhum item válido encontrado na planilha.");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+      setPendingRows(parsed);
+      setNotFound([]);
+      setShowFilialModal(true);
+    } catch (err) {
+      alert("Erro ao ler a planilha. Verifique o formato do arquivo.");
+      console.error(err);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleConfirmUpload = () => {
+    const novas: Simulacao[] = [];
+    const naoEncontrados: string[] = [];
+    pendingRows.forEach((r) => {
+      const prod = findProduto(r.codigo, uploadFilial);
+      if (!prod) {
+        naoEncontrados.push(r.codigo);
+        return;
+      }
+      novas.push({
+        id: crypto.randomUUID(),
+        codigo: r.codigo,
+        filial: uploadFilial,
+        volumeCaixas: r.volume,
+        precoVendaDesejado: r.preco,
+        produto: prod,
+        margemAjustada: "",
+      });
+    });
+    setSimulacoes((prev) => [...novas, ...prev]);
+    setNotFound(naoEncontrados);
+    setShowFilialModal(false);
+    setPendingRows([]);
+  };
+
+  const handleCancelUpload = () => {
+    setShowFilialModal(false);
+    setPendingRows([]);
+    setUploadFileName("");
+  };
+
   // Totais consolidados
   const totais = useMemo(() => {
     let totalSellOut = 0;
