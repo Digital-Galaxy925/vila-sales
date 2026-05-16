@@ -190,7 +190,7 @@ export default function SimuladorMassivo() {
         ["codigo", "sku", "volume", "preco", "qtd", "quantidade"].includes(h),
       );
       let idxCod = 0;
-      let idxVol = 1;
+      let idxVol = -1;
       let idxPreco = 2;
       if (hasHeader) {
         const find = (keys: string[]) =>
@@ -202,12 +202,18 @@ export default function SimuladorMassivo() {
         if (v >= 0) idxVol = v;
         if (p >= 0) idxPreco = p;
       }
+      const toNumericText = (value: any) => {
+        const raw = String(value ?? "").trim();
+        if (!raw) return "";
+        const normalized = raw.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
+        return /^-?\d+(\.\d+)?$/.test(normalized) ? raw.replace(".", ",") : "";
+      };
       const startIdx = hasHeader ? 1 : 0;
       const parsed = rows
         .slice(startIdx)
         .map((r) => ({
           codigo: String(r[idxCod] ?? "").trim(),
-          volume: String(r[idxVol] ?? "").trim(),
+          volume: idxVol >= 0 ? toNumericText(r[idxVol]) : "",
           preco: String(r[idxPreco] ?? "").trim().replace(".", ","),
         }))
         .filter((r) => r.codigo)
