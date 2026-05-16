@@ -11,6 +11,7 @@ import SimuladorMassivo from "./pages/SimuladorMassivo";
 import SimuladorPropostas from "./pages/SimuladorPropostas";
 import AnaliseGerencial from "./pages/AnaliseGerencial";
 import ComparativoLivros from "./pages/ComparativoLivros";
+import Tabloide from "./pages/Tabloide";
 import Transferencia from "./pages/Transferencia";
 import TransferenciaAutomatica from "./pages/TransferenciaAutomatica";
 import ContaCorrente from "./pages/ContaCorrente";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/pedidos-pendentes" element={<PedidosPendentes />} />
             <Route path="/tabela-st" element={<TabelaST />} />
             <Route path="/comparativo-livros" element={<ComparativoLivros />} />
+            <Route path="/tabloide" element={<Tabloide />} />
             <Route path="/transferencia" element={<Transferencia />} />
             <Route path="/transferencia-automatica" element={<TransferenciaAutomatica />} />
             <Route path="/conta-corrente" element={<ContaCorrente />} />
