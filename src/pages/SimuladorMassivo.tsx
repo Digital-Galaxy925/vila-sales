@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import MarginCalculator from "@/components/MarginCalculator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Product {
@@ -828,6 +829,10 @@ export default function SimuladorMassivo() {
                 </table>
               </div>
             )}
+          </div>
+
+          <div style={{ marginTop: 20 }}>
+            <MarginCalculator />
           </div>
         </>
       )}
