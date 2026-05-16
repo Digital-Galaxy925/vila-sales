@@ -778,11 +778,19 @@ export default function SimuladorMassivo() {
                         acc.volume += vol;
                         acc.invest += investTot;
                         acc.valor += valPed;
+                        acc.margNum += valPed * margAjustFrac;
                         return acc;
                       },
-                      { volume: 0, invest: 0, valor: 0 },
+                      { volume: 0, invest: 0, valor: 0, margNum: 0 },
                     );
                     const pct = tot.valor > 0 ? tot.invest / tot.valor : 0;
+                    const margPond = tot.valor > 0 ? tot.margNum / tot.valor : 0;
+                    const corMP =
+                      margPond >= 0.17
+                        ? "#16a34a"
+                        : margPond >= 0.1
+                          ? "#d97706"
+                          : "#dc2626";
                     const footCell: React.CSSProperties = {
                       padding: "10px 10px",
                       fontSize: 12,
@@ -796,7 +804,7 @@ export default function SimuladorMassivo() {
                       <tfoot>
                         <tr>
                           <td
-                            colSpan={16}
+                            colSpan={14}
                             style={{
                               ...footCell,
                               textAlign: "right",
@@ -808,6 +816,10 @@ export default function SimuladorMassivo() {
                           >
                             Total
                           </td>
+                          <td style={{ ...footCell, color: corMP }}>
+                            {(margPond * 100).toFixed(2).replace(".", ",")}%
+                          </td>
+                          <td style={footCell}></td>
                           <td style={footCell}>
                             {tot.volume.toLocaleString("pt-BR")}
                           </td>
