@@ -190,15 +190,44 @@ const AnaliseDDV = () => {
     });
   }, [items, lookup, metrics510]);
 
+  const buildRowFromLookup = (codigo: string) => {
+    const key = normCode(codigo);
+    const cells: Record<string, { estoque: number; ddv: number }> = {};
+    let descricao = "";
+    let anyHit = false;
+    FILIAIS.forEach(({ code }) => {
+      const found = lookup[code]?.get(key);
+      if (found) {
+        anyHit = true;
+        cells[code] = { estoque: found.estoque, ddv: found.ddv };
+        if (!descricao) descricao = found.descricao;
+      } else {
+        cells[code] = { estoque: 0, ddv: 0 };
+      }
+    });
+    if (cells["502"]) {
+      const found510 = lookup["510"]?.get(key);
+      const m510 = metrics510[key];
+      const ddv510 = found510?.ddv ?? m510?.ddv ?? 0;
+      cells["502"] = { estoque: cells["502"].estoque, ddv: ddv510 };
+    }
+    return { codigo, descricao, cells, anyHit };
+  };
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return enriched;
+    if (enriched.length === 0) {
+      // Sem upload: busca direta nos livros pelo código digitado
+      const row = buildRowFromLookup(search.trim());
+      return row.anyHit ? [{ codigo: row.codigo, descricao: row.descricao, cells: row.cells }] : [];
+    }
     return enriched.filter(
       (p) =>
         p.codigo.toLowerCase().includes(q) ||
         p.descricao.toLowerCase().includes(q),
     );
-  }, [enriched, search]);
+  }, [enriched, search, lookup, metrics510]);
 
   const exportExcel = () => {
     if (enriched.length === 0) return;
