@@ -1126,6 +1126,8 @@ export default function SimuladorMassivo() {
                           <td style={{ ...footCell, color: corMProp }}>
                             {(margPondProp * 100).toFixed(2).replace(".", ",")}%
                           </td>
+                          <td style={footCell}></td>
+                          <td style={footCell}></td>
                           <td style={{ ...footCell, color: corMP }}>
                             {(margPond * 100).toFixed(2).replace(".", ",")}%
                           </td>
