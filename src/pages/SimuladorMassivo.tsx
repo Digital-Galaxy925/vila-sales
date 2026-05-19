@@ -831,6 +831,14 @@ export default function SimuladorMassivo() {
                           : margProposta >= 0.1
                             ? "#d97706"
                             : "#dc2626";
+                      const contraProp = parseFloat(s.contraProposta?.replace(",", ".") || "") || 0;
+                      const margContra = contraProp > 0 ? (contraProp - p.custoLiq) / contraProp : 0;
+                      const corMC =
+                        margContra >= 0.17
+                          ? "#16a34a"
+                          : margContra >= 0.1
+                            ? "#d97706"
+                            : "#dc2626";
                       return (
                         <tr
                           key={s.id}
