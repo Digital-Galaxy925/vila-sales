@@ -304,6 +304,8 @@ export default function SimuladorMassivo() {
       const pv = pvInput > 0 ? pvInput : (s.viaUpload ? precoRef : 0);
       const margAtual = precoRef > 0 ? (precoRef - p.custoLiq) / precoRef : 0;
       const margProposta = pv > 0 ? (pv - p.custoLiq) / pv : 0;
+      const contraProp = parseFloat(s.contraProposta?.replace(",", ".") || "") || 0;
+      const margContra = contraProp > 0 ? (contraProp - p.custoLiq) / contraProp : 0;
       const valorPedido = un * pv;
       const margAjustFrac = (parseFloat(s.margemAjustada.replace(",", ".")) || 0) / 100;
       const investUnit =
