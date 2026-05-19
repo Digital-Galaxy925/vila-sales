@@ -1286,6 +1286,37 @@ const cellStyle: React.CSSProperties = {
   whiteSpace: "nowrap",
 };
 
+const FREEZE_WIDTHS = [70, 130, 140, 100, 260];
+const FREEZE_LEFTS = FREEZE_WIDTHS.reduce<number[]>((acc, w, i) => {
+  acc.push(i === 0 ? 0 : acc[i - 1] + FREEZE_WIDTHS[i - 1]);
+  return acc;
+}, []);
+const freezeHeader = (i: number): React.CSSProperties =>
+  i < 5
+    ? {
+        position: "sticky",
+        left: FREEZE_LEFTS[i],
+        zIndex: 3,
+        background: "#1e3a5f",
+        width: FREEZE_WIDTHS[i],
+        minWidth: FREEZE_WIDTHS[i],
+        boxShadow: i === 4 ? "2px 0 4px -2px rgba(0,0,0,0.35)" : undefined,
+      }
+    : {};
+const freezeCell = (i: number): React.CSSProperties =>
+  i < 5
+    ? {
+        position: "sticky",
+        left: FREEZE_LEFTS[i],
+        zIndex: 2,
+        background: "#ffffff",
+        width: FREEZE_WIDTHS[i],
+        minWidth: FREEZE_WIDTHS[i],
+        boxShadow: i === 4 ? "2px 0 4px -2px rgba(0,0,0,0.15)" : undefined,
+      }
+    : {};
+
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function Chip({
   label,
