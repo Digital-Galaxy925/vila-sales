@@ -755,6 +755,8 @@ export default function SimuladorMassivo() {
                         "MARGEM ATUAL",
                         "PROPOSTA",
                         "MARGEM PROPOSTA",
+                        "CONTRA PROPOSTA",
+                        "MARGEM CONTRA PROPOSTA",
                         "MARGEM AJUSTADA",
                         "SELL OUT AJUSTADO",
                         "VOLUME",
