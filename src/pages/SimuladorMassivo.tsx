@@ -827,13 +827,13 @@ export default function SimuladorMassivo() {
                           key={s.id}
                           style={{ borderBottom: "1px solid #f1f5f9" }}
                         >
-                          <td style={cellStyle}>{p.bu || "—"}</td>
-                          <td style={cellStyle}>{filialNome}</td>
-                          <td style={cellStyle}>{p.familia || "—"}</td>
-                          <td style={cellStyle}>
+                          <td style={{ ...cellStyle, ...freezeCell(0) }}>{p.bu || "—"}</td>
+                          <td style={{ ...cellStyle, ...freezeCell(1) }}>{filialNome}</td>
+                          <td style={{ ...cellStyle, ...freezeCell(2) }}>{p.familia || "—"}</td>
+                          <td style={{ ...cellStyle, ...freezeCell(3) }}>
                             <strong>{s.codigo}</strong>
                           </td>
-                          <td style={cellStyle}>{p.descricao}</td>
+                          <td style={{ ...cellStyle, ...freezeCell(4) }}>{p.descricao}</td>
                           <td style={cellStyle}>
                             {(p.estoque ?? 0).toLocaleString("pt-BR")}
                           </td>
