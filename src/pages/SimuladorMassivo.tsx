@@ -945,29 +945,25 @@ export default function SimuladorMassivo() {
                                     : "—"}
                                 </td>
                                 <td style={cellStyle}>
-                                  {s.viaUpload ? (
-                                    <input
-                                      type="text"
-                                      value={s.volumeCaixas}
-                                      onChange={(e) =>
-                                        handleVolumeChange(s.id, e.target.value)
-                                      }
-                                      placeholder="0"
-                                      style={{
-                                        width: 70,
-                                        padding: "5px 8px",
-                                        borderRadius: 6,
-                                        border: "1px solid #d1d5db",
-                                        fontSize: 12,
-                                        textAlign: "right",
-                                        outline: "none",
-                                        fontWeight: vol > 0 ? 600 : 400,
-                                        color: vol > 0 ? "#0f172a" : "#1f2937",
-                                      }}
-                                    />
-                                  ) : (
-                                    vol.toLocaleString("pt-BR")
-                                  )}
+                                  <input
+                                    type="text"
+                                    value={s.volumeCaixas}
+                                    onChange={(e) =>
+                                      handleVolumeChange(s.id, e.target.value)
+                                    }
+                                    placeholder="0"
+                                    style={{
+                                      width: 70,
+                                      padding: "5px 8px",
+                                      borderRadius: 6,
+                                      border: "1px solid #d1d5db",
+                                      fontSize: 12,
+                                      textAlign: "right",
+                                      outline: "none",
+                                      fontWeight: vol > 0 ? 600 : 400,
+                                      color: vol > 0 ? "#0f172a" : "#1f2937",
+                                    }}
+                                  />
                                 </td>
                                 <td
                                   style={{
