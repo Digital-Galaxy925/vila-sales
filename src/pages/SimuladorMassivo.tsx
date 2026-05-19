@@ -755,7 +755,7 @@ export default function SimuladorMassivo() {
                         "VALOR PEDIDO",
                         "% INVESTIMENTO",
                         "",
-                      ].map((h) => (
+                      ].map((h, idx) => (
                         <th
                           key={h}
                           style={{
@@ -768,6 +768,7 @@ export default function SimuladorMassivo() {
                             letterSpacing: 0.3,
                             borderRight: "1px solid #34548a",
                             whiteSpace: "nowrap",
+                            ...freezeHeader(idx),
                           }}
                         >
                           {h}
