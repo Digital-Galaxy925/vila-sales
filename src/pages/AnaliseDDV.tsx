@@ -370,8 +370,8 @@ const AnaliseDDV = () => {
               {filtered.length === 0
                 ? Array.from({ length: 8 }).map((_, idx) => (
                     <tr key={`empty-${idx}`}>
-                      <td className="px-3 py-2 border border-border sticky left-0 bg-card">&nbsp;</td>
-                      <td className="px-3 py-2 border border-border">&nbsp;</td>
+                      <td className="px-3 py-2 border border-border sticky left-0 bg-card z-10 w-[110px] min-w-[110px]">&nbsp;</td>
+                      <td className="px-3 py-2 border border-border sticky left-[110px] bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]">&nbsp;</td>
                       {FILIAIS.map((f) => (
                         <Fragment key={f.code}>
                           <td className="px-3 py-2 border border-border">&nbsp;</td>
