@@ -382,10 +382,10 @@ const AnaliseDDV = () => {
                   ))
                 : filtered.map((p, idx) => (
                     <tr key={`${p.codigo}-${idx}`} className="hover:bg-muted/20">
-                      <td className="px-3 py-2 text-foreground font-mono text-xs border border-border sticky left-0 bg-card">
+                      <td className="px-3 py-2 text-foreground font-mono text-xs border border-border sticky left-0 bg-card z-10 w-[110px] min-w-[110px]">
                         {p.codigo}
                       </td>
-                      <td className="px-3 py-2 text-foreground border border-border">
+                      <td className="px-3 py-2 text-foreground border border-border sticky left-[110px] bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]">
                         {p.descricao || <span className="text-muted-foreground italic">—</span>}
                       </td>
                       {FILIAIS.map((f) => {
