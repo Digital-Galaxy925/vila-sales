@@ -880,6 +880,36 @@ export default function SimuladorMassivo() {
                           >
                             {fmtPct(margProposta)}
                           </td>
+                          <td style={{ ...cellStyle, padding: "6px 8px" }}>
+                            <input
+                              type="text"
+                              value={s.contraProposta || ""}
+                              onChange={(e) =>
+                                handleContraProposta(s.id, e.target.value)
+                              }
+                              placeholder="0,00"
+                              style={{
+                                width: 80,
+                                padding: "5px 8px",
+                                borderRadius: 6,
+                                border: "1px solid #d1d5db",
+                                fontSize: 12,
+                                textAlign: "right",
+                                outline: "none",
+                                fontWeight: contraProp > 0 ? 600 : 400,
+                                color: contraProp > 0 ? "#0f172a" : "#1f2937",
+                              }}
+                            />
+                          </td>
+                          <td
+                            style={{
+                              ...cellStyle,
+                              color: corMC,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {contraProp > 0 ? fmtPct(margContra) : "—"}
+                          </td>
                           {(() => {
                             const margAjustNum =
                               parseFloat(
