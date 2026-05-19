@@ -37,6 +37,7 @@ interface Simulacao {
   precoVendaDesejado: string;
   produto: Product | null;
   margemAjustada: string;
+  contraProposta?: string;
   viaUpload?: boolean;
 }
 
@@ -164,6 +165,12 @@ export default function SimuladorMassivo() {
   const handleVolumeChange = (id: string, value: string) => {
     setSimulacoes((prev) =>
       prev.map((s) => (s.id === id ? { ...s, volumeCaixas: value } : s)),
+    );
+  };
+
+  const handleContraProposta = (id: string, value: string) => {
+    setSimulacoes((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, contraProposta: value } : s)),
     );
   };
 
@@ -297,6 +304,8 @@ export default function SimuladorMassivo() {
       const pv = pvInput > 0 ? pvInput : (s.viaUpload ? precoRef : 0);
       const margAtual = precoRef > 0 ? (precoRef - p.custoLiq) / precoRef : 0;
       const margProposta = pv > 0 ? (pv - p.custoLiq) / pv : 0;
+      const contraProp = parseFloat(s.contraProposta?.replace(",", ".") || "") || 0;
+      const margContra = contraProp > 0 ? (contraProp - p.custoLiq) / contraProp : 0;
       const valorPedido = un * pv;
       const margAjustFrac = (parseFloat(s.margemAjustada.replace(",", ".")) || 0) / 100;
       const investUnit =
@@ -322,6 +331,8 @@ export default function SimuladorMassivo() {
         "MARGEM ATUAL": margAtual,
         PROPOSTA: pv,
         "MARGEM PROPOSTA": margProposta,
+        "CONTRA PROPOSTA": contraProp,
+        "MARGEM CONTRA PROPOSTA": margContra,
         "MARGEM AJUSTADA": margAjustFrac,
         "SELL OUT AJUSTADO": sellOutAjustado,
         VOLUME: vol,
@@ -748,6 +759,8 @@ export default function SimuladorMassivo() {
                         "MARGEM ATUAL",
                         "PROPOSTA",
                         "MARGEM PROPOSTA",
+                        "CONTRA PROPOSTA",
+                        "MARGEM CONTRA PROPOSTA",
                         "MARGEM AJUSTADA",
                         "SELL OUT AJUSTADO",
                         "VOLUME",
@@ -822,6 +835,14 @@ export default function SimuladorMassivo() {
                           : margProposta >= 0.1
                             ? "#d97706"
                             : "#dc2626";
+                      const contraProp = parseFloat(s.contraProposta?.replace(",", ".") || "") || 0;
+                      const margContra = contraProp > 0 ? (contraProp - p.custoLiq) / contraProp : 0;
+                      const corMC =
+                        margContra >= 0.17
+                          ? "#16a34a"
+                          : margContra >= 0.1
+                            ? "#d97706"
+                            : "#dc2626";
                       return (
                         <tr
                           key={s.id}
@@ -862,6 +883,36 @@ export default function SimuladorMassivo() {
                             }}
                           >
                             {fmtPct(margProposta)}
+                          </td>
+                          <td style={{ ...cellStyle, padding: "6px 8px" }}>
+                            <input
+                              type="text"
+                              value={s.contraProposta || ""}
+                              onChange={(e) =>
+                                handleContraProposta(s.id, e.target.value)
+                              }
+                              placeholder="0,00"
+                              style={{
+                                width: 80,
+                                padding: "5px 8px",
+                                borderRadius: 6,
+                                border: "1px solid #d1d5db",
+                                fontSize: 12,
+                                textAlign: "right",
+                                outline: "none",
+                                fontWeight: contraProp > 0 ? 600 : 400,
+                                color: contraProp > 0 ? "#0f172a" : "#1f2937",
+                              }}
+                            />
+                          </td>
+                          <td
+                            style={{
+                              ...cellStyle,
+                              color: corMC,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {contraProp > 0 ? fmtPct(margContra) : "—"}
                           </td>
                           {(() => {
                             const margAjustNum =
@@ -1079,6 +1130,8 @@ export default function SimuladorMassivo() {
                           <td style={{ ...footCell, color: corMProp }}>
                             {(margPondProp * 100).toFixed(2).replace(".", ",")}%
                           </td>
+                          <td style={footCell}></td>
+                          <td style={footCell}></td>
                           <td style={{ ...footCell, color: corMP }}>
                             {(margPond * 100).toFixed(2).replace(".", ",")}%
                           </td>
