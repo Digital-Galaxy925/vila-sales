@@ -755,7 +755,7 @@ export default function SimuladorMassivo() {
                         "VALOR PEDIDO",
                         "% INVESTIMENTO",
                         "",
-                      ].map((h) => (
+                      ].map((h, idx) => (
                         <th
                           key={h}
                           style={{
@@ -768,6 +768,7 @@ export default function SimuladorMassivo() {
                             letterSpacing: 0.3,
                             borderRight: "1px solid #34548a",
                             whiteSpace: "nowrap",
+                            ...freezeHeader(idx),
                           }}
                         >
                           {h}
@@ -826,13 +827,13 @@ export default function SimuladorMassivo() {
                           key={s.id}
                           style={{ borderBottom: "1px solid #f1f5f9" }}
                         >
-                          <td style={cellStyle}>{p.bu || "—"}</td>
-                          <td style={cellStyle}>{filialNome}</td>
-                          <td style={cellStyle}>{p.familia || "—"}</td>
-                          <td style={cellStyle}>
+                          <td style={{ ...cellStyle, ...freezeCell(0) }}>{p.bu || "—"}</td>
+                          <td style={{ ...cellStyle, ...freezeCell(1) }}>{filialNome}</td>
+                          <td style={{ ...cellStyle, ...freezeCell(2) }}>{p.familia || "—"}</td>
+                          <td style={{ ...cellStyle, ...freezeCell(3) }}>
                             <strong>{s.codigo}</strong>
                           </td>
-                          <td style={cellStyle}>{p.descricao}</td>
+                          <td style={{ ...cellStyle, ...freezeCell(4) }}>{p.descricao}</td>
                           <td style={cellStyle}>
                             {(p.estoque ?? 0).toLocaleString("pt-BR")}
                           </td>
@@ -1285,6 +1286,37 @@ const cellStyle: React.CSSProperties = {
   color: "#1f2937",
   whiteSpace: "nowrap",
 };
+
+const FREEZE_WIDTHS = [70, 130, 140, 100, 260];
+const FREEZE_LEFTS = FREEZE_WIDTHS.reduce<number[]>((acc, w, i) => {
+  acc.push(i === 0 ? 0 : acc[i - 1] + FREEZE_WIDTHS[i - 1]);
+  return acc;
+}, []);
+const freezeHeader = (i: number): React.CSSProperties =>
+  i < 5
+    ? {
+        position: "sticky",
+        left: FREEZE_LEFTS[i],
+        zIndex: 3,
+        background: "#1e3a5f",
+        width: FREEZE_WIDTHS[i],
+        minWidth: FREEZE_WIDTHS[i],
+        boxShadow: i === 4 ? "2px 0 4px -2px rgba(0,0,0,0.35)" : undefined,
+      }
+    : {};
+const freezeCell = (i: number): React.CSSProperties =>
+  i < 5
+    ? {
+        position: "sticky",
+        left: FREEZE_LEFTS[i],
+        zIndex: 2,
+        background: "#ffffff",
+        width: FREEZE_WIDTHS[i],
+        minWidth: FREEZE_WIDTHS[i],
+        boxShadow: i === 4 ? "2px 0 4px -2px rgba(0,0,0,0.15)" : undefined,
+      }
+    : {};
+
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function Chip({
