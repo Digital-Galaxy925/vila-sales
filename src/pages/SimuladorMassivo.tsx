@@ -168,6 +168,12 @@ export default function SimuladorMassivo() {
     );
   };
 
+  const handleContraProposta = (id: string, value: string) => {
+    setSimulacoes((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, contraProposta: value } : s)),
+    );
+  };
+
   const handleLimpar = () => setSimulacoes([]);
 
   // ─── Upload de planilha ─────────────────────────────────────────────────────
