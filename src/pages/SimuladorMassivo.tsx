@@ -37,7 +37,7 @@ interface Simulacao {
   precoVendaDesejado: string;
   produto: Product | null;
   margemAjustada: string;
-  contraProposta: string;
+  contraProposta?: string;
   viaUpload?: boolean;
 }
 
