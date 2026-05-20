@@ -198,12 +198,16 @@ const AnaliseGerencial = () => {
   // KPI calculations based on search results
   const kpis = useMemo(() => {
     if (results.length === 0) {
-      return { custoMedio: "—", vendaMedia: "—", estoqueTotal: "—", filiaisPresentes: "—", valorEstoqueVenda: "—", estoqueCaixas: "—" };
+      return { custoMedio: "—", vendaMedia: "—", estoqueTotal: "—", filiaisPresentes: "—", valorEstoqueVenda: "—", estoqueCaixas: "—", unidPorCaixa: "—" };
     }
     const custoMedio = results.reduce((s, r) => s + r.custoLiq, 0) / results.length;
     const vendaMedia = results.reduce((s, r) => s + r.atual, 0) / results.length;
     const estoqueTotal = results.reduce((s, r) => s + r.estoque, 0);
-    const valorEstoqueVenda = results.reduce((s, r) => s + (r.estoque * r.atual), 0);
+    // Unidade por caixa: vem do livro 01 (filial 01)
+    const filial01 = results.find((r) => r.filial === "01");
+    const unidCaixa = filial01?.embCmp || results.find((r) => r.embCmp > 0)?.embCmp || 0;
+    // Valor Total Venda = venda média × estoque total × unidade por caixa
+    const valorEstoqueVenda = vendaMedia * estoqueTotal * (unidCaixa || 1);
     return {
       custoMedio: fmt(custoMedio),
       vendaMedia: fmt(vendaMedia),
@@ -211,6 +215,7 @@ const AnaliseGerencial = () => {
       filiaisPresentes: `${results.length} de ${FILIAL_ORDER.length}`,
       valorEstoqueVenda: fmt(valorEstoqueVenda),
       estoqueCaixas: `${fmtNum(estoqueTotal)} cx`,
+      unidPorCaixa: unidCaixa > 0 ? fmtNum(unidCaixa) : "—",
     };
   }, [results]);
 
