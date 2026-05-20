@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import ExcelJS from "exceljs";
 import * as XLSX from "xlsx";
 import { unzipSync, zipSync } from "fflate";
 import { notifyAppDataChanged } from "@/contexts/AppDataContext";
