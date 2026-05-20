@@ -17,6 +17,7 @@ interface Product {
   sellout: number;
   promoc: number;
   filial: string;
+  embCmp?: string | number;
 }
 
 type DataMap = Record<string, Product[]>;
@@ -44,7 +45,7 @@ interface BulkProductResult {
 }
 
 const findProductInData = (code: string, data: DataMap) => {
-  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; promoc: number; descricao: string }[] = [];
+  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; promoc: number; descricao: string; embCmp: number }[] = [];
   FILIAL_ORDER.forEach((filialId) => {
     const products = data[filialId];
     if (!products) return;
@@ -61,6 +62,7 @@ const findProductInData = (code: string, data: DataMap) => {
         sellout: (match as any).sellout ?? 0,
         promoc: (match as any).promoc ?? 0,
         descricao: match.descricao ?? "",
+        embCmp: parseFloat(String((match as any).embCmp ?? "")) || 0,
       });
     }
   });
@@ -196,12 +198,16 @@ const AnaliseGerencial = () => {
   // KPI calculations based on search results
   const kpis = useMemo(() => {
     if (results.length === 0) {
-      return { custoMedio: "—", vendaMedia: "—", estoqueTotal: "—", filiaisPresentes: "—", valorEstoqueVenda: "—", estoqueCaixas: "—" };
+      return { custoMedio: "—", vendaMedia: "—", estoqueTotal: "—", filiaisPresentes: "—", valorEstoqueVenda: "—", estoqueCaixas: "—", unidPorCaixa: "—" };
     }
     const custoMedio = results.reduce((s, r) => s + r.custoLiq, 0) / results.length;
     const vendaMedia = results.reduce((s, r) => s + r.atual, 0) / results.length;
     const estoqueTotal = results.reduce((s, r) => s + r.estoque, 0);
-    const valorEstoqueVenda = results.reduce((s, r) => s + (r.estoque * r.atual), 0);
+    // Unidade por caixa: vem do livro 01 (filial 01)
+    const filial01 = results.find((r) => r.filial === "01");
+    const unidCaixa = filial01?.embCmp || results.find((r) => r.embCmp > 0)?.embCmp || 0;
+    // Valor Total Venda = venda média × estoque total × unidade por caixa
+    const valorEstoqueVenda = vendaMedia * estoqueTotal * (unidCaixa || 1);
     return {
       custoMedio: fmt(custoMedio),
       vendaMedia: fmt(vendaMedia),
@@ -209,6 +215,7 @@ const AnaliseGerencial = () => {
       filiaisPresentes: `${results.length} de ${FILIAL_ORDER.length}`,
       valorEstoqueVenda: fmt(valorEstoqueVenda),
       estoqueCaixas: `${fmtNum(estoqueTotal)} cx`,
+      unidPorCaixa: unidCaixa > 0 ? fmtNum(unidCaixa) : "—",
     };
   }, [results]);
 
@@ -299,11 +306,12 @@ const AnaliseGerencial = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
       >
         <KpiCard title="Custo Médio" value={kpis.custoMedio} icon={DollarSign} />
         <KpiCard title="Venda Média" value={kpis.vendaMedia} icon={TrendingUp} />
         <KpiCard title="Estoque Total" value={kpis.estoqueTotal} icon={Package} />
+        <KpiCard title="Unidade por Caixa" value={kpis.unidPorCaixa} icon={BoxesIcon} />
         <KpiCard title="Filiais c/ Produto" value={kpis.filiaisPresentes} icon={BarChart3} />
         <KpiCard title="Valor Total Venda" value={kpis.valorEstoqueVenda} icon={ShoppingCart} />
       </motion.div>
