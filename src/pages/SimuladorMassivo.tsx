@@ -916,17 +916,6 @@ export default function SimuladorMassivo() {
                           >
                             {contraProp > 0 ? fmtPct(margContra) : "—"}
                           </td>
-                          <td
-                            style={{
-                              ...cellStyle,
-                              color: contraProp > 0 ? "#0f172a" : "#9ca3af",
-                              fontWeight: contraProp > 0 ? 600 : 400,
-                            }}
-                          >
-                            {contraProp > 0
-                              ? fmt(Math.max(0, p.custoLiq - contraProp))
-                              : "—"}
-                          </td>
                           {(() => {
                             const margAjustNum =
                               parseFloat(
