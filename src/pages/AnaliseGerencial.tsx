@@ -17,6 +17,7 @@ interface Product {
   sellout: number;
   promoc: number;
   filial: string;
+  embCmp?: string | number;
 }
 
 type DataMap = Record<string, Product[]>;
