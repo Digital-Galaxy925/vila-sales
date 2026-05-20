@@ -216,6 +216,34 @@ function rebuildZipExcel(bytes: Uint8Array): Uint8Array {
   return zipSync(entries, { level: 0, mtime: new Date(0) });
 }
 
+async function readExcelRowsWithExcelJS(file: File): Promise<Record<string, string>[]> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(await file.arrayBuffer());
+  const worksheet = workbook.worksheets[0];
+  if (!worksheet) throw new Error("Arquivo Excel sem planilhas.");
+
+  const headerRow = worksheet.getRow(1);
+  const headers = Array.from({ length: Math.max(headerRow.cellCount, worksheet.columnCount) }, (_, index) => {
+    const text = headerRow.getCell(index + 1).text.trim();
+    return text || `COLUNA_${index + 1}`;
+  });
+
+  const rows: Record<string, string>[] = [];
+  worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    if (rowNumber === 1) return;
+    const record: Record<string, string> = {};
+    let hasValue = false;
+    headers.forEach((header, index) => {
+      const value = row.getCell(index + 1).text.trim();
+      if (value) hasValue = true;
+      record[header] = value;
+    });
+    if (hasValue) rows.push(record);
+  });
+
+  return rows;
+}
+
 async function readWorkbookSafely(file: File): Promise<XLSX.WorkBook> {
   // Tenta vários métodos para contornar bugs do SheetJS 0.18.5
   // ("Bad compressed size" em arquivos .xlsx com data descriptor / ZIP64)
@@ -251,7 +279,12 @@ async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
   const sheetName = wb.SheetNames[0];
   if (!sheetName) throw new Error("Arquivo Excel sem planilhas.");
   const sheet = wb.Sheets[sheetName];
-  const rows: Record<string, string>[] = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+  let rows: Record<string, string>[] = [];
+  try {
+    rows = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+  } catch (_) {
+    rows = await readExcelRowsWithExcelJS(file);
+  }
   if (rows.length === 0) throw new Error(
     "Planilha lida mas sem dados.\n💡 Solução: verifique se os dados estão na primeira aba."
   );
