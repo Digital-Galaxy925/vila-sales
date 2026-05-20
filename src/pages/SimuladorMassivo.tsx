@@ -333,7 +333,7 @@ export default function SimuladorMassivo() {
         "MARGEM PROPOSTA": margProposta,
         "CONTRA PROPOSTA": contraProp,
         "MARGEM CONTRA PROPOSTA": margContra,
-        "SELL OUT CONTRA PROPOSTA": contraProp > 0 ? Math.max(0, p.custoLiq - contraProp) : 0,
+        
         "MARGEM AJUSTADA": margAjustFrac,
         "SELL OUT AJUSTADO": sellOutAjustado,
         VOLUME: vol,
