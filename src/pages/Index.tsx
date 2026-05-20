@@ -216,6 +216,56 @@ function rebuildZipExcel(bytes: Uint8Array): Uint8Array {
   return zipSync(entries, { level: 0, mtime: new Date(0) });
 }
 
+function isZipBasedExcel(bytes: Uint8Array): boolean {
+  return bytes[0] === 0x50 && bytes[1] === 0x4b;
+}
+
+async function fileIsTextCSV(file: File): Promise<boolean> {
+  if (!/\.csv$/i.test(file.name)) return false;
+  const bytes = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+  return !isZipBasedExcel(bytes);
+}
+
+function normalizeMatrixHeader(rows: string[][]): string[][] {
+  const headerIndex = rows.findIndex((row) => {
+    const header = row.map(normalizeHeader);
+    const hasCode = header.some((cell) => cell.includes("SEQ PROD") || cell.includes("COD PRODUTO") || cell === "CODIGO");
+    const hasData = header.some((cell) => cell.includes("DESCRICAO") || cell.includes("ESTOQUE") || cell.includes("DDV"));
+    return hasCode && hasData;
+  });
+  return headerIndex >= 0 ? rows.slice(headerIndex) : rows;
+}
+
+function combineWorkbookMatrices(fileName: string, sheets: Array<{ name: string; rows: string[][] }>): string[][] {
+  const usableSheets = sheets
+    .map((sheet) => ({ ...sheet, rows: normalizeMatrixHeader(sheet.rows) }))
+    .filter((sheet) => sheet.rows.length > 1);
+  const isLivro01 = /livro[_\s-]?01/i.test(fileName);
+  const selected = isLivro01
+    ? usableSheets.filter((sheet) => /POCOS.*SUGESTAO/i.test(sheet.name))
+    : [];
+  const finalSheets = selected.length > 0 ? selected : usableSheets.slice(0, 1);
+  if (finalSheets.length === 0) return [];
+
+  const [first, ...rest] = finalSheets;
+  return [first.rows[0], ...first.rows.slice(1), ...rest.flatMap((sheet) => sheet.rows.slice(1))];
+}
+
+function workbookToMatrix(fileName: string, workbook: XLSX.WorkBook): string[][] {
+  return combineWorkbookMatrices(
+    fileName,
+    workbook.SheetNames.map((sheetName) => ({
+      name: sheetName,
+      rows: XLSX.utils.sheet_to_json<(string | number)[]>(workbook.Sheets[sheetName], {
+        header: 1,
+        defval: "",
+        raw: false,
+        blankrows: false,
+      }).map((row) => row.map((cell) => String(cell ?? "").trim())),
+    }))
+  );
+}
+
 async function readExcelRowsWithExcelJS(file: File): Promise<Record<string, string>[]> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(await file.arrayBuffer());
@@ -247,16 +297,16 @@ async function readExcelRowsWithExcelJS(file: File): Promise<Record<string, stri
 async function readExcelMatrixWithExcelJS(file: File): Promise<string[][]> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(await file.arrayBuffer());
-  const worksheet = workbook.worksheets[0];
-  if (!worksheet) throw new Error("Arquivo Excel sem planilhas.");
-
-  const maxCol = worksheet.columnCount;
-  const rows: string[][] = [];
-  worksheet.eachRow({ includeEmpty: false }, (row) => {
-    const values = Array.from({ length: maxCol }, (_, index) => row.getCell(index + 1).text.trim());
-    if (values.some((value) => value !== "")) rows.push(values);
+  const sheets = workbook.worksheets.map((worksheet) => {
+    const maxCol = worksheet.columnCount;
+    const rows: string[][] = [];
+    worksheet.eachRow({ includeEmpty: false }, (row) => {
+      const values = Array.from({ length: maxCol }, (_, index) => row.getCell(index + 1).text.trim());
+      if (values.some((value) => value !== "")) rows.push(values);
+    });
+    return { name: worksheet.name, rows };
   });
-  return rows;
+  return combineWorkbookMatrices(file.name, sheets);
 }
 
 async function readWorkbookSafely(file: File): Promise<XLSX.WorkBook> {
@@ -285,7 +335,7 @@ async function readWorkbookSafely(file: File): Promise<XLSX.WorkBook> {
 }
 
 async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
-  if (/\.csv$/i.test(file.name)) {
+  if (await fileIsTextCSV(file)) {
     const text = await readFileText(file);
     return parseCSV(text);
   }
@@ -307,7 +357,7 @@ async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
 }
 
 async function readExcelAsMatrix(file: File): Promise<string[][]> {
-  if (/\.csv$/i.test(file.name)) {
+  if (await fileIsTextCSV(file)) {
     const text = await readFileText(file);
     const firstLine = text.split(/\r?\n/).find((line) => line.trim()) ?? "";
     if (!firstLine) return [];
@@ -322,11 +372,7 @@ async function readExcelAsMatrix(file: File): Promise<string[][]> {
 
   try {
     const wb = await readWorkbookSafely(file);
-    const sheetName = wb.SheetNames[0];
-    if (!sheetName) throw new Error("Arquivo Excel sem planilhas.");
-    const sheet = wb.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json<(string | number)[]>(sheet, { header: 1, defval: "", raw: false, blankrows: false })
-      .map((row) => row.map((cell) => String(cell ?? "").trim()));
+    return workbookToMatrix(file.name, wb);
   } catch (_) {
     return readExcelMatrixWithExcelJS(file);
   }
