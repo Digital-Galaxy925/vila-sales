@@ -199,14 +199,42 @@ async function readFileText(file: File): Promise<string> {
 }
 
 
+function readFileBinaryString(file: File): Promise<string> {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = (e) => res(e.target?.result as string);
+    reader.onerror = rej;
+    reader.readAsBinaryString(file);
+  });
+}
+
+async function readWorkbookSafely(file: File): Promise<XLSX.WorkBook> {
+  // Tenta vários métodos para contornar bugs do SheetJS 0.18.5
+  // ("Bad compressed size" em arquivos .xlsx com data descriptor / ZIP64)
+  const buf = await file.arrayBuffer();
+  try {
+    return XLSX.read(buf, { type: "array" });
+  } catch (e1) {
+    try {
+      return XLSX.read(new Uint8Array(buf), { type: "array", cellFormula: false, cellHTML: false });
+    } catch (e2) {
+      const bin = await readFileBinaryString(file);
+      try {
+        return XLSX.read(bin, { type: "binary" });
+      } catch (e3) {
+        return XLSX.read(bin, { type: "binary", cellFormula: false, cellHTML: false });
+      }
+    }
+  }
+}
+
 async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
   if (/\.csv$/i.test(file.name)) {
     const text = await readFileText(file);
     return parseCSV(text);
   }
 
-  const buf = await file.arrayBuffer();
-  const wb = XLSX.read(buf, { type: "array" });
+  const wb = await readWorkbookSafely(file);
   const sheetName = wb.SheetNames[0];
   if (!sheetName) throw new Error("Arquivo Excel sem planilhas.");
   const sheet = wb.Sheets[sheetName];
