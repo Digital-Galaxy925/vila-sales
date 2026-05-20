@@ -333,6 +333,7 @@ export default function SimuladorMassivo() {
         "MARGEM PROPOSTA": margProposta,
         "CONTRA PROPOSTA": contraProp,
         "MARGEM CONTRA PROPOSTA": margContra,
+        "SELL OUT CONTRA PROPOSTA": contraProp > 0 ? Math.max(0, p.custoLiq - contraProp) : 0,
         "MARGEM AJUSTADA": margAjustFrac,
         "SELL OUT AJUSTADO": sellOutAjustado,
         VOLUME: vol,
@@ -761,6 +762,7 @@ export default function SimuladorMassivo() {
                         "MARGEM PROPOSTA",
                         "CONTRA PROPOSTA",
                         "MARGEM CONTRA PROPOSTA",
+                        "SELL OUT CONTRA PROPOSTA",
                         "MARGEM AJUSTADA",
                         "SELL OUT AJUSTADO",
                         "VOLUME",
@@ -913,6 +915,17 @@ export default function SimuladorMassivo() {
                             }}
                           >
                             {contraProp > 0 ? fmtPct(margContra) : "—"}
+                          </td>
+                          <td
+                            style={{
+                              ...cellStyle,
+                              color: contraProp > 0 ? "#0f172a" : "#9ca3af",
+                              fontWeight: contraProp > 0 ? 600 : 400,
+                            }}
+                          >
+                            {contraProp > 0
+                              ? fmt(Math.max(0, p.custoLiq - contraProp))
+                              : "—"}
                           </td>
                           {(() => {
                             const margAjustNum =
