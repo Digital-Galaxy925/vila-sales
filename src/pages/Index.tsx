@@ -275,12 +275,12 @@ async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
     return parseCSV(text);
   }
 
-  const wb = await readWorkbookSafely(file);
-  const sheetName = wb.SheetNames[0];
-  if (!sheetName) throw new Error("Arquivo Excel sem planilhas.");
-  const sheet = wb.Sheets[sheetName];
   let rows: Record<string, string>[] = [];
   try {
+    const wb = await readWorkbookSafely(file);
+    const sheetName = wb.SheetNames[0];
+    if (!sheetName) throw new Error("Arquivo Excel sem planilhas.");
+    const sheet = wb.Sheets[sheetName];
     rows = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
   } catch (_) {
     rows = await readExcelRowsWithExcelJS(file);
