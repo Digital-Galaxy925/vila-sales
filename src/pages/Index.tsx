@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
+import { unzipSync, zipSync } from "fflate";
 import { notifyAppDataChanged } from "@/contexts/AppDataContext";
 import { saveLivrosToSupabase, clearLivrosFromSupabase, loadLivrosFromSupabase } from "@/lib/livrosSync";
 
@@ -208,21 +209,32 @@ function readFileBinaryString(file: File): Promise<string> {
   });
 }
 
+function rebuildZipExcel(bytes: Uint8Array): Uint8Array {
+  if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) return bytes;
+  const entries = unzipSync(bytes);
+  return zipSync(entries, { level: 0, mtime: new Date(0) });
+}
+
 async function readWorkbookSafely(file: File): Promise<XLSX.WorkBook> {
   // Tenta vários métodos para contornar bugs do SheetJS 0.18.5
   // ("Bad compressed size" em arquivos .xlsx com data descriptor / ZIP64)
   const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
   try {
     return XLSX.read(buf, { type: "array" });
   } catch (e1) {
     try {
-      return XLSX.read(new Uint8Array(buf), { type: "array", cellFormula: false, cellHTML: false });
+      return XLSX.read(bytes, { type: "array", cellFormula: false, cellHTML: false });
     } catch (e2) {
-      const bin = await readFileBinaryString(file);
       try {
-        return XLSX.read(bin, { type: "binary" });
+        return XLSX.read(rebuildZipExcel(bytes), { type: "array", cellFormula: false, cellHTML: false });
       } catch (e3) {
-        return XLSX.read(bin, { type: "binary", cellFormula: false, cellHTML: false });
+        const bin = await readFileBinaryString(file);
+        try {
+          return XLSX.read(bin, { type: "binary" });
+        } catch (e4) {
+          return XLSX.read(bin, { type: "binary", cellFormula: false, cellHTML: false });
+        }
       }
     }
   }
