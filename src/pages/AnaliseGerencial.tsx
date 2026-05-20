@@ -45,7 +45,7 @@ interface BulkProductResult {
 }
 
 const findProductInData = (code: string, data: DataMap) => {
-  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; promoc: number; descricao: string }[] = [];
+  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; promoc: number; descricao: string; embCmp: number }[] = [];
   FILIAL_ORDER.forEach((filialId) => {
     const products = data[filialId];
     if (!products) return;
@@ -62,6 +62,7 @@ const findProductInData = (code: string, data: DataMap) => {
         sellout: (match as any).sellout ?? 0,
         promoc: (match as any).promoc ?? 0,
         descricao: match.descricao ?? "",
+        embCmp: parseFloat(String((match as any).embCmp ?? "")) || 0,
       });
     }
   });
