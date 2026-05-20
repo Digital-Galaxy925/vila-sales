@@ -297,16 +297,16 @@ async function readExcelRowsWithExcelJS(file: File): Promise<Record<string, stri
 async function readExcelMatrixWithExcelJS(file: File): Promise<string[][]> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(await file.arrayBuffer());
-  const worksheet = workbook.worksheets[0];
-  if (!worksheet) throw new Error("Arquivo Excel sem planilhas.");
-
-  const maxCol = worksheet.columnCount;
-  const rows: string[][] = [];
-  worksheet.eachRow({ includeEmpty: false }, (row) => {
-    const values = Array.from({ length: maxCol }, (_, index) => row.getCell(index + 1).text.trim());
-    if (values.some((value) => value !== "")) rows.push(values);
+  const sheets = workbook.worksheets.map((worksheet) => {
+    const maxCol = worksheet.columnCount;
+    const rows: string[][] = [];
+    worksheet.eachRow({ includeEmpty: false }, (row) => {
+      const values = Array.from({ length: maxCol }, (_, index) => row.getCell(index + 1).text.trim());
+      if (values.some((value) => value !== "")) rows.push(values);
+    });
+    return { name: worksheet.name, rows };
   });
-  return rows;
+  return combineWorkbookMatrices(file.name, sheets);
 }
 
 async function readWorkbookSafely(file: File): Promise<XLSX.WorkBook> {
@@ -335,7 +335,7 @@ async function readWorkbookSafely(file: File): Promise<XLSX.WorkBook> {
 }
 
 async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
-  if (/\.csv$/i.test(file.name)) {
+  if (await fileIsTextCSV(file)) {
     const text = await readFileText(file);
     return parseCSV(text);
   }
@@ -357,7 +357,7 @@ async function readExcelAsRows(file: File): Promise<Record<string, string>[]> {
 }
 
 async function readExcelAsMatrix(file: File): Promise<string[][]> {
-  if (/\.csv$/i.test(file.name)) {
+  if (await fileIsTextCSV(file)) {
     const text = await readFileText(file);
     const firstLine = text.split(/\r?\n/).find((line) => line.trim()) ?? "";
     if (!firstLine) return [];
@@ -372,11 +372,7 @@ async function readExcelAsMatrix(file: File): Promise<string[][]> {
 
   try {
     const wb = await readWorkbookSafely(file);
-    const sheetName = wb.SheetNames[0];
-    if (!sheetName) throw new Error("Arquivo Excel sem planilhas.");
-    const sheet = wb.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json<(string | number)[]>(sheet, { header: 1, defval: "", raw: false, blankrows: false })
-      .map((row) => row.map((cell) => String(cell ?? "").trim()));
+    return workbookToMatrix(file.name, wb);
   } catch (_) {
     return readExcelMatrixWithExcelJS(file);
   }
