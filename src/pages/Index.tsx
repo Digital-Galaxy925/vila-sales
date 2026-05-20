@@ -2493,16 +2493,7 @@ export default function Index() {
       // Retorna array de arrays (sem depender de nomes de colunas)
       const parseCSVRaw = async (file: File | undefined): Promise<string[][]> => {
         if (!file) return [];
-        const text = await readFileText(file);
-        const firstLine = text.split(/\r?\n/).find((line) => line.trim()) ?? "";
-        if (!firstLine) return [];
-        const sep = firstLine.includes(";") ? ";" : ",";
-        const wb = XLSX.read(text, { type: "string", raw: false, FS: sep });
-        const sheetName = wb.SheetNames[0];
-        if (!sheetName) return [];
-        const sheet = wb.Sheets[sheetName];
-        return XLSX.utils.sheet_to_json<(string | number)[]>(sheet, { header: 1, defval: "", raw: false, blankrows: false })
-          .map((row) => row.map((cell) => String(cell ?? "").trim()));
+        return readExcelAsMatrix(file);
       };
 
       const chooseBestMetric = (...values: Array<string | undefined>): string => {
