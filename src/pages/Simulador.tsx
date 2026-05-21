@@ -248,12 +248,18 @@ export default function Simulador() {
                     ✓ A margem atual ({fmtPct(margemReal)}) já atende a margem mínima de {fmtPct(margemMinima)}. Nenhum investimento necessário.
                   </div>
                 ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
                     <SimKpiCard
                       label="Investimento / Unidade"
                       value={fmt(investimentoPorUnidade)}
                       color="#dc2626"
                       sub={`Custo ${fmt(custoUnitario)} − Máx. permitido ${fmt(precoVenda * (1 - margemMinima))}`}
+                    />
+                    <SimKpiCard
+                      label="Investimento por Caixa"
+                      value={fmt(investimentoPorUnidade * qtdPorCaixa)}
+                      color="#dc2626"
+                      sub={`${fmt(investimentoPorUnidade)} × ${qtdPorCaixa} un/cx`}
                     />
                     <SimKpiCard
                       label="Investimento Total"
