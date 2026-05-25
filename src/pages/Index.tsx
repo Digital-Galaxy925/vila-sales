@@ -2822,21 +2822,25 @@ export default function Index() {
         newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 19, undefined, map510.size > 0 ? map510 : undefined);
       }
 
-      setData(newData);
       try {
         localStorage.setItem("vilasales_data", JSON.stringify(newData));
         localStorage.setItem(LIVRO_METRICS_STORAGE_KEY, JSON.stringify(livroMetricsData));
       } catch(_) {}
       const updateTime = new Date().toLocaleString("pt-BR");
-      setLastUpdate(updateTime);
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
-      notifyAppDataChanged();
       // Espelha no Supabase (em background — não bloqueia a navegação)
       saveLivrosToSupabase(newData).catch((e) =>
         console.warn("saveLivros:", e?.message || e)
       );
-      setShowUpload(false);
-      setActiveModule("cruzamento");
+      // Difere updates de estado para o próximo tick para evitar
+      // conflito de renderização (NotFoundError: removeChild on Node).
+      setTimeout(() => {
+        setData(newData);
+        setLastUpdate(updateTime);
+        setShowUpload(false);
+        setActiveModule("cruzamento");
+        notifyAppDataChanged();
+      }, 0);
 
     } catch (e: any) {
       setError("Erro: " + e.message);
