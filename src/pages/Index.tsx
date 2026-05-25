@@ -3055,3 +3055,11 @@ function IndexInner() {
     </div>
   );
 }
+
+export default function Index() {
+  return (
+    <ErrorBoundary>
+      <IndexInner />
+    </ErrorBoundary>
+  );
+}
