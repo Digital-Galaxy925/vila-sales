@@ -127,7 +127,7 @@ export default function Simulador() {
         <>
           {/* ─── Inputs ─── */}
           <div style={{ background: "#fff", borderRadius: 12, padding: "18px 22px", border: "1px solid #e5e7eb", marginBottom: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, alignItems: "end" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, alignItems: "end" }}>
               <div>
                 <label style={labelStyle}>Código do Produto</label>
                 <input type="text" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ex: 125545" style={inputStyle} />
@@ -194,7 +194,7 @@ export default function Simulador() {
           {/* ─── Results Dashboard ─── */}
           {showResults && (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 12 }}>
                 <SimKpiCard
                   label="Margem Real"
                   value={fmtPct(margemReal)}
@@ -210,7 +210,8 @@ export default function Simulador() {
                 />
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 12 }}>
+
                 <MiniKpi label="Volume (CX)" value={volume.toLocaleString("pt-BR")} />
                 <MiniKpi label="Unid/CX" value={String(qtdPorCaixa)} />
                 <MiniKpi label="Total Unidades" value={totalUnidades.toLocaleString("pt-BR")} />
@@ -225,7 +226,7 @@ export default function Simulador() {
 
               {/* Investment analysis */}
               <div style={{ background: "#fff", borderRadius: 12, padding: "18px 22px", border: "1px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 14, flexWrap: "wrap" }}>
                   <h3 style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: 0 }}>
                     Análise de Investimento
                   </h3>
@@ -248,7 +249,7 @@ export default function Simulador() {
                     ✓ A margem atual ({fmtPct(margemReal)}) já atende a margem mínima de {fmtPct(margemMinima)}. Nenhum investimento necessário.
                   </div>
                 ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
                     <SimKpiCard
                       label="Investimento / Unidade"
                       value={fmt(investimentoPorUnidade)}
