@@ -2422,7 +2422,7 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
 }
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
-export default function Index() {
+function IndexInner() {
   const navigate = useNavigate();
   const [activeModule, setActiveModule] = useState<Module>("cruzamento");
   const [files, setFiles] = useState<UploadedFiles>({});
