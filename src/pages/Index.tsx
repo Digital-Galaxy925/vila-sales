@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { unzipSync, zipSync } from "fflate";
 import { notifyAppDataChanged } from "@/contexts/AppDataContext";
 import { saveLivrosToSupabase, clearLivrosFromSupabase, loadLivrosFromSupabase } from "@/lib/livrosSync";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Filial = "01" | "11" | "12" | "14" | "501" | "502";
