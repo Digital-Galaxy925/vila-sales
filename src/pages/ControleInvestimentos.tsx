@@ -156,11 +156,11 @@ export default function ControleInvestimentos() {
       return;
     }
     const rows = filtradas.map((p) => ({
-      Data: fmtDate(p.created_at),
+      Filial: p.filial_nome || p.filial,
+      BU: buOf(p),
       Código: p.codigo_produto,
       Descrição: p.descricao_produto,
-      BU: buOf(p),
-      Filial: p.filial_nome || p.filial,
+      Data: fmtDate(p.created_at),
       "Volume (CX)": p.volume_caixas ?? 0,
       "Unid / CX": p.unid_por_caixa ?? 0,
       "Total Unidades": p.total_unidades ?? 0,
@@ -261,11 +261,11 @@ export default function ControleInvestimentos() {
           <table className="w-full text-xs">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
-                <Th>Data</Th>
+                <Th>Filial</Th>
+                <Th>BU</Th>
                 <Th>Código</Th>
                 <Th>Descrição</Th>
-                <Th>BU</Th>
-                <Th>Filial</Th>
+                <Th>Data</Th>
                 <Th right>Volume (CX)</Th>
                 <Th right>Unidades</Th>
                 <Th right>Custo Un.</Th>
@@ -288,9 +288,7 @@ export default function ControleInvestimentos() {
               ) : (
                 filtradas.map((p) => (
                   <tr key={p.id} className="border-t border-border hover:bg-muted/30">
-                    <Td>{fmtDate(p.created_at)}</Td>
-                    <Td className="font-mono">{p.codigo_produto}</Td>
-                    <Td className="max-w-[260px] truncate" title={p.descricao_produto}>{p.descricao_produto}</Td>
+                    <Td>{p.filial} – {p.filial_nome}</Td>
                     <Td>
                       {(() => {
                         const bu = buOf(p);
@@ -309,7 +307,9 @@ export default function ControleInvestimentos() {
                         );
                       })()}
                     </Td>
-                    <Td>{p.filial} – {p.filial_nome}</Td>
+                    <Td className="font-mono">{p.codigo_produto}</Td>
+                    <Td className="max-w-[260px] truncate" title={p.descricao_produto}>{p.descricao_produto}</Td>
+                    <Td>{fmtDate(p.created_at)}</Td>
                     <Td right>{fmtNum(p.volume_caixas)}</Td>
                     <Td right>{fmtNum(p.total_unidades)}</Td>
                     <Td right>{fmt(p.custo_unitario)}</Td>
