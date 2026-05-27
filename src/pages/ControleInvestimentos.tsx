@@ -4,6 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Trash2, RefreshCw, Wallet, TrendingUp, Package, Percent, Pencil, X, Download } from "lucide-react";
 import * as XLSX from "xlsx";
+import { useAppData } from "@/contexts/AppDataContext";
+
+const normCod = (v: string): string => {
+  let s = (v ?? "").toString().trim();
+  s = s.replace(/\.0+$/, "");
+  s = s.replace(/^0+(\d)/, "$1");
+  return s;
+};
+const normBu = (raw: unknown): string => {
+  const b = (raw ?? "").toString().toUpperCase().trim();
+  if (b === "FOODS" || b === "FR" || b === "FOOD") return "FR";
+  if (b === "HC") return "HC";
+  return "";
+};
 
 interface Proposta {
   id: string;
