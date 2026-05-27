@@ -37,6 +37,7 @@ export default function ControleInvestimentos() {
   const [propostas, setPropostas] = useState<Proposta[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroFilial, setFiltroFilial] = useState<string>("todas");
+  const [filtroMes, setFiltroMes] = useState<string>("todos");
   const [busca, setBusca] = useState("");
   const [editando, setEditando] = useState<Proposta | null>(null);
   const [salvandoEdit, setSalvandoEdit] = useState(false);
