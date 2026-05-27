@@ -227,6 +227,7 @@ export default function ControleInvestimentos() {
                 <Th>Data</Th>
                 <Th>Código</Th>
                 <Th>Descrição</Th>
+                <Th>BU</Th>
                 <Th>Filial</Th>
                 <Th right>Volume (CX)</Th>
                 <Th right>Unidades</Th>
