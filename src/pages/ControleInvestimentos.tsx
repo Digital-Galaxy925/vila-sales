@@ -72,6 +72,29 @@ export default function ControleInvestimentos() {
     setLoading(false);
   }
 
+  const { get } = useAppData();
+  const buLookup = useMemo(() => {
+    const data = get<Record<string, Array<{ seqProd?: string; bu?: string }>>>("vilasales_data") ?? {};
+    const map = new Map<string, string>();
+    for (const fid of Object.keys(data)) {
+      const arr = data[fid];
+      if (!Array.isArray(arr)) continue;
+      for (const p of arr) {
+        const cod = normCod(p?.seqProd ?? "");
+        const bu = normBu(p?.bu);
+        if (cod && bu && !map.has(cod)) map.set(cod, bu);
+      }
+    }
+    return map;
+  }, [get]);
+
+  const buOf = (p: Proposta): string => {
+    const own = normBu(p.bu);
+    if (own) return own;
+    return buLookup.get(normCod(p.codigo_produto)) ?? "";
+  };
+
+
   useEffect(() => {
     load();
   }, []);
