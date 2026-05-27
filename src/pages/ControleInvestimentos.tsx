@@ -74,6 +74,10 @@ export default function ControleInvestimentos() {
   const filtradas = useMemo(() => {
     return propostas.filter((p) => {
       if (filtroFilial !== "todas" && p.filial !== filtroFilial) return false;
+      if (filtroMes !== "todos") {
+        const mes = p.created_at.slice(0, 7);
+        if (mes !== filtroMes) return false;
+      }
       if (busca.trim()) {
         const q = busca.trim().toLowerCase();
         if (
@@ -84,7 +88,7 @@ export default function ControleInvestimentos() {
       }
       return true;
     });
-  }, [propostas, filtroFilial, busca]);
+  }, [propostas, filtroFilial, filtroMes, busca]);
 
   const totais = useMemo(() => {
     const totalInvest = filtradas.reduce((s, p) => s + (p.investimento_total ?? 0), 0);
