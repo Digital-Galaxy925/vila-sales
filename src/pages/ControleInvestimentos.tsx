@@ -6,7 +6,7 @@ export default function ControleInvestimentos() {
     <div className="p-6 space-y-6">
       <PageHeader
         title="Controle de Investimentos"
-        subtitle="Acompanhamento e gestão dos investimentos comerciais"
+        description="Acompanhamento e gestão dos investimentos comerciais"
       />
       <div className="bg-card border border-border rounded-xl p-12 flex flex-col items-center justify-center text-center">
         <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
