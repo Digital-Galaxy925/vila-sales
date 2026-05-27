@@ -815,7 +815,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
           if (!val || /[a-zA-ZÀ-ú]/.test(val)) continue; // skip headers/text
           rawCodes.push(val);
         }
-        const allProds = Object.values(data).flat();
+        const allProds = FILIAIS.flatMap((f) => data[f] || []);
         // Build lookup: both raw seqProd and stripped-leading-zeros version
         const prodByRaw = new Map<string, string>();
         allProds.forEach((p) => {
@@ -841,7 +841,7 @@ function CrossAnalysis({ data }: { data: FilialData }) {
     e.target.value = "";
   };
 
-  const allProducts = Object.values(data).flat();
+  const allProducts = FILIAIS.flatMap((f) => data[f] || []);
   const base = selectedFilial === "all" ? allProducts : (data[selectedFilial] || []);
 
   const filtered = base
@@ -1687,7 +1687,7 @@ function PrecoAnalysis({ data }: { data: FilialData }) {
   const [sortBy, setSortBy] = useState<"marg" | "atual" | "sellout">("marg");
   const [filter, setFilter] = useState<"all" | "critico" | "ok">("all");
 
-  const allProducts = Object.values(data).flat();
+  const allProducts = FILIAIS.flatMap((f) => data[f] || []);
   const products = selectedFilial === "all"
     ? allProducts
     : data[selectedFilial] || [];
@@ -1914,7 +1914,7 @@ function PrecoAnalysis({ data }: { data: FilialData }) {
 }
 
 function EstoqueAnalysis({ data }: { data: FilialData }) {
-  const allProducts = Object.values(data).flat();
+  const allProducts = FILIAIS.flatMap((f) => data[f] || []);
 
   const [selectedFilial, setSelectedFilial] = useState<Filial | "all">("all");
   const [selectedBU, setSelectedBU] = useState<"all" | "FOODS" | "HC">("all");
@@ -2164,7 +2164,7 @@ function EstoqueAnalysis({ data }: { data: FilialData }) {
 }
 
 function MargemAnalysis({ data }: { data: FilialData }) {
-  const allProducts = Object.values(data).flat();
+  const allProducts = FILIAIS.flatMap((f) => data[f] || []);
   const criticos = allProducts.filter((p) => p.marg < 17);
   const saudaveis = allProducts.filter((p) => p.marg >= 17);
   const margMedia = allProducts.length ? allProducts.reduce((s, p) => s + p.marg, 0) / allProducts.length : 0;
@@ -2236,7 +2236,7 @@ function MargemAnalysis({ data }: { data: FilialData }) {
 }
 
 function GeralAnalysis({ data }: { data: FilialData }) {
-  const allProducts = Object.values(data).flat();
+  const allProducts = FILIAIS.flatMap((f) => data[f] || []);
   const totalProdutos = allProducts.length;
   const totalFiliais = Object.keys(data).length;
   const margMedia = totalProdutos ? allProducts.reduce((s, p) => s + p.marg, 0) / totalProdutos : 0;
@@ -2313,7 +2313,7 @@ function GeralAnalysis({ data }: { data: FilialData }) {
 }
 
 function ShelfLifeAnalysis({ data }: { data: FilialData }) {
-  const allProducts = Object.values(data).flat().filter((p) => p.ddv > 0);
+  const allProducts = FILIAIS.flatMap((f) => data[f] || []).filter((p) => p.ddv > 0);
   const vencendo = allProducts.filter((p) => p.ddv <= 30);
   const atencao = allProducts.filter((p) => p.ddv > 30 && p.ddv <= 90);
   const ok = allProducts.filter((p) => p.ddv > 90);
@@ -2813,7 +2813,7 @@ function IndexInner() {
           livroMetricsData["510"] = buildLivroMetrics(raw510, 1, 6, 7);
           // Espelha o livro_510 em newData para sincronizar com Supabase
           // (necessário para a Análise DDV ler o DDV em qualquer navegador).
-          newData["510"] = buildProducts(raw510, "501" as Filial, 1, 2, 6, 7, 16, 19);
+          newData["510"] = buildProducts(raw510, "502" as Filial, 1, 2, 6, 7, 16, 19);
         } catch (_) {}
       }
 
@@ -2896,7 +2896,7 @@ function IndexInner() {
             </h1>
             {hasData && (
               <p style={{ margin: 0, fontSize: 12, color: "#6b7280", marginTop: 2 }}>
-                {Object.values(data).flat().length} produtos carregados · {Object.keys(data).length} filiais
+                {FILIAIS.flatMap((f) => data[f] || []).length} produtos carregados · {Object.keys(data).length} filiais
               </p>
             )}
           </div>
