@@ -249,7 +249,6 @@ export default function ControleInvestimentos() {
                   Nenhuma proposta salva. Vá ao Simulador de Ofertas para criar a primeira.
                 </td></tr>
               ) : (
-              ) : loading ? null : filtradas.length === 0 ? null : (
                 filtradas.map((p) => (
                   <tr key={p.id} className="border-t border-border hover:bg-muted/30">
                     <Td>{fmtDate(p.created_at)}</Td>
