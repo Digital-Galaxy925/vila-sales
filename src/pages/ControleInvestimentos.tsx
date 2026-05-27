@@ -190,6 +190,18 @@ export default function ControleInvestimentos() {
             <option key={id} value={id}>{id} – {nome}</option>
           ))}
         </select>
+        <select
+          value={filtroMes}
+          onChange={(e) => setFiltroMes(e.target.value)}
+          className="px-3 py-2 text-sm border border-border rounded-lg bg-background"
+        >
+          <option value="todos">Todos os meses</option>
+          {mesesDisponiveis.map((m) => {
+            const [ano, mes] = m.split("-");
+            const label = `${mes}/${ano}`;
+            return <option key={m} value={m}>{label}</option>;
+          })}
+        </select>
         <span className="text-xs text-muted-foreground">{totais.count} proposta(s)</span>
       </div>
 
