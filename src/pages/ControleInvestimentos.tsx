@@ -37,6 +37,7 @@ export default function ControleInvestimentos() {
   const [propostas, setPropostas] = useState<Proposta[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroFilial, setFiltroFilial] = useState<string>("todas");
+  const [filtroMes, setFiltroMes] = useState<string>("todos");
   const [busca, setBusca] = useState("");
   const [editando, setEditando] = useState<Proposta | null>(null);
   const [salvandoEdit, setSalvandoEdit] = useState(false);
@@ -73,6 +74,10 @@ export default function ControleInvestimentos() {
   const filtradas = useMemo(() => {
     return propostas.filter((p) => {
       if (filtroFilial !== "todas" && p.filial !== filtroFilial) return false;
+      if (filtroMes !== "todos") {
+        const mes = p.created_at.slice(0, 7);
+        if (mes !== filtroMes) return false;
+      }
       if (busca.trim()) {
         const q = busca.trim().toLowerCase();
         if (
@@ -83,7 +88,7 @@ export default function ControleInvestimentos() {
       }
       return true;
     });
-  }, [propostas, filtroFilial, busca]);
+  }, [propostas, filtroFilial, filtroMes, busca]);
 
   const totais = useMemo(() => {
     const totalInvest = filtradas.reduce((s, p) => s + (p.investimento_total ?? 0), 0);
@@ -97,6 +102,12 @@ export default function ControleInvestimentos() {
     const m = new Map<string, string>();
     propostas.forEach((p) => m.set(p.filial, p.filial_nome || p.filial));
     return Array.from(m.entries());
+  }, [propostas]);
+
+  const mesesDisponiveis = useMemo(() => {
+    const set = new Set<string>();
+    propostas.forEach((p) => set.add(p.created_at.slice(0, 7)));
+    return Array.from(set).sort().reverse();
   }, [propostas]);
 
   function exportarExcel() {
@@ -178,6 +189,18 @@ export default function ControleInvestimentos() {
           {filiaisDisponiveis.map(([id, nome]) => (
             <option key={id} value={id}>{id} – {nome}</option>
           ))}
+        </select>
+        <select
+          value={filtroMes}
+          onChange={(e) => setFiltroMes(e.target.value)}
+          className="px-3 py-2 text-sm border border-border rounded-lg bg-background"
+        >
+          <option value="todos">Todos os meses</option>
+          {mesesDisponiveis.map((m) => {
+            const [ano, mes] = m.split("-");
+            const label = `${mes}/${ano}`;
+            return <option key={m} value={m}>{label}</option>;
+          })}
         </select>
         <span className="text-xs text-muted-foreground">{totais.count} proposta(s)</span>
       </div>
