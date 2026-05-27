@@ -110,9 +110,12 @@ export default function Simulador() {
     if (!produto || !showResults) return;
     setSalvando(true);
     try {
+      const buRaw = (produto.bu ?? "").toString().toUpperCase();
+      const buNorm = buRaw === "FOODS" || buRaw === "FR" || buRaw === "FOOD" ? "FR" : buRaw === "HC" ? "HC" : (buRaw || null);
       const { error } = await supabase.from("propostas_simulador").insert({
         codigo_produto: normCod(produto.seqProd),
         descricao_produto: produto.descricao ?? "",
+        bu: buNorm,
         filial,
         filial_nome: FILIAIS.find((f) => f.id === filial)?.nome ?? "",
         volume_caixas: volume,

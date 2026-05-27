@@ -148,6 +148,7 @@ export type Database = {
       }
       propostas_simulador: {
         Row: {
+          bu: string | null
           codigo_produto: string
           created_at: string
           custo_unitario: number | null
@@ -170,6 +171,7 @@ export type Database = {
           volume_caixas: number | null
         }
         Insert: {
+          bu?: string | null
           codigo_produto?: string
           created_at?: string
           custo_unitario?: number | null
@@ -192,6 +194,7 @@ export type Database = {
           volume_caixas?: number | null
         }
         Update: {
+          bu?: string | null
           codigo_produto?: string
           created_at?: string
           custo_unitario?: number | null

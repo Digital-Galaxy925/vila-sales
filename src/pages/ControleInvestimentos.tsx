@@ -9,6 +9,7 @@ interface Proposta {
   id: string;
   codigo_produto: string;
   descricao_produto: string;
+  bu: string | null;
   filial: string;
   filial_nome: string;
   volume_caixas: number | null;
@@ -38,6 +39,7 @@ export default function ControleInvestimentos() {
   const [loading, setLoading] = useState(true);
   const [filtroFilial, setFiltroFilial] = useState<string>("todas");
   const [filtroMes, setFiltroMes] = useState<string>("todos");
+  const [filtroBu, setFiltroBu] = useState<string>("todas");
   const [busca, setBusca] = useState("");
   const [editando, setEditando] = useState<Proposta | null>(null);
   const [salvandoEdit, setSalvandoEdit] = useState(false);
@@ -74,6 +76,7 @@ export default function ControleInvestimentos() {
   const filtradas = useMemo(() => {
     return propostas.filter((p) => {
       if (filtroFilial !== "todas" && p.filial !== filtroFilial) return false;
+      if (filtroBu !== "todas" && (p.bu ?? "").toUpperCase() !== filtroBu) return false;
       if (filtroMes !== "todos") {
         const mes = p.created_at.slice(0, 7);
         if (mes !== filtroMes) return false;
@@ -88,7 +91,7 @@ export default function ControleInvestimentos() {
       }
       return true;
     });
-  }, [propostas, filtroFilial, filtroMes, busca]);
+  }, [propostas, filtroFilial, filtroMes, filtroBu, busca]);
 
   const totais = useMemo(() => {
     const totalInvest = filtradas.reduce((s, p) => s + (p.investimento_total ?? 0), 0);
@@ -119,6 +122,7 @@ export default function ControleInvestimentos() {
       Data: fmtDate(p.created_at),
       Código: p.codigo_produto,
       Descrição: p.descricao_produto,
+      BU: p.bu ?? "",
       Filial: p.filial_nome || p.filial,
       "Volume (CX)": p.volume_caixas ?? 0,
       "Unid / CX": p.unid_por_caixa ?? 0,
@@ -202,6 +206,15 @@ export default function ControleInvestimentos() {
             return <option key={m} value={m}>{label}</option>;
           })}
         </select>
+        <select
+          value={filtroBu}
+          onChange={(e) => setFiltroBu(e.target.value)}
+          className="px-3 py-2 text-sm border border-border rounded-lg bg-background"
+        >
+          <option value="todas">Todas as BUs</option>
+          <option value="HC">HC</option>
+          <option value="FR">FR</option>
+        </select>
         <span className="text-xs text-muted-foreground">{totais.count} proposta(s)</span>
       </div>
 
@@ -214,6 +227,7 @@ export default function ControleInvestimentos() {
                 <Th>Data</Th>
                 <Th>Código</Th>
                 <Th>Descrição</Th>
+                <Th>BU</Th>
                 <Th>Filial</Th>
                 <Th right>Volume (CX)</Th>
                 <Th right>Unidades</Th>
@@ -229,9 +243,9 @@ export default function ControleInvestimentos() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={14} className="text-center py-10 text-muted-foreground">Carregando...</td></tr>
+                <tr><td colSpan={15} className="text-center py-10 text-muted-foreground">Carregando...</td></tr>
               ) : filtradas.length === 0 ? (
-                <tr><td colSpan={14} className="text-center py-10 text-muted-foreground">
+                <tr><td colSpan={15} className="text-center py-10 text-muted-foreground">
                   Nenhuma proposta salva. Vá ao Simulador de Ofertas para criar a primeira.
                 </td></tr>
               ) : (
@@ -240,6 +254,21 @@ export default function ControleInvestimentos() {
                     <Td>{fmtDate(p.created_at)}</Td>
                     <Td className="font-mono">{p.codigo_produto}</Td>
                     <Td className="max-w-[260px] truncate" title={p.descricao_produto}>{p.descricao_produto}</Td>
+                    <Td>
+                      {p.bu ? (
+                        <span
+                          className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                          style={{
+                            background: p.bu === "HC" ? "#ede9fe" : p.bu === "FR" ? "#dcfce7" : "#f1f5f9",
+                            color: p.bu === "HC" ? "#6d28d9" : p.bu === "FR" ? "#16a34a" : "#475569",
+                          }}
+                        >
+                          {p.bu}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">–</span>
+                      )}
+                    </Td>
                     <Td>{p.filial} – {p.filial_nome}</Td>
                     <Td right>{fmtNum(p.volume_caixas)}</Td>
                     <Td right>{fmtNum(p.total_unidades)}</Td>
