@@ -128,7 +128,7 @@ export default function ControleInvestimentos() {
       }
       return true;
     });
-  }, [propostas, filtroFilial, filtroMes, filtroBu, busca]);
+  }, [propostas, filtroFilial, filtroMes, filtroBu, busca, buLookup]);
 
   const totais = useMemo(() => {
     const totalInvest = filtradas.reduce((s, p) => s + (p.investimento_total ?? 0), 0);
