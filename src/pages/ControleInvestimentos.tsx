@@ -99,18 +99,56 @@ export default function ControleInvestimentos() {
     return Array.from(m.entries());
   }, [propostas]);
 
+  function exportarExcel() {
+    if (filtradas.length === 0) {
+      toast({ title: "Nenhuma proposta para exportar", description: "Aplique filtros ou salve propostas primeiro." });
+      return;
+    }
+    const rows = filtradas.map((p) => ({
+      Data: fmtDate(p.created_at),
+      Código: p.codigo_produto,
+      Descrição: p.descricao_produto,
+      Filial: p.filial_nome || p.filial,
+      "Volume (CX)": p.volume_caixas ?? 0,
+      "Unid / CX": p.unid_por_caixa ?? 0,
+      "Total Unidades": p.total_unidades ?? 0,
+      "Custo Unitário": p.custo_unitario ?? 0,
+      "Preço Venda": p.preco_venda ?? 0,
+      "Margem Real": p.margem_real ?? 0,
+      "Sell Out Total": p.total_sellout ?? 0,
+      "Invest. por Unid": p.investimento_por_unidade ?? 0,
+      "Invest. por CX": p.investimento_por_caixa ?? 0,
+      "Invest. Total": p.investimento_total ?? 0,
+      "% Investimento": p.percentual_investimento ?? 0,
+      Observação: p.observacao ?? "",
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Propostas");
+    XLSX.writeFile(wb, `Controle_Investimentos_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast({ title: "Exportação concluída" });
+  }
+
   return (
     <div className="p-6 space-y-5">
       <PageHeader
         title="Controle de Investimentos"
         description="Histórico de todas as propostas salvas no Simulador de Ofertas"
         actions={
-          <button
-            onClick={load}
-            className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium border border-border rounded-lg hover:bg-muted transition"
-          >
-            <RefreshCw className="w-3.5 h-3.5" /> Atualizar
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={exportarExcel}
+              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium border border-border rounded-lg hover:bg-muted transition"
+            >
+              <Download className="w-3.5 h-3.5" /> Exportar Excel
+            </button>
+            <button
+              onClick={load}
+              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium border border-border rounded-lg hover:bg-muted transition"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Atualizar
+            </button>
+          </div>
         }
       />
 
