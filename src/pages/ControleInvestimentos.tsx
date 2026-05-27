@@ -9,6 +9,7 @@ interface Proposta {
   id: string;
   codigo_produto: string;
   descricao_produto: string;
+  bu: string | null;
   filial: string;
   filial_nome: string;
   volume_caixas: number | null;
