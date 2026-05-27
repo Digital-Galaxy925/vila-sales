@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, RefreshCw, Wallet, TrendingUp, Package, Percent, Pencil, X } from "lucide-react";
+import { Trash2, RefreshCw, Wallet, TrendingUp, Package, Percent, Pencil, X, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 
 interface Proposta {
   id: string;
