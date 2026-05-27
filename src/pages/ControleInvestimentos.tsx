@@ -193,13 +193,22 @@ export default function ControleInvestimentos() {
                     <Td right>{fmtPct(p.percentual_investimento)}</Td>
                     <Td className="max-w-[160px] truncate text-muted-foreground" title={p.observacao ?? ""}>{p.observacao}</Td>
                     <Td>
-                      <button
-                        onClick={() => remover(p.id)}
-                        className="text-destructive hover:bg-destructive/10 p-1.5 rounded"
-                        title="Excluir"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setEditando(p)}
+                          className="text-primary hover:bg-primary/10 p-1.5 rounded"
+                          title="Editar"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => remover(p.id)}
+                          className="text-destructive hover:bg-destructive/10 p-1.5 rounded"
+                          title="Excluir"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </Td>
                   </tr>
                 ))
