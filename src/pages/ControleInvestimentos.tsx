@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Trash2, RefreshCw, Wallet, TrendingUp, Package, Percent } from "lucide-react";
+import { Trash2, RefreshCw, Wallet, TrendingUp, Package, Percent, Pencil, X } from "lucide-react";
 
 interface Proposta {
   id: string;
@@ -37,6 +37,8 @@ export default function ControleInvestimentos() {
   const [loading, setLoading] = useState(true);
   const [filtroFilial, setFiltroFilial] = useState<string>("todas");
   const [busca, setBusca] = useState("");
+  const [editando, setEditando] = useState<Proposta | null>(null);
+  const [salvandoEdit, setSalvandoEdit] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -191,13 +193,22 @@ export default function ControleInvestimentos() {
                     <Td right>{fmtPct(p.percentual_investimento)}</Td>
                     <Td className="max-w-[160px] truncate text-muted-foreground" title={p.observacao ?? ""}>{p.observacao}</Td>
                     <Td>
-                      <button
-                        onClick={() => remover(p.id)}
-                        className="text-destructive hover:bg-destructive/10 p-1.5 rounded"
-                        title="Excluir"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setEditando(p)}
+                          className="text-primary hover:bg-primary/10 p-1.5 rounded"
+                          title="Editar"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => remover(p.id)}
+                          className="text-destructive hover:bg-destructive/10 p-1.5 rounded"
+                          title="Excluir"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </Td>
                   </tr>
                 ))
@@ -206,6 +217,130 @@ export default function ControleInvestimentos() {
           </table>
         </div>
       </div>
+
+      {editando && (
+        <EditModal
+          proposta={editando}
+          salvando={salvandoEdit}
+          onClose={() => setEditando(null)}
+          onSave={async (patch) => {
+            setSalvandoEdit(true);
+            const volume = patch.volume_caixas ?? 0;
+            const unidCx = patch.unid_por_caixa ?? 1;
+            const custo = patch.custo_unitario ?? 0;
+            const preco = patch.preco_venda ?? 0;
+            const totalUnid = volume * unidCx;
+            const totalSellout = totalUnid * preco;
+            const margReal = preco > 0 ? (preco - custo) / preco : 0;
+
+            const { error } = await supabase
+              .from("propostas_simulador")
+              .update({
+                volume_caixas: volume,
+                unid_por_caixa: unidCx,
+                total_unidades: totalUnid,
+                custo_unitario: custo,
+                preco_venda: preco,
+                margem_real: margReal,
+                total_sellout: totalSellout,
+                observacao: patch.observacao ?? "",
+              })
+              .eq("id", editando.id);
+            setSalvandoEdit(false);
+            if (error) {
+              toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+            } else {
+              toast({ title: "Proposta atualizada" });
+              setEditando(null);
+              load();
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditModal({
+  proposta,
+  salvando,
+  onClose,
+  onSave,
+}: {
+  proposta: Proposta;
+  salvando: boolean;
+  onClose: () => void;
+  onSave: (patch: Partial<Proposta>) => void;
+}) {
+  const [volume, setVolume] = useState(String(proposta.volume_caixas ?? ""));
+  const [unidCx, setUnidCx] = useState(String(proposta.unid_por_caixa ?? ""));
+  const [custo, setCusto] = useState(String(proposta.custo_unitario ?? ""));
+  const [preco, setPreco] = useState(String(proposta.preco_venda ?? ""));
+  const [obs, setObs] = useState(proposta.observacao ?? "");
+  const num = (s: string) => parseFloat(s.replace(",", ".")) || 0;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card border border-border rounded-xl w-full max-w-lg p-5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-semibold">Editar Proposta</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{proposta.codigo_produto} – {proposta.descricao_produto}</p>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-muted rounded"><X className="w-4 h-4" /></button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Volume (CX)" value={volume} onChange={setVolume} />
+          <Field label="Unid / CX" value={unidCx} onChange={setUnidCx} />
+          <Field label="Custo Unitário (R$)" value={custo} onChange={setCusto} />
+          <Field label="Preço de Venda (R$)" value={preco} onChange={setPreco} />
+          <div className="col-span-2">
+            <label className="block text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Observação</label>
+            <input
+              type="text"
+              value={obs}
+              onChange={(e) => setObs(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-5">
+          <button onClick={onClose} className="px-4 py-2 text-xs font-medium border border-border rounded-lg hover:bg-muted">
+            Cancelar
+          </button>
+          <button
+            disabled={salvando}
+            onClick={() =>
+              onSave({
+                volume_caixas: num(volume),
+                unid_por_caixa: num(unidCx),
+                custo_unitario: num(custo),
+                preco_venda: num(preco),
+                observacao: obs,
+              })
+            }
+            className="px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary rounded-lg hover:opacity-90 disabled:opacity-50"
+          >
+            {salvando ? "Salvando..." : "Salvar Alterações"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="block text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1">{label}</label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background"
+      />
     </div>
   );
 }
