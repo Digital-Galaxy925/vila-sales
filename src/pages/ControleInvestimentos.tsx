@@ -249,11 +249,27 @@ export default function ControleInvestimentos() {
                   Nenhuma proposta salva. Vá ao Simulador de Ofertas para criar a primeira.
                 </td></tr>
               ) : (
+              ) : loading ? null : filtradas.length === 0 ? null : (
                 filtradas.map((p) => (
                   <tr key={p.id} className="border-t border-border hover:bg-muted/30">
                     <Td>{fmtDate(p.created_at)}</Td>
                     <Td className="font-mono">{p.codigo_produto}</Td>
                     <Td className="max-w-[260px] truncate" title={p.descricao_produto}>{p.descricao_produto}</Td>
+                    <Td>
+                      {p.bu ? (
+                        <span
+                          className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                          style={{
+                            background: p.bu === "HC" ? "#ede9fe" : p.bu === "FR" ? "#dcfce7" : "#f1f5f9",
+                            color: p.bu === "HC" ? "#6d28d9" : p.bu === "FR" ? "#16a34a" : "#475569",
+                          }}
+                        >
+                          {p.bu}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">–</span>
+                      )}
+                    </Td>
                     <Td>{p.filial} – {p.filial_nome}</Td>
                     <Td right>{fmtNum(p.volume_caixas)}</Td>
                     <Td right>{fmtNum(p.total_unidades)}</Td>
