@@ -113,7 +113,7 @@ export default function ControleInvestimentos() {
   const filtradas = useMemo(() => {
     return propostas.filter((p) => {
       if (filtroFilial !== "todas" && p.filial !== filtroFilial) return false;
-      if (filtroBu !== "todas" && (p.bu ?? "").toUpperCase() !== filtroBu) return false;
+      if (filtroBu !== "todas" && buOf(p) !== filtroBu) return false;
       if (filtroMes !== "todos") {
         const mes = p.created_at.slice(0, 7);
         if (mes !== filtroMes) return false;
