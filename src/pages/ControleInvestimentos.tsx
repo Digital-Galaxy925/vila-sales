@@ -104,6 +104,12 @@ export default function ControleInvestimentos() {
     return Array.from(m.entries());
   }, [propostas]);
 
+  const mesesDisponiveis = useMemo(() => {
+    const set = new Set<string>();
+    propostas.forEach((p) => set.add(p.created_at.slice(0, 7)));
+    return Array.from(set).sort().reverse();
+  }, [propostas]);
+
   function exportarExcel() {
     if (filtradas.length === 0) {
       toast({ title: "Nenhuma proposta para exportar", description: "Aplique filtros ou salve propostas primeiro." });
