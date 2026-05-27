@@ -2813,7 +2813,7 @@ function IndexInner() {
           livroMetricsData["510"] = buildLivroMetrics(raw510, 1, 6, 7);
           // Espelha o livro_510 em newData para sincronizar com Supabase
           // (necessário para a Análise DDV ler o DDV em qualquer navegador).
-          newData["510"] = buildProducts(raw510, "501" as Filial, 1, 2, 6, 7, 16, 19);
+          newData["510"] = buildProducts(raw510, "502" as Filial, 1, 2, 6, 7, 16, 19);
         } catch (_) {}
       }
 
