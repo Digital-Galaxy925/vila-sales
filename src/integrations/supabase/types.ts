@@ -146,6 +146,75 @@ export type Database = {
         }
         Relationships: []
       }
+      propostas_simulador: {
+        Row: {
+          codigo_produto: string
+          created_at: string
+          custo_unitario: number | null
+          descricao_produto: string
+          filial: string
+          filial_nome: string
+          id: string
+          investimento_por_caixa: number | null
+          investimento_por_unidade: number | null
+          investimento_total: number | null
+          margem_minima: number | null
+          margem_real: number | null
+          observacao: string | null
+          percentual_investimento: number | null
+          preco_venda: number | null
+          total_sellout: number | null
+          total_unidades: number | null
+          unid_por_caixa: number | null
+          updated_at: string
+          volume_caixas: number | null
+        }
+        Insert: {
+          codigo_produto?: string
+          created_at?: string
+          custo_unitario?: number | null
+          descricao_produto?: string
+          filial?: string
+          filial_nome?: string
+          id?: string
+          investimento_por_caixa?: number | null
+          investimento_por_unidade?: number | null
+          investimento_total?: number | null
+          margem_minima?: number | null
+          margem_real?: number | null
+          observacao?: string | null
+          percentual_investimento?: number | null
+          preco_venda?: number | null
+          total_sellout?: number | null
+          total_unidades?: number | null
+          unid_por_caixa?: number | null
+          updated_at?: string
+          volume_caixas?: number | null
+        }
+        Update: {
+          codigo_produto?: string
+          created_at?: string
+          custo_unitario?: number | null
+          descricao_produto?: string
+          filial?: string
+          filial_nome?: string
+          id?: string
+          investimento_por_caixa?: number | null
+          investimento_por_unidade?: number | null
+          investimento_total?: number | null
+          margem_minima?: number | null
+          margem_real?: number | null
+          observacao?: string | null
+          percentual_investimento?: number | null
+          preco_venda?: number | null
+          total_sellout?: number | null
+          total_unidades?: number | null
+          unid_por_caixa?: number | null
+          updated_at?: string
+          volume_caixas?: number | null
+        }
+        Relationships: []
+      }
       st_data: {
         Row: {
           created_at: string
