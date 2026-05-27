@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Product {
@@ -60,6 +62,8 @@ export default function Simulador() {
   const [volumeCaixas, setVolumeCaixas] = useState("");
   const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
   const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
+  const [observacao, setObservacao] = useState("");
+  const [salvando, setSalvando] = useState(false);
 
   const normCod = (v: string): string => {
     let s = v.trim();
@@ -101,6 +105,39 @@ export default function Simulador() {
   const percentualInvestimento = totalSellOut > 0 ? investimentoTotal / totalSellOut : 0;
 
   const showResults = produto && precoVenda > 0;
+
+  async function salvarProposta() {
+    if (!produto || !showResults) return;
+    setSalvando(true);
+    try {
+      const { error } = await supabase.from("propostas_simulador").insert({
+        codigo_produto: normCod(produto.seqProd),
+        descricao_produto: produto.descricao ?? "",
+        filial,
+        filial_nome: FILIAIS.find((f) => f.id === filial)?.nome ?? "",
+        volume_caixas: volume,
+        unid_por_caixa: qtdPorCaixa,
+        total_unidades: totalUnidades,
+        custo_unitario: custoUnitario,
+        preco_venda: precoVenda,
+        margem_real: margemReal,
+        margem_minima: margemMinima,
+        total_sellout: totalSellOut,
+        investimento_por_unidade: investimentoPorUnidade > 0 ? investimentoPorUnidade : 0,
+        investimento_por_caixa: investimentoPorUnidade > 0 ? investimentoPorUnidade * qtdPorCaixa : 0,
+        investimento_total: investimentoTotal,
+        percentual_investimento: percentualInvestimento,
+        observacao,
+      });
+      if (error) throw error;
+      toast({ title: "Proposta salva", description: "Disponível em Controle de Investimentos." });
+      setObservacao("");
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e?.message ?? "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSalvando(false);
+    }
+  }
 
   return (
     <div style={{ minHeight: "100vh", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1a1a2e" }}>
@@ -277,6 +314,27 @@ export default function Simulador() {
                     />
                   </div>
                 )}
+              </div>
+
+              {/* Save proposal */}
+              <div style={{ marginTop: 16, background: "#fff", borderRadius: 12, padding: "18px 22px", border: "1px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.04)", display: "flex", gap: 12, alignItems: "end", flexWrap: "wrap" }}>
+                <div style={{ flex: 1, minWidth: 240 }}>
+                  <label style={labelStyle}>Observação (opcional)</label>
+                  <input type="text" value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: cliente XYZ, campanha de junho..." style={inputStyle} />
+                </div>
+                <button
+                  onClick={salvarProposta}
+                  disabled={salvando}
+                  style={{ background: salvando ? "#94a3b8" : "#0071e3", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", cursor: salvando ? "not-allowed" : "pointer", fontWeight: 600, fontSize: 13, height: 38 }}
+                >
+                  {salvando ? "Salvando..." : "Salvar Proposta"}
+                </button>
+                <button
+                  onClick={() => navigate("/controle-investimentos")}
+                  style={{ background: "#fff", color: "#0071e3", border: "1px solid #0071e3", borderRadius: 8, padding: "10px 22px", cursor: "pointer", fontWeight: 600, fontSize: 13, height: 38 }}
+                >
+                  Ver Controle de Investimentos
+                </button>
               </div>
             </>
           )}
