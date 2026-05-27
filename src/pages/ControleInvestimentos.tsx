@@ -4,6 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Trash2, RefreshCw, Wallet, TrendingUp, Package, Percent, Pencil, X, Download } from "lucide-react";
 import * as XLSX from "xlsx";
+import { useAppData } from "@/contexts/AppDataContext";
+
+const normCod = (v: string): string => {
+  let s = (v ?? "").toString().trim();
+  s = s.replace(/\.0+$/, "");
+  s = s.replace(/^0+(\d)/, "$1");
+  return s;
+};
+const normBu = (raw: unknown): string => {
+  const b = (raw ?? "").toString().toUpperCase().trim();
+  if (b === "FOODS" || b === "FR" || b === "FOOD") return "FR";
+  if (b === "HC") return "HC";
+  return "";
+};
 
 interface Proposta {
   id: string;
@@ -58,6 +72,29 @@ export default function ControleInvestimentos() {
     setLoading(false);
   }
 
+  const { get } = useAppData();
+  const buLookup = useMemo(() => {
+    const data = get<Record<string, Array<{ seqProd?: string; bu?: string }>>>("vilasales_data") ?? {};
+    const map = new Map<string, string>();
+    for (const fid of Object.keys(data)) {
+      const arr = data[fid];
+      if (!Array.isArray(arr)) continue;
+      for (const p of arr) {
+        const cod = normCod(p?.seqProd ?? "");
+        const bu = normBu(p?.bu);
+        if (cod && bu && !map.has(cod)) map.set(cod, bu);
+      }
+    }
+    return map;
+  }, [get]);
+
+  const buOf = (p: Proposta): string => {
+    const own = normBu(p.bu);
+    if (own) return own;
+    return buLookup.get(normCod(p.codigo_produto)) ?? "";
+  };
+
+
   useEffect(() => {
     load();
   }, []);
@@ -76,7 +113,7 @@ export default function ControleInvestimentos() {
   const filtradas = useMemo(() => {
     return propostas.filter((p) => {
       if (filtroFilial !== "todas" && p.filial !== filtroFilial) return false;
-      if (filtroBu !== "todas" && (p.bu ?? "").toUpperCase() !== filtroBu) return false;
+      if (filtroBu !== "todas" && buOf(p) !== filtroBu) return false;
       if (filtroMes !== "todos") {
         const mes = p.created_at.slice(0, 7);
         if (mes !== filtroMes) return false;
@@ -91,7 +128,7 @@ export default function ControleInvestimentos() {
       }
       return true;
     });
-  }, [propostas, filtroFilial, filtroMes, filtroBu, busca]);
+  }, [propostas, filtroFilial, filtroMes, filtroBu, busca, buLookup]);
 
   const totais = useMemo(() => {
     const totalInvest = filtradas.reduce((s, p) => s + (p.investimento_total ?? 0), 0);
@@ -122,7 +159,7 @@ export default function ControleInvestimentos() {
       Data: fmtDate(p.created_at),
       Código: p.codigo_produto,
       Descrição: p.descricao_produto,
-      BU: p.bu ?? "",
+      BU: buOf(p),
       Filial: p.filial_nome || p.filial,
       "Volume (CX)": p.volume_caixas ?? 0,
       "Unid / CX": p.unid_por_caixa ?? 0,
@@ -255,19 +292,22 @@ export default function ControleInvestimentos() {
                     <Td className="font-mono">{p.codigo_produto}</Td>
                     <Td className="max-w-[260px] truncate" title={p.descricao_produto}>{p.descricao_produto}</Td>
                     <Td>
-                      {p.bu ? (
-                        <span
-                          className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
-                          style={{
-                            background: p.bu === "HC" ? "#ede9fe" : p.bu === "FR" ? "#dcfce7" : "#f1f5f9",
-                            color: p.bu === "HC" ? "#6d28d9" : p.bu === "FR" ? "#16a34a" : "#475569",
-                          }}
-                        >
-                          {p.bu}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">–</span>
-                      )}
+                      {(() => {
+                        const bu = buOf(p);
+                        return bu ? (
+                          <span
+                            className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                            style={{
+                              background: bu === "HC" ? "#ede9fe" : bu === "FR" ? "#dcfce7" : "#f1f5f9",
+                              color: bu === "HC" ? "#6d28d9" : bu === "FR" ? "#16a34a" : "#475569",
+                            }}
+                          >
+                            {bu}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">–</span>
+                        );
+                      })()}
                     </Td>
                     <Td>{p.filial} – {p.filial_nome}</Td>
                     <Td right>{fmtNum(p.volume_caixas)}</Td>
