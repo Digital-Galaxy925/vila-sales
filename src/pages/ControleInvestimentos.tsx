@@ -206,6 +206,15 @@ export default function ControleInvestimentos() {
             return <option key={m} value={m}>{label}</option>;
           })}
         </select>
+        <select
+          value={filtroBu}
+          onChange={(e) => setFiltroBu(e.target.value)}
+          className="px-3 py-2 text-sm border border-border rounded-lg bg-background"
+        >
+          <option value="todas">Todas as BUs</option>
+          <option value="HC">HC</option>
+          <option value="FR">FR</option>
+        </select>
         <span className="text-xs text-muted-foreground">{totais.count} proposta(s)</span>
       </div>
 
