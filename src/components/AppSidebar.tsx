@@ -15,6 +15,7 @@ import {
   GitCompareArrows,
   ArrowLeftRight,
   Zap,
+  Wallet,
   Menu,
   X,
 } from "lucide-react";
@@ -30,6 +31,7 @@ const navItems = [
   { to: "/simulador-massivo", label: "Simulador de Ofertas Massivas", icon: SlidersHorizontal },
   { to: "/propostas", label: "Simulador de Propostas", icon: FileText },
   { to: "/propostas-aprovadas", label: "Propostas Aprovadas", icon: FileText },
+  { to: "/controle-investimentos", label: "Controle de Investimentos", icon: Wallet },
   { to: "/pedidos-pendentes", label: "Pedidos Pendentes", icon: FileText },
   { to: "/comparativo-livros", label: "Comparativo de Livros", icon: GitCompareArrows },
   
