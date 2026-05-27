@@ -122,6 +122,7 @@ export default function ControleInvestimentos() {
       Data: fmtDate(p.created_at),
       Código: p.codigo_produto,
       Descrição: p.descricao_produto,
+      BU: p.bu ?? "",
       Filial: p.filial_nome || p.filial,
       "Volume (CX)": p.volume_caixas ?? 0,
       "Unid / CX": p.unid_por_caixa ?? 0,
