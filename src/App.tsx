@@ -25,6 +25,7 @@ import UploadDados from "./pages/UploadDados";
 import TabelaST from "./pages/TabelaST";
 import UploadST from "./pages/UploadST";
 import PropostasAprovadas from "./pages/PropostasAprovadas";
+import Livros from "./pages/Livros";
 import PedidosPendentes from "./pages/PedidosPendentes";
 import ControleInvestimentos from "./pages/ControleInvestimentos";
 import AnaliseGeral from "./pages/AnaliseGeral";
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/simulador-massivo" element={<SimuladorMassivo />} />
             <Route path="/propostas" element={<SimuladorPropostas />} />
             <Route path="/propostas-aprovadas" element={<PropostasAprovadas />} />
+            <Route path="/livros" element={<Livros />} />
             <Route path="/pedidos-pendentes" element={<PedidosPendentes />} />
             <Route path="/controle-investimentos" element={<ControleInvestimentos />} />
             <Route path="/tabela-st" element={<TabelaST />} />
