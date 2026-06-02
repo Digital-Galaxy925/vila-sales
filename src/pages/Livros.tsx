@@ -134,7 +134,7 @@ const Livros = () => {
         FAM: l.familia,
         PROD: l.seqProd,
         DESCRICAO: l.descricao,
-        CMP: Math.round(l.cmp),
+        "Unid/CX": Math.round(l.cmp),
       };
       FILIAIS.forEach((f) => (r[f.label] = l.precos[f.code] ?? 0));
       return r;
@@ -203,7 +203,7 @@ const Livros = () => {
                 <Th>FAM</Th>
                 <Th>PROD</Th>
                 <Th>DESCRICAO</Th>
-                <Th right>CMP</Th>
+                <Th right>Unid/CX</Th>
                 {FILIAIS.map((f) => (
                   <Th key={f.code} right>{f.label}</Th>
                 ))}
