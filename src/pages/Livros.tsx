@@ -203,7 +203,7 @@ const Livros = () => {
                 <Th>FAM</Th>
                 <Th>PROD</Th>
                 <Th>DESCRICAO</Th>
-                <Th right>CMP</Th>
+                <Th right>Unid/CX</Th>
                 {FILIAIS.map((f) => (
                   <Th key={f.code} right>{f.label}</Th>
                 ))}
