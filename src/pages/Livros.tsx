@@ -34,6 +34,7 @@ const num = (v: any): number => {
 const normCode = (v: any) => String(v ?? "").trim().replace(/^0+/, "");
 const fmt = (v: number) =>
   v > 0 ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—";
+const fmtInt = (v: number) => (v > 0 ? Math.round(v).toLocaleString("pt-BR") : "—");
 
 interface LinhaLivro {
   bu: string;
