@@ -134,7 +134,7 @@ const Livros = () => {
         FAM: l.familia,
         PROD: l.seqProd,
         DESCRICAO: l.descricao,
-        CMP: l.cmp,
+        CMP: Math.round(l.cmp),
       };
       FILIAIS.forEach((f) => (r[f.label] = l.precos[f.code] ?? 0));
       return r;
