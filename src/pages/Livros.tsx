@@ -243,7 +243,7 @@ const Livros = () => {
                     <Td>{l.familia}</Td>
                     <Td className="font-mono">{l.seqProd}</Td>
                     <Td className="max-w-[280px] truncate" title={l.descricao}>{l.descricao}</Td>
-                    <Td right>{fmt(l.cmp)}</Td>
+                    <Td right>{fmtInt(l.cmp)}</Td>
                     {FILIAIS.map((f) => (
                       <Td key={f.code} right>{fmt(l.precos[f.code] ?? 0)}</Td>
                     ))}
