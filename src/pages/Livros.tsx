@@ -40,7 +40,7 @@ interface LinhaLivro {
   familia: string;
   seqProd: string;
   descricao: string;
-  cmp: number;
+  cmp: number; // unidades por caixa (embalagem CMP)
   precos: Record<string, number>; // por filial
 }
 
