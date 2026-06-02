@@ -34,13 +34,14 @@ const num = (v: any): number => {
 const normCode = (v: any) => String(v ?? "").trim().replace(/^0+/, "");
 const fmt = (v: number) =>
   v > 0 ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—";
+const fmtInt = (v: number) => (v > 0 ? Math.round(v).toLocaleString("pt-BR") : "—");
 
 interface LinhaLivro {
   bu: string;
   familia: string;
   seqProd: string;
   descricao: string;
-  cmp: number;
+  cmp: number; // unidades por caixa (embalagem CMP)
   precos: Record<string, number>; // por filial
 }
 
@@ -82,7 +83,7 @@ const Livros = () => {
             familia: String(p?.familia ?? "").trim(),
             seqProd: String(p?.seqProd ?? cod).trim(),
             descricao: String(p?.descricao ?? "").trim(),
-            cmp: num(p?.custoLiq ?? p?.custoNf ?? p?.custo),
+            cmp: num(p?.embCmp ?? p?.emb_cmp ?? p?.unidPorCaixa ?? p?.unid_por_caixa),
             precos: {},
           };
           map.set(cod, row);
@@ -90,7 +91,7 @@ const Livros = () => {
           if (!row.bu) row.bu = String(p?.bu ?? "").toUpperCase().trim();
           if (!row.familia) row.familia = String(p?.familia ?? "").trim();
           if (!row.descricao) row.descricao = String(p?.descricao ?? "").trim();
-          if (!row.cmp) row.cmp = num(p?.custoLiq ?? p?.custoNf ?? p?.custo);
+          if (!row.cmp) row.cmp = num(p?.embCmp ?? p?.emb_cmp ?? p?.unidPorCaixa ?? p?.unid_por_caixa);
         }
         const promoc = num(p?.promoc ?? p?.promocional);
         const atual = num(p?.atual ?? p?.preco);
@@ -133,7 +134,7 @@ const Livros = () => {
         FAM: l.familia,
         PROD: l.seqProd,
         DESCRICAO: l.descricao,
-        CMP: l.cmp,
+        CMP: Math.round(l.cmp),
       };
       FILIAIS.forEach((f) => (r[f.label] = l.precos[f.code] ?? 0));
       return r;
@@ -242,7 +243,7 @@ const Livros = () => {
                     <Td>{l.familia}</Td>
                     <Td className="font-mono">{l.seqProd}</Td>
                     <Td className="max-w-[280px] truncate" title={l.descricao}>{l.descricao}</Td>
-                    <Td right>{fmt(l.cmp)}</Td>
+                    <Td right>{fmtInt(l.cmp)}</Td>
                     {FILIAIS.map((f) => (
                       <Td key={f.code} right>{fmt(l.precos[f.code] ?? 0)}</Td>
                     ))}
