@@ -82,7 +82,7 @@ const Livros = () => {
             familia: String(p?.familia ?? "").trim(),
             seqProd: String(p?.seqProd ?? cod).trim(),
             descricao: String(p?.descricao ?? "").trim(),
-            cmp: num(p?.custoLiq ?? p?.custoNf ?? p?.custo),
+            cmp: num(p?.embCmp ?? p?.emb_cmp ?? p?.unidPorCaixa ?? p?.unid_por_caixa),
             precos: {},
           };
           map.set(cod, row);
@@ -90,7 +90,7 @@ const Livros = () => {
           if (!row.bu) row.bu = String(p?.bu ?? "").toUpperCase().trim();
           if (!row.familia) row.familia = String(p?.familia ?? "").trim();
           if (!row.descricao) row.descricao = String(p?.descricao ?? "").trim();
-          if (!row.cmp) row.cmp = num(p?.custoLiq ?? p?.custoNf ?? p?.custo);
+          if (!row.cmp) row.cmp = num(p?.embCmp ?? p?.emb_cmp ?? p?.unidPorCaixa ?? p?.unid_por_caixa);
         }
         const promoc = num(p?.promoc ?? p?.promocional);
         const atual = num(p?.atual ?? p?.preco);
