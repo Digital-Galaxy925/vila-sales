@@ -29,6 +29,7 @@ import Livros from "./pages/Livros";
 import PedidosPendentes from "./pages/PedidosPendentes";
 import ControleInvestimentos from "./pages/ControleInvestimentos";
 import AnaliseGeral from "./pages/AnaliseGeral";
+import DashboardUnilever from "./pages/DashboardUnilever";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/margem" element={<AnaliseMargem />} />
             <Route path="/preco" element={<AnalisePreco />} />
             <Route path="/shelf-life" element={<AnaliseShelfLife />} />
+            <Route path="/dashboard-unilever" element={<DashboardUnilever />} />
             <Route path="/upload" element={<UploadDados />} />
           </Route>
           <Route path="*" element={<NotFound />} />

@@ -23,6 +23,7 @@ import {
 const navItems = [
   { to: "/gerencial", label: "Análise Gerencial", icon: BriefcaseBusiness },
   { to: "/", label: "Análise Geral", icon: LayoutDashboard },
+  { to: "/dashboard-unilever", label: "Dashboard Unilever", icon: BarChart3 },
   { to: "/manual", label: "Análise de Custos", icon: BarChart3 },
   { to: "/margem", label: "Análise de Margem", icon: TrendingUp },
   { to: "/estoque", label: "Análise de Estoque", icon: Package },
