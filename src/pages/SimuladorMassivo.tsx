@@ -1,6 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -175,6 +179,64 @@ export default function SimuladorMassivo() {
   };
 
   const handleLimpar = () => setSimulacoes([]);
+
+  const [salvando, setSalvando] = useState(false);
+  const handleSalvarTodas = async () => {
+    const validas = simulacoes.filter((s) => {
+      const pv = parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
+      const vol = parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
+      return s.produto && pv > 0 && vol > 0;
+    });
+    if (validas.length === 0) {
+      toast({ title: "Nada para salvar", description: "Adicione simulações com preço e volume válidos.", variant: "destructive" });
+      return;
+    }
+    setSalvando(true);
+    try {
+      const rows = validas.map((s) => {
+        const p = s.produto!;
+        const pv = parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
+        const vol = parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
+        const qpc = parseFloat(p.embCmp) || 1;
+        const un = vol * qpc;
+        const margAjustFrac = (parseFloat(s.margemAjustada.replace(",", ".")) || 0) / 100;
+        const margReal = pv > 0 ? (pv - p.custoLiq) / pv : 0;
+        const totalSellOut = un * pv;
+        const investUnit = margAjustFrac > 0 && margAjustFrac < 1 && pv > 0 ? p.custoLiq - pv * (1 - margAjustFrac) : 0;
+        const investTotal = investUnit > 0 ? investUnit * un : 0;
+        const pctInv = totalSellOut > 0 && investTotal > 0 ? investTotal / totalSellOut : 0;
+        const buRaw = (p.bu ?? "").toString().toUpperCase();
+        const buNorm = buRaw === "FOODS" || buRaw === "FR" || buRaw === "FOOD" ? "FR" : buRaw === "HC" ? "HC" : (buRaw || null);
+        return {
+          codigo_produto: normCod(p.seqProd),
+          descricao_produto: p.descricao ?? "",
+          bu: buNorm,
+          filial: s.filial,
+          filial_nome: FILIAIS.find((f) => f.id === s.filial)?.nome ?? "",
+          volume_caixas: vol,
+          unid_por_caixa: qpc,
+          total_unidades: un,
+          custo_unitario: p.custoLiq,
+          preco_venda: pv,
+          margem_real: margReal,
+          margem_minima: margAjustFrac,
+          total_sellout: totalSellOut,
+          investimento_por_unidade: investUnit > 0 ? investUnit : 0,
+          investimento_por_caixa: investUnit > 0 ? investUnit * qpc : 0,
+          investimento_total: investTotal,
+          percentual_investimento: pctInv,
+          observacao: s.viaUpload ? "Importado via planilha" : "",
+        };
+      });
+      const { error } = await supabase.from("propostas_simulador").insert(rows);
+      if (error) throw error;
+      toast({ title: `${rows.length} proposta(s) salva(s)`, description: "Disponíveis em Controle de Investimentos." });
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e?.message ?? "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSalvando(false);
+    }
+  };
 
   // ─── Upload de planilha ─────────────────────────────────────────────────────
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -688,6 +750,37 @@ export default function SimuladorMassivo() {
               </h3>
               {simulacoes.length > 0 && (
                 <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={handleSalvarTodas}
+                    disabled={salvando}
+                    style={{
+                      background: salvando ? "#94a3b8" : "#0071e3",
+                      border: "none",
+                      color: "#fff",
+                      borderRadius: 8,
+                      padding: "6px 14px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: salvando ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {salvando ? "Salvando..." : "💾 Salvar"}
+                  </button>
+                  <button
+                    onClick={() => navigate("/controle-investimentos")}
+                    style={{
+                      background: "#fff",
+                      border: "1px solid #0071e3",
+                      color: "#0071e3",
+                      borderRadius: 8,
+                      padding: "6px 14px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Ver Controle
+                  </button>
                   <button
                     onClick={handleExportExcel}
                     style={{
