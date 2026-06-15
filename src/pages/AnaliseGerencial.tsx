@@ -561,11 +561,14 @@ const AnaliseGerencial = () => {
                             <th
                               key={r.filial}
                               colSpan={5}
-                              className={`${tableHeaderStyle} text-center border-r border-border last:border-r-0`}
+                              className={`${tableHeaderStyle} text-center border-r border-border`}
                             >
                               {FILIAL_NAMES[r.filial]?.split(" - ")[1] || r.filial} | {r.filial}
                             </th>
                           ))}
+                          <th rowSpan={2} className={`${tableHeaderStyle} text-right bg-primary/10 text-primary`}>
+                            TOTAL (Cx)
+                          </th>
                         </tr>
                         <tr className="border-b border-border bg-muted/20">
                           {results.map((r) => (
@@ -574,7 +577,7 @@ const AnaliseGerencial = () => {
                               <th className={`${tableHeaderStyle} text-right`}>Custo</th>
                               <th className={`${tableHeaderStyle} text-right`}>Venda</th>
                               <th className={`${tableHeaderStyle} text-right`}>Promoção</th>
-                              <th className={`${tableHeaderStyle} text-right border-r border-border last:border-r-0`}>Sellout</th>
+                              <th className={`${tableHeaderStyle} text-right border-r border-border`}>Sellout</th>
                             </React.Fragment>
                           ))}
                         </tr>
@@ -590,9 +593,12 @@ const AnaliseGerencial = () => {
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.custoLiq)}</td>
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.atual)}</td>
                               <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>{fmt(r.promoc)}</td>
-                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border last:border-r-0`}>{fmtNum(r.sellout)}</td>
+                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border`}>{fmtNum(r.sellout)}</td>
                             </React.Fragment>
                           ))}
+                          <td className={`${tableCellStyle} text-right font-mono font-bold text-primary bg-primary/5`}>
+                            {fmtNum(results.reduce((s, r) => s + (Number(r.estoque) || 0), 0))}
+                          </td>
                         </tr>
                       </tbody>
                     </table>
