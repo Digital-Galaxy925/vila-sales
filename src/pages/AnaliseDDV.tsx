@@ -381,6 +381,7 @@ const AnaliseDDV = () => {
                           <td className="px-3 py-2 border border-border">&nbsp;</td>
                         </Fragment>
                       ))}
+                      <td className="px-3 py-2 border border-border bg-primary/5">&nbsp;</td>
                     </tr>
                   ))
                 : filtered.map((p, idx) => (
