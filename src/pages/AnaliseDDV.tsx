@@ -418,6 +418,9 @@ const AnaliseDDV = () => {
                           </Fragment>
                         );
                       })}
+                      <td className="px-3 py-2 text-right border border-border tabular-nums font-bold text-primary bg-primary/5">
+                        {FILIAIS.reduce((s, f) => s + (p.cells[f.code]?.estoque || 0), 0).toLocaleString("pt-BR")}
+                      </td>
                     </tr>
                   ))}
             </tbody>
