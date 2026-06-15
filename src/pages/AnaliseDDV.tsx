@@ -352,6 +352,9 @@ const AnaliseDDV = () => {
                     {f.label}
                   </th>
                 ))}
+                <th rowSpan={2} className="px-3 py-2 text-center text-xs font-bold text-primary border border-border bg-primary/10 whitespace-nowrap min-w-[100px]">
+                  TOTAL (Cx)
+                </th>
               </tr>
               <tr className="bg-muted/30">
                 {FILIAIS.map((f) => (
