@@ -352,6 +352,9 @@ const AnaliseDDV = () => {
                     {f.label}
                   </th>
                 ))}
+                <th rowSpan={2} className="px-3 py-2 text-center text-xs font-bold text-primary border border-border bg-primary/10 whitespace-nowrap min-w-[100px]">
+                  TOTAL (Cx)
+                </th>
               </tr>
               <tr className="bg-muted/30">
                 {FILIAIS.map((f) => (
@@ -378,6 +381,7 @@ const AnaliseDDV = () => {
                           <td className="px-3 py-2 border border-border">&nbsp;</td>
                         </Fragment>
                       ))}
+                      <td className="px-3 py-2 border border-border bg-primary/5">&nbsp;</td>
                     </tr>
                   ))
                 : filtered.map((p, idx) => (
@@ -415,6 +419,9 @@ const AnaliseDDV = () => {
                           </Fragment>
                         );
                       })}
+                      <td className="px-3 py-2 text-right border border-border tabular-nums font-bold text-primary bg-primary/5">
+                        {FILIAIS.reduce((s, f) => s + (p.cells[f.code]?.estoque || 0), 0).toLocaleString("pt-BR")}
+                      </td>
                     </tr>
                   ))}
             </tbody>
