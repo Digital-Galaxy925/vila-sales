@@ -381,10 +381,13 @@ const AnaliseDDV = () => {
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-muted/40">
-                <th rowSpan={2} className="px-3 py-2 text-left text-xs font-bold text-foreground border border-border sticky left-0 bg-muted/40 z-20 w-[110px] min-w-[110px]">
+                <th rowSpan={2} className="px-3 py-2 text-center text-xs font-bold text-foreground border border-border sticky left-0 bg-muted/40 z-20 w-[60px] min-w-[60px]">
+                  BU
+                </th>
+                <th rowSpan={2} className="px-3 py-2 text-left text-xs font-bold text-foreground border border-border sticky left-[60px] bg-muted/40 z-20 w-[110px] min-w-[110px]">
                   CODIGO
                 </th>
-                <th rowSpan={2} className="px-3 py-2 text-left text-xs font-bold text-foreground border border-border sticky left-[110px] bg-muted/40 z-20 min-w-[260px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]">
+                <th rowSpan={2} className="px-3 py-2 text-left text-xs font-bold text-foreground border border-border sticky left-[170px] bg-muted/40 z-20 min-w-[260px] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]">
                   DESCRIÇÃO
                 </th>
                 {FILIAIS.map((f) => (
