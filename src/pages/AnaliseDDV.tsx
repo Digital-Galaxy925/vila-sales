@@ -480,7 +480,8 @@ const AnaliseDDV = () => {
                         {FILIAIS.reduce((s, f) => s + (p.cells[f.code]?.estoque || 0), 0).toLocaleString("pt-BR")}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
             </tbody>
           </table>
         </div>
