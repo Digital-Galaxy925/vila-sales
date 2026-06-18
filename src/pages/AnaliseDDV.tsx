@@ -271,15 +271,16 @@ const AnaliseDDV = () => {
 
   const exportExcel = () => {
     if (enriched.length === 0) return;
-    const headerTop = ["CODIGO", "DESCRIÇÃO"];
-    const headerSub = ["", ""];
+    const headerTop = ["BU", "CODIGO", "DESCRIÇÃO"];
+    const headerSub = ["", "", ""];
     FILIAIS.forEach(({ label }) => {
       headerTop.push(label, "");
       headerSub.push("ESTOQUE", "DDV");
     });
     const aoa: any[][] = [headerTop, headerSub];
     enriched.forEach((p) => {
-      const row: any[] = [p.codigo, p.descricao];
+      const bu = buLookup[normCode(p.codigo)] || "";
+      const row: any[] = [bu, p.codigo, p.descricao];
       FILIAIS.forEach(({ code }) => {
         row.push(p.cells[code].estoque, p.cells[code].ddv);
       });
