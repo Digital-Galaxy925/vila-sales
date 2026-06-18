@@ -271,15 +271,16 @@ const AnaliseDDV = () => {
 
   const exportExcel = () => {
     if (enriched.length === 0) return;
-    const headerTop = ["CODIGO", "DESCRIÇÃO"];
-    const headerSub = ["", ""];
+    const headerTop = ["BU", "CODIGO", "DESCRIÇÃO"];
+    const headerSub = ["", "", ""];
     FILIAIS.forEach(({ label }) => {
       headerTop.push(label, "");
       headerSub.push("ESTOQUE", "DDV");
     });
     const aoa: any[][] = [headerTop, headerSub];
     enriched.forEach((p) => {
-      const row: any[] = [p.codigo, p.descricao];
+      const bu = buLookup[normCode(p.codigo)] || "";
+      const row: any[] = [bu, p.codigo, p.descricao];
       FILIAIS.forEach(({ code }) => {
         row.push(p.cells[code].estoque, p.cells[code].ddv);
       });
@@ -289,14 +290,14 @@ const AnaliseDDV = () => {
     // Merge per-filial header
     const merges: XLSX.Range[] = [];
     FILIAIS.forEach((_, i) => {
-      const c = 2 + i * 2;
+      const c = 3 + i * 2;
       merges.push({ s: { r: 0, c }, e: { r: 0, c: c + 1 } });
     });
     ws["!merges"] = merges;
     // Format: estoque as integer with thousand separator, ddv with 2 decimals
     const totalRows = enriched.length + 2;
     FILIAIS.forEach((_, i) => {
-      const estCol = 2 + i * 2;
+      const estCol = 3 + i * 2;
       const ddvCol = estCol + 1;
       for (let r = 2; r < totalRows; r++) {
         const estAddr = XLSX.utils.encode_cell({ r, c: estCol });
