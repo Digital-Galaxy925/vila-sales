@@ -290,14 +290,14 @@ const AnaliseDDV = () => {
     // Merge per-filial header
     const merges: XLSX.Range[] = [];
     FILIAIS.forEach((_, i) => {
-      const c = 2 + i * 2;
+      const c = 3 + i * 2;
       merges.push({ s: { r: 0, c }, e: { r: 0, c: c + 1 } });
     });
     ws["!merges"] = merges;
     // Format: estoque as integer with thousand separator, ddv with 2 decimals
     const totalRows = enriched.length + 2;
     FILIAIS.forEach((_, i) => {
-      const estCol = 2 + i * 2;
+      const estCol = 3 + i * 2;
       const ddvCol = estCol + 1;
       for (let r = 2; r < totalRows; r++) {
         const estAddr = XLSX.utils.encode_cell({ r, c: estCol });
