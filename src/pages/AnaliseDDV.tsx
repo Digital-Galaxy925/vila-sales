@@ -416,8 +416,9 @@ const AnaliseDDV = () => {
               {filtered.length === 0
                 ? Array.from({ length: 8 }).map((_, idx) => (
                     <tr key={`empty-${idx}`}>
-                      <td className="px-3 py-2 border border-border sticky left-0 bg-card z-10 w-[110px] min-w-[110px]">&nbsp;</td>
-                      <td className="px-3 py-2 border border-border sticky left-[110px] bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]">&nbsp;</td>
+                      <td className="px-3 py-2 border border-border sticky left-0 bg-card z-10 w-[60px] min-w-[60px]">&nbsp;</td>
+                      <td className="px-3 py-2 border border-border sticky left-[60px] bg-card z-10 w-[110px] min-w-[110px]">&nbsp;</td>
+                      <td className="px-3 py-2 border border-border sticky left-[170px] bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]">&nbsp;</td>
                       {FILIAIS.map((f) => (
                         <Fragment key={f.code}>
                           <td className="px-3 py-2 border border-border">&nbsp;</td>
@@ -427,12 +428,25 @@ const AnaliseDDV = () => {
                       <td className="px-3 py-2 border border-border bg-primary/5">&nbsp;</td>
                     </tr>
                   ))
-                : filtered.map((p, idx) => (
+                : filtered.map((p, idx) => {
+                    const bu = buLookup[normCode(p.codigo)] || "";
+                    return (
                     <tr key={`${p.codigo}-${idx}`} className="hover:bg-muted/20">
-                      <td className="px-3 py-2 text-foreground font-mono text-xs border border-border sticky left-0 bg-card z-10 w-[110px] min-w-[110px]">
+                      <td className="px-3 py-2 text-center border border-border sticky left-0 bg-card z-10 w-[60px] min-w-[60px]">
+                        {bu ? (
+                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                            bu === "HC" ? "bg-violet-100 text-violet-700" : bu === "FR" ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"
+                          }`}>
+                            {bu}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground italic text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-foreground font-mono text-xs border border-border sticky left-[60px] bg-card z-10 w-[110px] min-w-[110px]">
                         {p.codigo}
                       </td>
-                      <td className="px-3 py-2 text-foreground border border-border sticky left-[110px] bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]">
+                      <td className="px-3 py-2 text-foreground border border-border sticky left-[170px] bg-card z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]">
                         {p.descricao || <span className="text-muted-foreground italic">—</span>}
                       </td>
                       {FILIAIS.map((f) => {
