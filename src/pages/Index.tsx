@@ -1015,6 +1015,8 @@ function CrossAnalysis({ data }: { data: FilialData }) {
               setDesiredMargins({});
               setDesiredPrices({});
               setPromoDiscounts({});
+              setMargSelloutInput({});
+              setAnaliseSelect({});
               setBulkMargin("");
               setBulkDiscount("");
             }}
