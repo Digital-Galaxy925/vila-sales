@@ -918,30 +918,68 @@ function CrossAnalysis({ data }: { data: FilialData }) {
     const header = ["BU","Cód. Família","Filial","Código","Descrição","Unid/CX","Estoque","DDV (dias)","Custo Liq (R$)","Sell Out (R$)","Preço Venda (R$)","Promoção (R$)","Margem (%)","Status Margem","Margem com Sell Out (%)","Adicionar Sell Out (R$)","Margem Desejada (%)","Preço Futuro (R$)","Preço Desejado (R$)","Margem Futura (%)","Desconto Promocional (%)","Preço Futuro Final (R$)","Análise"];
     const rows = filtered.map((p) => {
       const key = `${p.filial}-${p.seqProd}`;
-      // Margem com Sell Out
+      const atual = p.atual || 0;
+      const custoLiq = p.custoLiq || 0;
+      const promoc = p.promoc || 0;
+      const sellout = p.sellout || 0;
+      const precoAlvo = promoc > 0 ? promoc : atual;
+
+      // Margem com Sell Out: usa input do usuário; senão calcula margem efetiva c/ sellout
       const margSellVal = margSelloutInput[key] || "";
       const margSellNum = margSellVal ? num(margSellVal) : NaN;
-      // Adicionar Sell Out (calculado)
-      let adicionarSellout = "";
-      if (!isNaN(margSellNum) && margSellNum > 0 && margSellNum < 100) {
-        const precoAlvo = p.promoc > 0 ? p.promoc : p.atual;
-        if (precoAlvo > 0) {
-          const custoMaximo = precoAlvo * (1 - margSellNum / 100);
-          const selloutNecessario = p.custoLiq - custoMaximo;
-          adicionarSellout = selloutNecessario > 0 ? selloutNecessario.toFixed(2) : "";
-        }
+      let margComSellout: number | "" = "";
+      if (!isNaN(margSellNum)) {
+        margComSellout = margSellNum / 100;
+      } else if (precoAlvo > 0) {
+        margComSellout = ((precoAlvo - (custoLiq - sellout)) / precoAlvo);
       }
-      // Margem desejada / Preço futuro
+
+      // Adicionar Sell Out: usa cálculo do input; senão usa o sellout atual do produto
+      let adicionarSelloutVal: number | "" = "";
+      if (!isNaN(margSellNum) && margSellNum > 0 && margSellNum < 100 && precoAlvo > 0) {
+        const custoMaximo = precoAlvo * (1 - margSellNum / 100);
+        const selloutNecessario = custoLiq - custoMaximo;
+        adicionarSelloutVal = selloutNecessario > 0 ? Number(selloutNecessario.toFixed(2)) : 0;
+      } else {
+        adicionarSelloutVal = sellout;
+      }
+
+      // Margem Desejada: usa input; senão minMargin
       const raw = desiredMargins[key];
-      const margDes = raw ? parseFloat(raw.replace(",", ".")) : NaN;
-      const futuro = !isNaN(margDes) && margDes < 100 ? p.custoLiq / (1 - margDes / 100) : NaN;
+      const margDesNum = raw ? parseFloat(raw.replace(",", ".")) : minMargin;
+      const margDesejadaVal = margDesNum / 100;
+
+      // Preço Futuro: a partir da Margem Desejada
+      const futuro = margDesNum < 100 ? custoLiq / (1 - margDesNum / 100) : NaN;
+      const precoFuturoVal = !isNaN(futuro) ? Number(futuro.toFixed(2)) : "";
+
+      // Preço Desejado: usa input; senão repete preço atual
       const rawPreco = desiredPrices[key];
-      const precoDesejado = rawPreco ? parseFloat(rawPreco.replace(",", ".")) : NaN;
-      const margFutura = !isNaN(precoDesejado) && precoDesejado > 0 ? (((precoDesejado - p.custoLiq) / precoDesejado) * 100).toFixed(2) : "";
+      const precoDesejado = rawPreco ? parseFloat(rawPreco.replace(",", ".")) : atual;
+      const precoDesejadoVal = precoDesejado > 0 ? Number(precoDesejado.toFixed(2)) : "";
+
+      // Margem Futura: a partir do Preço Desejado
+      const margFutura = precoDesejado > 0 ? ((precoDesejado - custoLiq) / precoDesejado) : NaN;
+      const margFuturaVal = !isNaN(margFutura) ? Number(margFutura.toFixed(4)) : "";
+
+      // Desconto Promocional: usa input; senão calcula a partir de promoc vs atual
       const rawDesc = promoDiscounts[key];
-      const descPerc = rawDesc ? parseFloat(rawDesc.replace(",", ".")) : NaN;
-      const basePreco = !isNaN(precoDesejado) && precoDesejado > 0 ? precoDesejado : futuro;
-      const precoFuturoFinal = !isNaN(basePreco) && !isNaN(descPerc) ? (basePreco - (basePreco * descPerc / 100)).toFixed(2) : "";
+      let descPercNum: number;
+      if (rawDesc) {
+        descPercNum = parseFloat(rawDesc.replace(",", "."));
+      } else if (atual > 0 && promoc > 0 && promoc < atual) {
+        descPercNum = ((atual - promoc) / atual) * 100;
+      } else {
+        descPercNum = 0;
+      }
+      const descPromoVal = !isNaN(descPercNum) ? Number((descPercNum / 100).toFixed(4)) : "";
+
+      // Preço Futuro Final: base (Preço Desejado || Preço Futuro) com Desconto Promocional
+      const basePreco = precoDesejado > 0 ? precoDesejado : (!isNaN(futuro) ? futuro : 0);
+      const precoFuturoFinal = basePreco > 0 && !isNaN(descPercNum)
+        ? Number((basePreco - (basePreco * descPercNum / 100)).toFixed(2))
+        : "";
+
       return [
         p.bu,
         p.familia,
@@ -951,21 +989,21 @@ function CrossAnalysis({ data }: { data: FilialData }) {
         p.embCmp || "",
         p.estoque,
         p.ddv,
-        p.custoLiq,
-        p.sellout,
-        p.atual,
-        p.promoc ?? 0,
+        custoLiq,
+        sellout,
+        atual,
+        promoc,
         p.marg / 100,
         p.marg >= minMargin ? "Saudável" : "Crítico",
-        margSellVal ? margSellNum / 100 : "",
-        adicionarSellout ? parseFloat(adicionarSellout) : "",
-        raw ? margDes / 100 : "",
-        !isNaN(futuro) ? futuro : "",
-        rawPreco ? precoDesejado : "",
-        margFutura ? parseFloat(margFutura) / 100 : "",
-        rawDesc ? descPerc / 100 : "",
-        precoFuturoFinal ? parseFloat(precoFuturoFinal) : "",
-        analiseSelect[key] || "",
+        margComSellout,
+        adicionarSelloutVal,
+        margDesejadaVal,
+        precoFuturoVal,
+        precoDesejadoVal,
+        margFuturaVal,
+        descPromoVal,
+        precoFuturoFinal,
+        analiseSelect[key] || (p.marg < minMargin ? "Margem Baixa" : ""),
       ];
     });
     const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
