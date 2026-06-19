@@ -787,12 +787,28 @@ function CrossAnalysis({ data }: { data: FilialData }) {
   const [minMargin, setMinMargin] = useState(17);
   const [bulkMargin, setBulkMargin] = useState("");
   const [bulkDiscount, setBulkDiscount] = useState("");
-  const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>({});
-  const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>({});
-  const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>({});
+  const [desiredMargins, setDesiredMargins] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem("vilasales_manual_desiredMargins") || "{}"); } catch { return {}; }
+  });
+  const [desiredPrices, setDesiredPrices] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem("vilasales_manual_desiredPrices") || "{}"); } catch { return {}; }
+  });
+  const [promoDiscounts, setPromoDiscounts] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem("vilasales_manual_promoDiscounts") || "{}"); } catch { return {}; }
+  });
   const [addedSellout, setAddedSellout] = useState<Record<string, string>>({});
-  const [margSelloutInput, setMargSelloutInput] = useState<Record<string, string>>({});
-  const [analiseSelect, setAnaliseSelect] = useState<Record<string, string>>({});
+  const [margSelloutInput, setMargSelloutInput] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem("vilasales_manual_margSellout") || "{}"); } catch { return {}; }
+  });
+  const [analiseSelect, setAnaliseSelect] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem("vilasales_manual_analise") || "{}"); } catch { return {}; }
+  });
+  // Persist manual inputs so they survive navigation and are included in export
+  useEffect(() => { try { localStorage.setItem("vilasales_manual_desiredMargins", JSON.stringify(desiredMargins)); } catch {} }, [desiredMargins]);
+  useEffect(() => { try { localStorage.setItem("vilasales_manual_desiredPrices", JSON.stringify(desiredPrices)); } catch {} }, [desiredPrices]);
+  useEffect(() => { try { localStorage.setItem("vilasales_manual_promoDiscounts", JSON.stringify(promoDiscounts)); } catch {} }, [promoDiscounts]);
+  useEffect(() => { try { localStorage.setItem("vilasales_manual_margSellout", JSON.stringify(margSelloutInput)); } catch {} }, [margSelloutInput]);
+  useEffect(() => { try { localStorage.setItem("vilasales_manual_analise", JSON.stringify(analiseSelect)); } catch {} }, [analiseSelect]);
   const [specificList, setSpecificList] = useState<string[] | null>(null);
   const [specificFileName, setSpecificFileName] = useState("");
   const [specificNotFound, setSpecificNotFound] = useState<string[]>([]);
