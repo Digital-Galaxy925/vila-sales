@@ -277,22 +277,34 @@ const AnaliseDDV = () => {
       headerTop.push(label, "");
       headerSub.push("ESTOQUE", "DDV");
     });
+    headerTop.push("TOTAL (Cx)");
+    headerSub.push("");
     const aoa: any[][] = [headerTop, headerSub];
     enriched.forEach((p) => {
       const bu = buLookup[normCode(p.codigo)] || "";
       const row: any[] = [bu, p.codigo, p.descricao];
+      let total = 0;
       FILIAIS.forEach(({ code }) => {
-        row.push(p.cells[code].estoque, p.cells[code].ddv);
+        const est = p.cells[code]?.estoque || 0;
+        row.push(est, p.cells[code]?.ddv || 0);
+        total += est;
       });
+      row.push(total);
       aoa.push(row);
     });
     const ws = XLSX.utils.aoa_to_sheet(aoa);
-    // Merge per-filial header
-    const merges: XLSX.Range[] = [];
+    // Merge per-filial header + BU/CODIGO/DESCRIÇÃO/TOTAL rowSpan
+    const merges: XLSX.Range[] = [
+      { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } },
+      { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } },
+      { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } },
+    ];
     FILIAIS.forEach((_, i) => {
       const c = 3 + i * 2;
       merges.push({ s: { r: 0, c }, e: { r: 0, c: c + 1 } });
     });
+    const totalCol = 3 + FILIAIS.length * 2;
+    merges.push({ s: { r: 0, c: totalCol }, e: { r: 1, c: totalCol } });
     ws["!merges"] = merges;
     // Format: estoque as integer with thousand separator, ddv with 2 decimals
     const totalRows = enriched.length + 2;
@@ -306,6 +318,10 @@ const AnaliseDDV = () => {
         if (ws[ddvAddr]) { ws[ddvAddr].t = "n"; ws[ddvAddr].z = "#,##0.00"; }
       }
     });
+    for (let r = 2; r < totalRows; r++) {
+      const addr = XLSX.utils.encode_cell({ r, c: totalCol });
+      if (ws[addr]) { ws[addr].t = "n"; ws[addr].z = "#,##0"; }
+    }
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Análise DDV");
     XLSX.writeFile(wb, "analise_ddv.xlsx");
