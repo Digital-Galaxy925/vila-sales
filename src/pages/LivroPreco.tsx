@@ -211,22 +211,64 @@ const LivroPreco = () => {
     if (descPct < 0) descPct = 0;
     if (descPct > 0.1) descPct = 0.1;
 
-    const out: Item[] = [];
+    // Build map filial -> rows. Special merge rules:
+    //  - Filial 01: estoque from LIVRO_01, vendas/preços from LIVRO_10
+    //  - Filial 502: estoque from LIVRO_502, vendas/preços from LIVRO_510
+    const byFilial: Record<string, Record<string, string>[]> = {};
     for (const f of files) {
-      const filial = filialFromName(f.name);
-      for (const r of f.rows) {
+      const fil = filialFromName(f.name);
+      byFilial[fil] = f.rows;
+    }
+
+    const rowKey = (r: Record<string, string>) =>
+      `${(r["SEQ.PROD"] || r["SEQ. PROD"] || "").trim()}__${(r["FAMILIA"] || "").trim()}`;
+
+    type Pair = { filial: string; salesRows: Record<string, string>[]; stockMap: Map<string, Record<string, string>> };
+    const pairs: Pair[] = [];
+    const handled = new Set<string>();
+
+    if (byFilial["01"] || byFilial["10"]) {
+      const sales = byFilial["10"] || byFilial["01"] || [];
+      const stock = byFilial["01"] || byFilial["10"] || [];
+      const sm = new Map<string, Record<string, string>>();
+      stock.forEach((r) => sm.set(rowKey(r), r));
+      pairs.push({ filial: "01", salesRows: sales, stockMap: sm });
+      handled.add("01");
+      handled.add("10");
+    }
+    if (byFilial["502"] || byFilial["510"]) {
+      const sales = byFilial["510"] || byFilial["502"] || [];
+      const stock = byFilial["502"] || byFilial["510"] || [];
+      const sm = new Map<string, Record<string, string>>();
+      stock.forEach((r) => sm.set(rowKey(r), r));
+      pairs.push({ filial: "502", salesRows: sales, stockMap: sm });
+      handled.add("502");
+      handled.add("510");
+    }
+    for (const fil of Object.keys(byFilial)) {
+      if (handled.has(fil)) continue;
+      const sm = new Map<string, Record<string, string>>();
+      byFilial[fil].forEach((r) => sm.set(rowKey(r), r));
+      pairs.push({ filial: fil, salesRows: byFilial[fil], stockMap: sm });
+    }
+
+    const out: Item[] = [];
+    for (const { filial, salesRows, stockMap } of pairs) {
+      for (const r of salesRows) {
         const fornecedor = r["Fornecedor"] || r["FORNECEDOR"] || r["fornecedor"] || "";
         const bu = deriveBU(fornecedor);
         if (!bu) continue;
 
-        const ddv = parseBR(r["DDV"]);
+        const stockRow = stockMap.get(rowKey(r)) || r;
+
+        const ddv = parseBR(stockRow["DDV"] ?? r["DDV"]);
         if (!ddv || ddv <= 0) continue;
         if (ddvLimite > 0 && ddv < ddvLimite) continue;
 
         const atual = parseBR(r["ATUAL"]);
         const promoc = parseBR(r["PROMOC"]);
         const custoLiq = parseBR(r["CUSTO LIQ"]);
-        const estoque = parseBR(r["ESTOQUE"]);
+        const estoque = parseBR(stockRow["ESTOQUE"] ?? r["ESTOQUE"]);
         const vAtu = parseBR(r["VD.SEM.ATU"]);
         const v1 = parseBR(r["VD.SEM. -1"] ?? r["VD.SEM.-1"]);
         const v2 = parseBR(r["VD.SEM. -2"] ?? r["VD.SEM.-2"]);
@@ -268,6 +310,7 @@ const LivroPreco = () => {
         });
       }
     }
+
     out.sort((a, b) =>
       a.filial.localeCompare(b.filial) ||
       a.bu.localeCompare(b.bu) ||
