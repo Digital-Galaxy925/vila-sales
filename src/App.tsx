@@ -18,6 +18,7 @@ import ContaCorrente from "./pages/ContaCorrente";
 
 import AnaliseEstoque from "./pages/AnaliseEstoque";
 import AnaliseDDV from "./pages/AnaliseDDV";
+import LivroPreco from "./pages/LivroPreco";
 import AnaliseMargem from "./pages/AnaliseMargem";
 import AnalisePreco from "./pages/AnalisePreco";
 import AnaliseShelfLife from "./pages/AnaliseShelfLife";
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/upload-st" element={<UploadST />} />
             <Route path="/estoque" element={<AnaliseEstoque />} />
             <Route path="/analise-ddv" element={<AnaliseDDV />} />
+            <Route path="/livro-preco" element={<LivroPreco />} />
             <Route path="/margem" element={<AnaliseMargem />} />
             <Route path="/preco" element={<AnalisePreco />} />
             <Route path="/shelf-life" element={<AnaliseShelfLife />} />

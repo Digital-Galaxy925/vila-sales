@@ -5,7 +5,7 @@ const LivroPreco = () => {
     <div className="p-6 space-y-6">
       <PageHeader
         title="Livro Preço"
-        subtitle="Consulta de preços por filial"
+        description="Consulta de preços por filial"
       />
       <div className="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
         Em breve: módulo de Livro Preço.
