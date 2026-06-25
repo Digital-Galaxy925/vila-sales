@@ -31,6 +31,10 @@ interface Product {
   sugerido: number;
   ddv: number;
   pendCmp: number;
+  vAtu: number;
+  v1: number;
+  v2: number;
+  v3: number;
   filial: Filial;
   bu: string; // FOODS | HC
 }
@@ -43,6 +47,18 @@ interface LivroMetricRow {
   estoque: number;
   ddv: number;
   pendCmp: number;
+}
+
+interface LivroOverrideRow {
+  custo: string;
+  preco: string;
+  sellout: string;
+  promoc: string;
+  vAtu: string;
+  v1: string;
+  v2: string;
+  v3: string;
+  estoque?: string;
 }
 
 interface LivroMetricsData {
@@ -189,6 +205,10 @@ function rowToProduct(row: Record<string, string>, filial: Filial): Product {
     ddv: num(findCol(row, ["DDV"])),
     filial,
     bu: "",
+    vAtu: num(findCol(row, ["VD.SEM.ATU", "VD SEM ATU", "VDSEMATU"])),
+    v1: num(findCol(row, ["VD.SEM. -1", "VD.SEM.-1", "VD SEM -1", "VDSEM-1"])),
+    v2: num(findCol(row, ["VD.SEM. -2", "VD.SEM.-2", "VD SEM -2", "VDSEM-2"])),
+    v3: num(findCol(row, ["VD.SEM. -3", "VD.SEM.-3", "VD SEM -3", "VDSEM-3"])),
   };
 }
 
@@ -2615,7 +2635,7 @@ function IndexInner() {
       };
 
       const buildOverrideMap = async (file: File | undefined, label: string) => {
-        const map = new Map<string, { custo: string; preco: string; sellout: string; promoc: string }>();
+        const map = new Map<string, LivroOverrideRow>();
         if (!file) return map;
 
         if (/\.csv$/i.test(file.name)) {
@@ -2626,6 +2646,10 @@ function IndexInner() {
           const colPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"], 19);
           const colSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
           const colPromoc = findHeaderIndex(header, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"], -1);
+          const colVAtu = findHeaderIndex(header, ["VD.SEM.ATU", "VD SEM ATU", "VDSEMATU"], 55);
+          const colV1 = findHeaderIndex(header, ["VD.SEM. -1", "VD.SEM.-1", "VD SEM -1", "VDSEM-1"], 56);
+          const colV2 = findHeaderIndex(header, ["VD.SEM. -2", "VD.SEM.-2", "VD SEM -2", "VDSEM-2"], 57);
+          const colV3 = findHeaderIndex(header, ["VD.SEM. -3", "VD.SEM.-3", "VD SEM -3", "VDSEM-3"], 58);
 
           rawRows.slice(1).forEach((cols) => {
             const cod = normCod(cols[colCod] ?? "");
@@ -2637,6 +2661,10 @@ function IndexInner() {
               preco: chooseBestMetric(cols[colPreco], current?.preco),
               sellout: chooseBestMetric(colSellout >= 0 ? cols[colSellout] : undefined, current?.sellout),
               promoc: chooseBestMetric(colPromoc >= 0 ? cols[colPromoc] : undefined, current?.promoc),
+              vAtu: chooseBestMetric(colVAtu >= 0 ? cols[colVAtu] : undefined, current?.vAtu),
+              v1: chooseBestMetric(colV1 >= 0 ? cols[colV1] : undefined, current?.v1),
+              v2: chooseBestMetric(colV2 >= 0 ? cols[colV2] : undefined, current?.v2),
+              v3: chooseBestMetric(colV3 >= 0 ? cols[colV3] : undefined, current?.v3),
             });
           });
         } else {
@@ -2662,6 +2690,22 @@ function IndexInner() {
               promoc: chooseBestMetric(
                 findCol(row, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"]),
                 current?.promoc,
+              ),
+              vAtu: chooseBestMetric(
+                findCol(row, ["VD.SEM.ATU", "VD SEM ATU", "VDSEMATU"]),
+                current?.vAtu,
+              ),
+              v1: chooseBestMetric(
+                findCol(row, ["VD.SEM. -1", "VD.SEM.-1", "VD SEM -1", "VDSEM-1"]),
+                current?.v1,
+              ),
+              v2: chooseBestMetric(
+                findCol(row, ["VD.SEM. -2", "VD.SEM.-2", "VD SEM -2", "VDSEM-2"]),
+                current?.v2,
+              ),
+              v3: chooseBestMetric(
+                findCol(row, ["VD.SEM. -3", "VD.SEM.-3", "VD SEM -3", "VDSEM-3"]),
+                current?.v3,
               ),
             });
           });
@@ -2715,8 +2759,8 @@ function IndexInner() {
         colDDV: number,
         colCustoFallback: number,
         colPrecoFallback: number,
-        overrideEstoque?: Map<string, { estoque: string; custo: string; sellout: string; promoc: string }>,
-        overridePrecos?: Map<string, { custo: string; preco: string; sellout: string; promoc: string }>
+        overrideEstoque?: Map<string, LivroOverrideRow>,
+        overridePrecos?: Map<string, LivroOverrideRow>
       ): Product[] => {
         const header = rawRows[0] ?? [];
         const finalColCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO"], colCod);
@@ -2730,6 +2774,10 @@ function IndexInner() {
         const finalColSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
         const finalColPromoc = findHeaderIndex(header, ["PROMOC", "PROMOCAO", "PROMOÇÃO", "PROMO"], -1);
         const finalColPendCmp = findHeaderIndex(header, ["PEND.CMP", "PEND CMP", "PENDCMP", "PEND_COMPRA", "PENDENCIA"], -1);
+        const finalColVAtu = findHeaderIndex(header, ["VD.SEM.ATU", "VD SEM ATU", "VDSEMATU"], 55);
+        const finalColV1 = findHeaderIndex(header, ["VD.SEM. -1", "VD.SEM.-1", "VD SEM -1", "VDSEM-1"], 56);
+        const finalColV2 = findHeaderIndex(header, ["VD.SEM. -2", "VD.SEM.-2", "VD SEM -2", "VDSEM-2"], 57);
+        const finalColV3 = findHeaderIndex(header, ["VD.SEM. -3", "VD.SEM.-3", "VD SEM -3", "VDSEM-3"], 58);
 
         const dataRows = rawRows.slice(1);
         const result: Product[] = [];
@@ -2753,6 +2801,10 @@ function IndexInner() {
           const ownPreco = cols[finalColPreco] ?? "0";
           const ownSellout = (finalColSellout >= 0 ? cols[finalColSellout] : undefined) ?? "0";
           const ownPromoc = (finalColPromoc >= 0 ? cols[finalColPromoc] : undefined) ?? "0";
+          const ownVAtu = (finalColVAtu >= 0 ? cols[finalColVAtu] : undefined) ?? "0";
+          const ownV1 = (finalColV1 >= 0 ? cols[finalColV1] : undefined) ?? "0";
+          const ownV2 = (finalColV2 >= 0 ? cols[finalColV2] : undefined) ?? "0";
+          const ownV3 = (finalColV3 >= 0 ? cols[finalColV3] : undefined) ?? "0";
 
           const custoStr = overridePrecos
             ? (overridePrecosRow?.custo && num(overridePrecosRow.custo) !== 0
@@ -2774,6 +2826,26 @@ function IndexInner() {
                 ? overridePrecosRow.promoc
                 : ownPromoc)
             : ownPromoc;
+          const vAtuStr = overridePrecos
+            ? (overridePrecosRow?.vAtu && num(overridePrecosRow.vAtu) !== 0
+                ? overridePrecosRow.vAtu
+                : ownVAtu)
+            : ownVAtu;
+          const v1Str = overridePrecos
+            ? (overridePrecosRow?.v1 && num(overridePrecosRow.v1) !== 0
+                ? overridePrecosRow.v1
+                : ownV1)
+            : ownV1;
+          const v2Str = overridePrecos
+            ? (overridePrecosRow?.v2 && num(overridePrecosRow.v2) !== 0
+                ? overridePrecosRow.v2
+                : ownV2)
+            : ownV2;
+          const v3Str = overridePrecos
+            ? (overridePrecosRow?.v3 && num(overridePrecosRow.v3) !== 0
+                ? overridePrecosRow.v3
+                : ownV3)
+            : ownV3;
 
 
           const estoque = num(estoqueStr);
@@ -2781,6 +2853,10 @@ function IndexInner() {
           const atual = num(precoStr);
           const sellout = num(selloutStr);
           const promoc = num(promocStr);
+          const vAtu = num(vAtuStr);
+          const v1 = num(v1Str);
+          const v2 = num(v2Str);
+          const v3 = num(v3Str);
           const ddv = num(cols[finalColDDV] ?? "0");
           const pendCmp = finalColPendCmp >= 0 ? num(cols[finalColPendCmp] ?? "0") : 0;
           const marg = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
@@ -2805,6 +2881,10 @@ function IndexInner() {
             sugerido: 0,
             ddv,
             pendCmp,
+            vAtu,
+            v1,
+            v2,
+            v3,
             filial,
             bu: baseEntry.bu,
           });
