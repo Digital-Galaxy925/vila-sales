@@ -650,9 +650,6 @@ const LivroPreco = () => {
           <Button variant="outline" size="sm" onClick={restoreAll} className="flex-1">
             <RotateCcw className="w-4 h-4 mr-1" /> Restaurar tudo
           </Button>
-          <Button variant="outline" size="sm" onClick={exportXLSX} className="flex-1">
-            <Download className="w-4 h-4 mr-1" /> Exportar
-          </Button>
         </div>
       </div>
 
