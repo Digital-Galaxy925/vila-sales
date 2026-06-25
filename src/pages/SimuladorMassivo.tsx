@@ -318,7 +318,7 @@ export default function SimuladorMassivo() {
         .map((r) => ({
           codigo: String(r[idxCod] ?? "").trim(),
           volume: idxVol >= 0 ? toNumericText(r[idxVol]) : "",
-          preco: String(r[idxPreco] ?? "").trim().replace(".", ","),
+          preco: idxPreco >= 0 ? toNumericText(r[idxPreco]) : "",
         }))
         .filter((r) => r.codigo)
         .slice(0, 300);
