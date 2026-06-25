@@ -415,11 +415,45 @@ export default function SimuladorMassivo() {
         .map((r) => {
           const rawCodigo = String(r[idxCod] ?? "").trim();
           const codigoExtraido = normCod(String((rawCodigo.match(/\d+(?:\.0+)?/)?.[0]) ?? rawCodigo));
+          const row = Array.isArray(r) ? r : [];
+          const getPositive = (col: number) => (col >= 0 ? parseLocaleNumber(row[col]) : 0);
+          let volumeNum = getPositive(idxVol);
+          let precoNum = getPositive(idxPreco);
+          const numericCols = row
+            .map((cell, col) => ({ col, value: parseLocaleNumber(cell) }))
+            .filter(
+              (item) =>
+                item.value > 0 &&
+                item.col !== idxCod &&
+                item.col !== idxDesc &&
+                item.col !== idxPreco,
+            );
+          if (volumeNum <= 0) {
+            const byHeader = numericCols.find((item) =>
+              ["pedido", "pedida", "quantidade", "quant", "qtde", "qtd", "qnt", "volume", "caixa", "cx"].some((k) =>
+                (header[item.col] ?? "").includes(k),
+              ),
+            );
+            volumeNum = byHeader?.value ?? numericCols[0]?.value ?? 0;
+          }
+          if (precoNum <= 0 || idxPreco === idxVol) {
+            const excluded = new Set([idxCod, idxDesc, idxVol]);
+            const priceCandidates = row
+              .map((cell, col) => ({ col, value: parseLocaleNumber(cell), head: header[col] ?? "" }))
+              .filter((item) => item.value > 0 && !excluded.has(item.col));
+            const byHeader = priceCandidates.find((item) =>
+              ["preco", "precos", "valor unit", "unitario", "venda", "proposta", "valor"].some((k) =>
+                item.head.includes(k),
+              ),
+            );
+            const afterVolume = priceCandidates.find((item) => item.col > idxVol);
+            precoNum = byHeader?.value ?? afterVolume?.value ?? priceCandidates[0]?.value ?? 0;
+          }
           return {
             codigo: codigoExtraido,
             descricao: idxDesc >= 0 ? String(r[idxDesc] ?? "").trim() : "",
-            volume: idxVol >= 0 ? toNumericText(r[idxVol]) : "",
-            preco: idxPreco >= 0 ? toNumericText(r[idxPreco]) : "",
+            volume: volumeNum > 0 ? String(volumeNum).replace(".", ",") : "",
+            preco: precoNum > 0 ? String(precoNum).replace(".", ",") : "",
           };
         })
         .filter((r) => r.codigo)
