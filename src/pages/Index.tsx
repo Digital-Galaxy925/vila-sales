@@ -2586,8 +2586,14 @@ function IndexInner() {
 
   const processFiles = useCallback(async () => {
     setLoading(true);
+    setCompleted(false);
+    setProgress(5);
     setError(null);
+    const progressTimer = setInterval(() => {
+      setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
+    }, 220);
     try {
+
 
       // ── 1. Lê a base Excel (Etapa 2) ──────────────────────────────────────────
       // Coluna 3 (índice 2) = Cod Produto
