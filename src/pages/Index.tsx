@@ -3060,7 +3060,7 @@ function IndexInner() {
                 <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#1f2937" }}>
                   📂 Upload de Arquivos
                 </h2>
-                {hasData && (
+                {hasData && !forceUpload && (
                   <button
                     onClick={() => setShowUpload(false)}
                     style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 18 }}
