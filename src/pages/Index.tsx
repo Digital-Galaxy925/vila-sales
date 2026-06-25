@@ -2489,9 +2489,6 @@ function IndexInner() {
     setUnrecognizedFiles(unrecognized);
   }, []);
 
-  const handleBaseFile = useCallback((f: File | null) => {
-    setBaseFile(f);
-  }, []);
 
   const handleClear = useCallback(() => {
     setFiles({});
