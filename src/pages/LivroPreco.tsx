@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Upload, FileSpreadsheet, RotateCcw, Download, AlertTriangle } from "lucide-react";
+import { FileSpreadsheet, RotateCcw, Download, AlertTriangle } from "lucide-react";
+import { loadLivrosFromSupabase } from "@/lib/livrosSync";
+import { notifyAppDataChanged } from "@/contexts/AppDataContext";
 
 /* ---------- parsing helpers ---------- */
 
@@ -240,8 +242,10 @@ const LivroPreco = () => {
   const [overrides, setOverrides] = useState<Record<string, number>>({});
   const [filtroFilial, setFiltroFilial] = useState<string>("ALL");
   const [filtroBU, setFiltroBU] = useState<string>("ALL");
+  const [gerando, setGerando] = useState(false);
 
-  function gerar() {
+  async function gerar() {
+    setGerando(true);
     let rawByFilial: Record<string, string[][]> = {};
     try {
       const saved = localStorage.getItem("vilasales_livros_raw");
@@ -256,6 +260,7 @@ const LivroPreco = () => {
     const out: Item[] = [];
     const hasRaw = rawByFilial && Object.keys(rawByFilial).length > 0;
 
+    try {
     if (hasRaw) {
       // Caminho principal: usa as matrizes CSV brutas salvas no upload central.
       const byFilial: Record<string, Record<string, string>[]> = {};
@@ -354,12 +359,24 @@ const LivroPreco = () => {
         }
       }
     } else {
-      // Fallback: usa os produtos já parseados em vilasales_data (sem vendas semanais).
+      // Fallback: usa os produtos já parseados em vilasales_data/Supabase.
+      // Isso garante a versão publicada funcionando mesmo em outro navegador,
+      // onde o cache bruto `vilasales_livros_raw` não existe.
       let data: Record<string, any[]> = {};
       try {
         const saved = localStorage.getItem("vilasales_data");
         if (saved) data = JSON.parse(saved) || {};
       } catch (_) {}
+      // Sempre dá preferência ao Supabase quando não há CSV bruto local,
+      // evitando usar cache antigo na versão publicada.
+      const remote = await loadLivrosFromSupabase();
+      if (remote) {
+        data = remote;
+        try {
+          localStorage.setItem("vilasales_data", JSON.stringify(remote));
+          notifyAppDataChanged("vilasales_data");
+        } catch (_) {}
+      }
       const totalProds = Object.values(data).reduce(
         (acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0),
         0,
@@ -438,8 +455,11 @@ const LivroPreco = () => {
     setOverrides({});
     toast({
       title: "Livro Preço gerado",
-      description: `${out.length} item(ns) sugeridos.${hasRaw ? "" : " (sem vendas semanais — refaça o upload em 'Upload de Livros' para tendências.)"}`,
+      description: `${out.length} item(ns) sugeridos.${hasRaw ? "" : " (usando dados salvos no Upload de Livros.)"}`,
     });
+    } finally {
+      setGerando(false);
+    }
   }
 
   const filiais = useMemo(
@@ -577,8 +597,8 @@ const LivroPreco = () => {
         description="Sugestão de preços (sáb→sex) por filial e BU para Unilever HC/FR."
         actions={
           <div className="flex items-center gap-2">
-            <Button size="sm" onClick={gerar}>
-              <FileSpreadsheet className="w-4 h-4 mr-2" /> Gerar Livro Preço
+            <Button size="sm" onClick={gerar} disabled={gerando}>
+              <FileSpreadsheet className="w-4 h-4 mr-2" /> {gerando ? "Gerando..." : "Gerar Livro Preço"}
             </Button>
             <Button
               size="sm"
