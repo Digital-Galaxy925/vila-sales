@@ -274,7 +274,7 @@ export default function SimuladorMassivo() {
           .replace(/[\u0300-\u036f]/g, "")
           .trim();
       const header = rows[0]?.map(norm) ?? [];
-      const headerKeywords = ["codigo", "sku", "cod", "produto", "volume", "preco", "qtd", "quantidade", "caixa", "valor"];
+      const headerKeywords = ["codigo", "sku", "cod", "produto", "volume", "preco", "qtd", "quantidade", "caixa", "valor", "pedido"];
       const hasHeader = header.some((h) =>
         headerKeywords.some((k) => h.includes(k)),
       );
@@ -285,7 +285,8 @@ export default function SimuladorMassivo() {
         const find = (keys: string[]) =>
           header.findIndex((h) => keys.some((k) => h.includes(k)));
         const c = find(["codigo", "sku", "cod"]);
-        const v = find(["volume", "quantidade", "qtd", "caixa", "cx"]);
+        // "pedido" / "quantidade" / "volume" / "qtd" / "caixa"/"cx" todos viram volume (pedido em caixas)
+        const v = find(["pedido", "volume", "quantidade", "qtd", "caixa", "cx"]);
         const p = find(["preco", "preço", "venda", "proposta", "valor", "unit"]);
         if (c >= 0) idxCod = c;
         if (v >= 0) idxVol = v;
