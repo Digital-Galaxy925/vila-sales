@@ -2708,6 +2708,7 @@ function IndexInner() {
         const finalColV1 = findHeaderIndex(header, ["VD.SEM. -1", "VD.SEM.-1", "VD SEM -1", "VDSEM-1"], 56);
         const finalColV2 = findHeaderIndex(header, ["VD.SEM. -2", "VD.SEM.-2", "VD SEM -2", "VDSEM-2"], 57);
         const finalColV3 = findHeaderIndex(header, ["VD.SEM. -3", "VD.SEM.-3", "VD SEM -3", "VDSEM-3"], 58);
+        const finalColFornecedor = findHeaderIndex(header, ["FORNECEDOR", "FORNEC", "NOME FORNECEDOR", "RAZAO FORNECEDOR"], -1);
 
         const dataRows = rawRows.slice(1);
         const result: Product[] = [];
