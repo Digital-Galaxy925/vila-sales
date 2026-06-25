@@ -99,11 +99,11 @@ function parseCSV(text: string): Record<string, string>[] {
   const firstLine = text.split(/\r?\n/).find((line) => line.trim()) ?? "";
   if (!firstLine) return [];
   const sep = firstLine.includes(";") ? ";" : ",";
-  const wb = XLSX.read(text, { type: "string", raw: false, FS: sep });
+  const wb = XLSX.read(text, { type: "string", raw: true, FS: sep });
   const sheetName = wb.SheetNames[0];
   if (!sheetName) return [];
   const sheet = wb.Sheets[sheetName];
-  return XLSX.utils.sheet_to_json<Record<string, string | number>>(sheet, { defval: "", raw: false }).map((row) =>
+  return XLSX.utils.sheet_to_json<Record<string, string | number>>(sheet, { defval: "", raw: true }).map((row) =>
     Object.fromEntries(
       Object.entries(row).map(([key, value]) => [
         String(key).trim().replace(/"/g, ""),
@@ -383,11 +383,11 @@ async function readExcelAsMatrix(file: File): Promise<string[][]> {
     const firstLine = text.split(/\r?\n/).find((line) => line.trim()) ?? "";
     if (!firstLine) return [];
     const sep = firstLine.includes(";") ? ";" : ",";
-    const wb = XLSX.read(text, { type: "string", raw: false, FS: sep });
+    const wb = XLSX.read(text, { type: "string", raw: true, FS: sep });
     const sheetName = wb.SheetNames[0];
     if (!sheetName) return [];
     const sheet = wb.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json<(string | number)[]>(sheet, { header: 1, defval: "", raw: false, blankrows: false })
+    return XLSX.utils.sheet_to_json<(string | number)[]>(sheet, { header: 1, defval: "", raw: true, blankrows: false })
       .map((row) => row.map((cell) => String(cell ?? "").trim()));
   }
 
