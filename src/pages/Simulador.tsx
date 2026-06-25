@@ -64,22 +64,31 @@ export default function Simulador() {
   const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
   const [observacao, setObservacao] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [selectedCod, setSelectedCod] = useState<string>("");
+  const [showSug, setShowSug] = useState(false);
 
   const normCod = (v: string): string => {
-    let s = v.trim();
+    let s = (v ?? "").toString().trim();
     s = s.replace(/\.0+$/, "");
     s = s.replace(/^0+(\d)/, "$1");
     return s;
   };
 
   const produto = useMemo(() => {
-    if (!codigo.trim()) return null;
-    const cod = normCod(codigo);
-    if (!cod) return null;
+    const q = codigo.trim();
+    if (!q) return null;
+    const codNorm = normCod(selectedCod || q);
+    const qLower = q.toLowerCase();
     const searchInFilial = (fid: string) => {
       const arr = data[fid];
       if (!Array.isArray(arr)) return null;
-      return arr.find((p) => normCod(p.seqProd) === cod) ?? null;
+      let f = arr.find((p) => normCod(p.seqProd) === codNorm);
+      if (f) return f;
+      if (!selectedCod) {
+        f = arr.find((p) => (p.descricao ?? "").toLowerCase().includes(qLower));
+        if (f) return f;
+      }
+      return null;
     };
     const found = searchInFilial(filial);
     if (found) return found;
@@ -88,7 +97,32 @@ export default function Simulador() {
       if (f) return f;
     }
     return null;
-  }, [codigo, filial, data]);
+  }, [codigo, filial, data, selectedCod]);
+
+  const suggestions = useMemo(() => {
+    const q = codigo.trim().toLowerCase();
+    if (!q || q.length < 2 || selectedCod) return [];
+    const qCod = normCod(codigo);
+    const seen = new Set<string>();
+    const out: Product[] = [];
+    const arr = data[filial];
+    const pools: Product[][] = [];
+    if (Array.isArray(arr)) pools.push(arr);
+    for (const k of Object.keys(data)) if (k !== filial && Array.isArray(data[k])) pools.push(data[k]);
+    for (const pool of pools) {
+      for (const p of pool) {
+        const cod = normCod(p.seqProd);
+        if (seen.has(cod)) continue;
+        const desc = (p.descricao ?? "").toLowerCase();
+        if ((qCod && cod.includes(qCod)) || desc.includes(q)) {
+          seen.add(cod);
+          out.push(p);
+          if (out.length >= 15) return out;
+        }
+      }
+    }
+    return out;
+  }, [codigo, filial, data, selectedCod]);
 
   const custoUnitario = produto?.custoLiq ?? 0;
   const precoVenda = parseFloat(precoVendaDesejado.replace(",", ".")) || 0;
