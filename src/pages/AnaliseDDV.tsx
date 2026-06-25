@@ -423,6 +423,7 @@ const AnaliseDDV = () => {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 };
