@@ -592,11 +592,11 @@ const LivroPreco = () => {
       />
 
       {/* control bar */}
-      <div className="rounded-lg border border-border bg-card p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="rounded-xl border border-[#d2e3fb] bg-[#f5f9ff] p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <div>
-          <Label className="text-xs text-muted-foreground">DDV mínimo</Label>
+          <Label className="text-xs font-medium text-[#6e6e73]">DDV mínimo</Label>
           <Select value={ddvMin} onValueChange={setDdvMin}>
-            <SelectTrigger className="h-9 mt-1">
+            <SelectTrigger className="h-9 mt-1 bg-white border-[#d2d2d7] rounded-lg focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -609,18 +609,18 @@ const LivroPreco = () => {
           </Select>
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground">Desconto alvo (%) — máx 10</Label>
+          <Label className="text-xs font-medium text-[#6e6e73]">Desconto alvo (%) — máx 10</Label>
           <Input
-            className="h-9 mt-1"
+            className="h-9 mt-1 bg-white border-[#d2d2d7] rounded-lg focus-visible:ring-2 focus-visible:ring-[#0071e3]/30 focus-visible:border-[#0071e3]"
             value={descontoStr}
             onChange={(e) => setDescontoStr(e.target.value)}
             placeholder="10"
           />
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground">Filtrar Filial</Label>
+          <Label className="text-xs font-medium text-[#6e6e73]">Filtrar Filial</Label>
           <Select value={filtroFilial} onValueChange={setFiltroFilial}>
-            <SelectTrigger className="h-9 mt-1">
+            <SelectTrigger className="h-9 mt-1 bg-white border-[#d2d2d7] rounded-lg focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -634,9 +634,9 @@ const LivroPreco = () => {
           </Select>
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground">Filtrar BU</Label>
+          <Label className="text-xs font-medium text-[#6e6e73]">Filtrar BU</Label>
           <Select value={filtroBU} onValueChange={setFiltroBU}>
-            <SelectTrigger className="h-9 mt-1">
+            <SelectTrigger className="h-9 mt-1 bg-white border-[#d2d2d7] rounded-lg focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -647,7 +647,7 @@ const LivroPreco = () => {
           </Select>
         </div>
         <div className="flex items-end gap-2">
-          <Button variant="outline" size="sm" onClick={restoreAll} className="flex-1">
+          <Button variant="outline" size="sm" onClick={restoreAll} className="flex-1 bg-white border-[#d2d2d7] text-[#0071e3] hover:bg-[#0071e3]/5 hover:text-[#0071e3] rounded-lg">
             <RotateCcw className="w-4 h-4 mr-1" /> Restaurar tudo
           </Button>
         </div>
@@ -657,7 +657,7 @@ const LivroPreco = () => {
       {/* table */}
       <div className="rounded-lg border border-border bg-card overflow-auto max-h-[calc(100vh-260px)]">
         <table className="w-full text-xs">
-          <thead className="bg-muted/50 sticky top-0 z-20">
+          <thead className="bg-[#eef4fb] sticky top-0 z-20 border-b border-[#d2e3fb]">
             <tr className="text-left">
               {[
                 { h: "BU", sticky: 0, w: 50 },
@@ -673,7 +673,7 @@ const LivroPreco = () => {
               ].map((c, idx) => (
                 <th
                   key={c.h + idx}
-                  className={`px-2 py-2 font-semibold text-foreground whitespace-nowrap bg-muted/50 ${c.sticky !== undefined ? "sticky z-30" : ""}`}
+                  className={`px-2 py-2.5 font-semibold text-[#0071e3] whitespace-nowrap bg-[#eef4fb] uppercase tracking-wide text-[11px] ${c.sticky !== undefined ? "sticky z-30" : ""}`}
                   style={c.sticky !== undefined ? { left: c.sticky, minWidth: c.w } : undefined}
                 >
                   {c.h}
