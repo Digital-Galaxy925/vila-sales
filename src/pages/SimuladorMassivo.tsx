@@ -353,6 +353,63 @@ export default function SimuladorMassivo() {
         if (p >= 0) idxPreco = p;
       }
       const startIdx = hasHeader ? headerRowIndex + 1 : 0;
+      const dataRows = rows.slice(startIdx).filter(Array.isArray) as unknown[][];
+      const maxCols = rows.reduce(
+        (max, row) => Math.max(max, Array.isArray(row) ? row.length : 0),
+        0,
+      );
+      const hasPositiveValues = (col: number) =>
+        col >= 0 && dataRows.some((row) => parseLocaleNumber(row[col]) > 0);
+      const findNumericColumn = (
+        preferKeys: string[],
+        excludeKeys: string[],
+        excludeCols: number[],
+      ) => {
+        let best = { col: -1, score: 0 };
+        for (let col = 0; col < maxCols; col += 1) {
+          if (excludeCols.includes(col)) continue;
+          const h = header[col] ?? "";
+          if (excludeKeys.some((k) => h.includes(k))) continue;
+          const positiveCount = dataRows.reduce(
+            (acc, row) => acc + (parseLocaleNumber(row[col]) > 0 ? 1 : 0),
+            0,
+          );
+          if (positiveCount === 0) continue;
+          const headerScore = preferKeys.some((k) => h.includes(k)) ? 100 : 0;
+          const positionalScore = Math.max(0, 20 - col);
+          const score = headerScore + positiveCount + positionalScore;
+          if (score > best.score) best = { col, score };
+        }
+        return best.col;
+      };
+
+      if (!hasHeader && maxCols >= 4) {
+        idxCod = 0;
+        idxDesc = 1;
+        idxVol = 2;
+        idxPreco = 3;
+      }
+
+      if (idxDesc < 0 && idxCod + 1 < maxCols) idxDesc = idxCod + 1;
+
+      if (!hasPositiveValues(idxVol)) {
+        const detectedVol = findNumericColumn(
+          ["pedido", "pedida", "quantidade", "quant", "qtde", "qtd", "qnt", "volume", "caixa", "cx"],
+          ["preco", "precos", "valor", "unit", "total", "custo", "invest", "ean", "barra"],
+          [idxCod, idxDesc, idxPreco].filter((i) => i >= 0),
+        );
+        idxVol = detectedVol >= 0 ? detectedVol : idxDesc + 1 < maxCols ? idxDesc + 1 : idxVol;
+      }
+
+      if (!hasPositiveValues(idxPreco) || idxPreco === idxVol) {
+        const detectedPreco = findNumericColumn(
+          ["preco", "precos", "valor unit", "unitario", "venda", "proposta", "valor"],
+          ["total", "pedido total", "quantidade", "quant", "qtde", "qtd", "qnt", "volume", "caixa", "cx", "codigo", "cod", "sku", "ean", "barra"],
+          [idxCod, idxDesc, idxVol].filter((i) => i >= 0),
+        );
+        idxPreco = detectedPreco >= 0 ? detectedPreco : idxVol + 1 < maxCols ? idxVol + 1 : idxPreco;
+      }
+
       const parsed = rows
         .slice(startIdx)
         .map((r) => {
