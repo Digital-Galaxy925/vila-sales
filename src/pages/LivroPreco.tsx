@@ -531,6 +531,19 @@ const LivroPreco = () => {
     });
     filiaisOrd.forEach((f) => {
       const ws = XLSX.utils.aoa_to_sheet([headers, ...grupos.get(f)!]);
+      const moneyCols = ["N", "O", "P", "Q"]; // Custo Líq, Atual, PROMOC, Preço Sugerido
+      const pctCols = ["R", "S", "T"]; // Variação, Margem, Margem Atual
+      const dataLen = grupos.get(f)!.length;
+      for (let r = 2; r <= dataLen + 1; r++) {
+        moneyCols.forEach((c) => {
+          const cell = ws[`${c}${r}`];
+          if (cell && typeof cell.v === "number") cell.z = 'R$ #,##0.00;[Red]-R$ #,##0.00';
+        });
+        pctCols.forEach((c) => {
+          const cell = ws[`${c}${r}`];
+          if (cell && typeof cell.v === "number") cell.z = "0.00%";
+        });
+      }
       const sheetName = `Filial ${f}`.slice(0, 31);
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
