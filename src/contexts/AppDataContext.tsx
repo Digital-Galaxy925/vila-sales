@@ -126,13 +126,17 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     const current = readKey("vilasales_data") as Record<string, unknown> | null;
     const isEmpty =
       !current || (typeof current === "object" && Object.keys(current).length === 0);
-    if (!isEmpty) return;
+    const hasWeeklyData = Object.values(current ?? {}).some((produtos) =>
+      Array.isArray(produtos) &&
+      produtos.some((p: any) => p?.vAtu !== undefined || p?.v1 !== undefined || p?.v2 !== undefined || p?.v3 !== undefined)
+    );
+    if (!isEmpty && hasWeeklyData) return;
 
     (async () => {
       try {
-        const { loadLivrosFromSupabase } = await import("@/lib/livrosSync");
+        const { hasWeeklySalesData, loadLivrosFromSupabase } = await import("@/lib/livrosSync");
         const remote = await loadLivrosFromSupabase();
-        if (cancelled || !remote) return;
+        if (cancelled || !remote || !hasWeeklySalesData(remote)) return;
         try {
           localStorage.setItem("vilasales_data", JSON.stringify(remote));
         } catch {

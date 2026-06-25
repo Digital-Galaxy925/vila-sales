@@ -4,7 +4,7 @@ import ExcelJS from "exceljs";
 import * as XLSX from "xlsx";
 import { unzipSync, zipSync } from "fflate";
 import { notifyAppDataChanged } from "@/contexts/AppDataContext";
-import { saveLivrosToSupabase, clearLivrosFromSupabase, loadLivrosFromSupabase } from "@/lib/livrosSync";
+import { saveLivrosToSupabase, clearLivrosFromSupabase, loadLivrosFromSupabase, hasWeeklySalesData } from "@/lib/livrosSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -2540,8 +2540,9 @@ function IndexInner() {
     loadLivrosFromSupabase()
       .then((remote) => {
         if (cancelled || !remote || !Object.values(remote).some((arr) => Array.isArray(arr) && arr.length > 0)) return;
+        if (!forceUpload && !hasWeeklySalesData(remote)) return;
         setData(remote as FilialData);
-        setShowUpload(false);
+        if (!forceUpload) setShowUpload(false);
         try {
           localStorage.setItem("vilasales_data", JSON.stringify(remote));
         } catch (_) {}
@@ -2552,7 +2553,7 @@ function IndexInner() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [forceUpload]);
 
   const handleFiles = useCallback((newFiles: Partial<UploadedFiles>, unrecognized: string[]) => {
     setFiles((prev) => ({ ...prev, ...newFiles }));
@@ -2985,10 +2986,8 @@ function IndexInner() {
       } catch(_) {}
       const updateTime = new Date().toLocaleString("pt-BR");
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
-      // Espelha no Supabase (em background — não bloqueia a navegação)
-      saveLivrosToSupabase(newData).catch((e) =>
-        console.warn("saveLivros:", e?.message || e)
-      );
+      // Espelha no backend antes de liberar a navegação para evitar recarregar dados antigos.
+      await saveLivrosToSupabase(newData);
       // Difere updates de estado para o próximo tick para evitar
       // conflito de renderização (NotFoundError: removeChild on Node).
       setTimeout(() => {
@@ -3101,6 +3100,7 @@ function IndexInner() {
                 localStorage.removeItem("vilasales_data");
                 localStorage.removeItem("vilasales_lastUpdate");
                 localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
+                localStorage.removeItem("vilasales_livros_raw");
               } catch (_) {}
               notifyAppDataChanged();
               clearLivrosFromSupabase().catch((e) => console.warn("clearLivros:", e));

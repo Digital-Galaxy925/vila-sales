@@ -14,6 +14,17 @@ export interface FilialDataMap {
   [filial: string]: any[];
 }
 
+export function hasWeeklySalesData(data: FilialDataMap | null | undefined): boolean {
+  if (!data || typeof data !== "object") return false;
+  return Object.values(data).some((produtos) =>
+    Array.isArray(produtos) &&
+    produtos.some((p) =>
+      p &&
+      (p.vAtu !== undefined || p.v1 !== undefined || p.v2 !== undefined || p.v3 !== undefined)
+    )
+  );
+}
+
 /** Grava todas as filiais com produtos no Supabase (upsert por filial). */
 export async function saveLivrosToSupabase(data: FilialDataMap): Promise<void> {
   const rows = Object.entries(data)
