@@ -596,7 +596,7 @@ const LivroPreco = () => {
         <div>
           <Label className="text-xs font-medium text-[#6e6e73]">DDV mínimo</Label>
           <Select value={ddvMin} onValueChange={setDdvMin}>
-            <SelectTrigger className="h-9 mt-1">
+            <SelectTrigger className="h-9 mt-1 bg-white border-[#d2d2d7] rounded-lg focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -620,7 +620,7 @@ const LivroPreco = () => {
         <div>
           <Label className="text-xs font-medium text-[#6e6e73]">Filtrar Filial</Label>
           <Select value={filtroFilial} onValueChange={setFiltroFilial}>
-            <SelectTrigger className="h-9 mt-1">
+            <SelectTrigger className="h-9 mt-1 bg-white border-[#d2d2d7] rounded-lg focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -636,7 +636,7 @@ const LivroPreco = () => {
         <div>
           <Label className="text-xs font-medium text-[#6e6e73]">Filtrar BU</Label>
           <Select value={filtroBU} onValueChange={setFiltroBU}>
-            <SelectTrigger className="h-9 mt-1">
+            <SelectTrigger className="h-9 mt-1 bg-white border-[#d2d2d7] rounded-lg focus:ring-2 focus:ring-[#0071e3]/30 focus:border-[#0071e3]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
