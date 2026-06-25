@@ -698,7 +698,7 @@ const LivroPreco = () => {
               return (
                 <tr key={i.key} className="border-t border-border hover:bg-muted/30 group">
                   <td className="px-2 py-1.5 font-medium sticky left-0 z-10 bg-card group-hover:bg-muted/30" style={{ minWidth: 50 }}>{i.bu}</td>
-                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 50, minWidth: 60 }}>{i.filial}</td>
+                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30 whitespace-nowrap" style={{ left: 50, minWidth: 150 }}>{filialLabel(i.filial)}</td>
                   <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 110, minWidth: 90 }}>{i.familia}</td>
                   <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 200, minWidth: 90 }}>{i.produto}</td>
                   <td className="px-2 py-1.5 max-w-[240px] truncate sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 290, minWidth: 240 }} title={i.descricao}>
