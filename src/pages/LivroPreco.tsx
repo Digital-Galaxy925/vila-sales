@@ -673,7 +673,7 @@ const LivroPreco = () => {
               ].map((c, idx) => (
                 <th
                   key={c.h + idx}
-                  className={`px-2 py-2 font-semibold text-foreground whitespace-nowrap bg-muted/50 ${c.sticky !== undefined ? "sticky z-30" : ""}`}
+                  className={`px-2 py-2.5 font-semibold text-[#0071e3] whitespace-nowrap bg-[#eef4fb] uppercase tracking-wide text-[11px] ${c.sticky !== undefined ? "sticky z-30" : ""}`}
                   style={c.sticky !== undefined ? { left: c.sticky, minWidth: c.w } : undefined}
                 >
                   {c.h}
