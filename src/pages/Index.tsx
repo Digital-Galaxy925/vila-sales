@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ExcelJS from "exceljs";
 import * as XLSX from "xlsx";
 import { unzipSync, zipSync } from "fflate";
@@ -2481,6 +2481,8 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
 // ─── Main App ─────────────────────────────────────────────────────────────────
 function IndexInner() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const forceUpload = location.pathname === "/upload-livros";
   const [activeModule, setActiveModule] = useState<Module>("cruzamento");
   const [files, setFiles] = useState<UploadedFiles>({});
   const [baseFile, setBaseFile] = useState<File | null>(null);
@@ -2495,6 +2497,7 @@ function IndexInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(() => {
+    if (typeof window !== "undefined" && window.location.pathname === "/upload-livros") return true;
     try {
       const saved = localStorage.getItem("vilasales_data");
       if (saved) {
@@ -2504,6 +2507,9 @@ function IndexInner() {
     } catch (_) {}
     return true;
   });
+  useEffect(() => {
+    if (forceUpload) setShowUpload(true);
+  }, [forceUpload]);
   const [lastUpdate, setLastUpdate] = useState<string | null>(() => {
     return localStorage.getItem("vilasales_lastUpdate") || null;
   });
