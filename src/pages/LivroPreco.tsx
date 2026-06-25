@@ -492,12 +492,6 @@ const LivroPreco = () => {
         </div>
       </div>
 
-      {/* file chips */}
-      {files.length > 0 && (
-        <div className="text-xs text-muted-foreground">
-          Arquivos: {files.map((f) => `${f.name} → Filial ${filialFromName(f.name)}`).join(" • ")}
-        </div>
-      )}
 
       {/* table */}
       <div className="rounded-lg border border-border bg-card overflow-auto">
