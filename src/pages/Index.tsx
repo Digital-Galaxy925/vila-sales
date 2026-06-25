@@ -2492,7 +2492,6 @@ function IndexInner() {
 
   const handleClear = useCallback(() => {
     setFiles({});
-    setBaseFile(null);
     setUnrecognizedFiles([]);
     setData({});
     setLastUpdate(null);
