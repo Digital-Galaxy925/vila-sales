@@ -367,19 +367,15 @@ const LivroPreco = () => {
         const saved = localStorage.getItem("vilasales_data");
         if (saved) data = JSON.parse(saved) || {};
       } catch (_) {}
-      const localTotal = Object.values(data).reduce(
-        (acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0),
-        0,
-      );
-      if (localTotal === 0) {
-        const remote = await loadLivrosFromSupabase();
-        if (remote) {
-          data = remote;
-          try {
-            localStorage.setItem("vilasales_data", JSON.stringify(remote));
-            notifyAppDataChanged("vilasales_data");
-          } catch (_) {}
-        }
+      // Sempre dá preferência ao Supabase quando não há CSV bruto local,
+      // evitando usar cache antigo na versão publicada.
+      const remote = await loadLivrosFromSupabase();
+      if (remote) {
+        data = remote;
+        try {
+          localStorage.setItem("vilasales_data", JSON.stringify(remote));
+          notifyAppDataChanged("vilasales_data");
+        } catch (_) {}
       }
       const totalProds = Object.values(data).reduce(
         (acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0),
