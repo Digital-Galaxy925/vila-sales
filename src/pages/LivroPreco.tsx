@@ -187,6 +187,13 @@ function pick(row: Record<string, string>, candidates: string[]): string {
   return "";
 }
 
+function normalizeCode(value: string): string {
+  return String(value ?? "")
+    .trim()
+    .replace(/\.0+$/, "")
+    .replace(/^0+(\d)/, "$1");
+}
+
 /** Detect the header row inside the first rows of a CSV matrix. */
 function matrixToRecords(mat: string[][]): Record<string, string>[] {
   if (!Array.isArray(mat) || mat.length < 2) return [];
@@ -242,7 +249,7 @@ const LivroPreco = () => {
       }
 
       const rowKey = (r: Record<string, string>) =>
-        `${pick(r, ["SEQ.PROD", "SEQ PROD", "SEQPROD", "COD"]).trim()}__${pick(r, ["FAMILIA"]).trim()}`;
+        normalizeCode(pick(r, ["SEQ.PROD", "SEQ PROD", "SEQPROD", "COD", "CODIGO", "SEQ_PROD"]));
 
       type Pair = { filial: string; salesRows: Record<string, string>[]; stockMap: Map<string, Record<string, string>> };
       const pairs: Pair[] = [];
@@ -307,16 +314,18 @@ const LivroPreco = () => {
 
           const sug = computeSugerido(ref, atual, inPromo, trend, promoc, descPct, true);
 
-          const familia = pick(r, ["FAMILIA"]);
-          const produto = pick(r, ["SEQ.PROD", "SEQ PROD", "SEQPROD"]);
+          const familia = pick(r, ["FAMILIA", "FAMÍLIA", "COD FAMILIA", "COD.FAMILIA", "COD_FAMILIA"]) ||
+            pick(stockRow, ["FAMILIA", "FAMÍLIA", "COD FAMILIA", "COD.FAMILIA", "COD_FAMILIA"]);
+          const produto = pick(r, ["SEQ.PROD", "SEQ PROD", "SEQPROD", "COD", "CODIGO", "SEQ_PROD"]) ||
+            pick(stockRow, ["SEQ.PROD", "SEQ PROD", "SEQPROD", "COD", "CODIGO", "SEQ_PROD"]);
           out.push({
             key: `${filial}__${produto}__${familia}`,
             bu,
             filial,
             familia,
             produto,
-            descricao: pick(r, ["DESCRICAO", "DESCRIÇÃO"]),
-            unidCx: pick(r, ["EMB.CMP", "EMB CMP", "EMBCMP"]),
+            descricao: pick(r, ["DESCRICAO", "DESCRIÇÃO"]) || pick(stockRow, ["DESCRICAO", "DESCRIÇÃO"]),
+            unidCx: pick(r, ["EMB.CMP", "EMB CMP", "EMBCMP"]) || pick(stockRow, ["EMB.CMP", "EMB CMP", "EMBCMP"]),
             estoque,
             ddv,
             custoLiq,

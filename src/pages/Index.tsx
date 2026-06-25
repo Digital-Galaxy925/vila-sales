@@ -50,6 +50,7 @@ interface LivroMetricRow {
 }
 
 interface LivroOverrideRow {
+  familia: string;
   custo: string;
   preco: string;
   sellout: string;
@@ -2607,13 +2608,16 @@ function IndexInner() {
         return s;
       };
 
-      const baseMap = new Map<string, { cod: string; desc: string; bu: string }>();
+      const baseColFamilia = baseCols.find((col) => normalizeHeader(col).includes("FAMILIA"));
+
+      const baseMap = new Map<string, { cod: string; desc: string; bu: string; familia: string }>();
       baseRows.forEach((r) => {
         const cod = normCod(r[baseColCod]);
         if (cod) {
           const desc = String(r[baseColDesc] ?? "").trim();
           const bu   = String(r[baseColBU]   ?? "").trim().toUpperCase();
-          baseMap.set(cod, { cod, desc, bu });
+          const familia = String(baseColFamilia ? r[baseColFamilia] ?? "" : "").trim();
+          baseMap.set(cod, { cod, desc, bu, familia });
         }
       });
 
@@ -2643,6 +2647,7 @@ function IndexInner() {
           const rawRows = await parseCSVRaw(file);
           const header = rawRows[0] ?? [];
           const colCod = findHeaderIndex(header, ["SEQ.PROD", "SEQ PROD", "COD", "CODIGO", "SEQPROD", "SEQ_PROD"], 1);
+          const colFamilia = findHeaderIndex(header, ["FAMILIA", "FAMÍLIA", "COD FAMILIA", "COD.FAMILIA", "COD_FAMILIA"], -1);
           const colCusto = findHeaderIndex(header, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"], 16);
           const colPreco = findHeaderIndex(header, ["ATUAL", "PRECO VENDA", "PRECO DE VENDA", "PV", "PRECO_VENDA"], 19);
           const colSellout = findHeaderIndex(header, ["SELLOUT", "SELL OUT", "SELL.OUT", "SELL_OUT"], -1);
@@ -2658,6 +2663,7 @@ function IndexInner() {
 
             const current = map.get(cod);
             map.set(cod, {
+              familia: chooseBestMetric(colFamilia >= 0 ? cols[colFamilia] : undefined, current?.familia),
               custo: chooseBestMetric(cols[colCusto], current?.custo),
               preco: chooseBestMetric(cols[colPreco], current?.preco),
               sellout: chooseBestMetric(colSellout >= 0 ? cols[colSellout] : undefined, current?.sellout),
@@ -2676,6 +2682,10 @@ function IndexInner() {
 
             const current = map.get(cod);
             map.set(cod, {
+              familia: chooseBestMetric(
+                findCol(row, ["FAMILIA", "FAMÍLIA", "COD FAMILIA", "COD.FAMILIA", "COD_FAMILIA"]),
+                current?.familia,
+              ),
               custo: chooseBestMetric(
                 findCol(row, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTO_LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]),
                 current?.custo,
@@ -2863,7 +2873,10 @@ function IndexInner() {
           const marg = atual > 0 ? ((atual - custoLiq) / atual) * 100 : 0;
 
           result.push({
-            familia: finalColFamilia >= 0 ? (cols[finalColFamilia] ?? "") : "",
+            familia: (finalColFamilia >= 0 ? (cols[finalColFamilia] ?? "") : "") ||
+              overrideEstoqueRow?.familia ||
+              overridePrecosRow?.familia ||
+              baseEntry.familia,
             seqProd: baseEntry.cod,
             descricao: desc,
             embCmp: finalColEmbCmp >= 0 ? (cols[finalColEmbCmp] ?? "") : "",
