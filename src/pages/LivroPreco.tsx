@@ -580,6 +580,13 @@ const LivroPreco = () => {
             <Button size="sm" onClick={gerar}>
               <FileSpreadsheet className="w-4 h-4 mr-2" /> Gerar Livro Preço
             </Button>
+            <Button
+              size="sm"
+              onClick={exportXLSX}
+              className="bg-[#107C41] hover:bg-[#0B5A2E] text-white border-0"
+            >
+              <Download className="w-4 h-4 mr-2" /> Exportar Excel
+            </Button>
           </div>
         }
       />
