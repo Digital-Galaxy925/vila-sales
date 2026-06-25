@@ -2432,7 +2432,7 @@ function IndexInner() {
   const forceUpload = location.pathname === "/upload-livros";
   const [activeModule, setActiveModule] = useState<Module>("cruzamento");
   const [files, setFiles] = useState<UploadedFiles>({});
-  const [baseFile, setBaseFile] = useState<File | null>(null);
+  
   const [unrecognizedFiles, setUnrecognizedFiles] = useState<string[]>([]);
   const [data, setData] = useState<FilialData>(() => {
     try {
