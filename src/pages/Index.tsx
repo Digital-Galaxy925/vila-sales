@@ -2519,42 +2519,29 @@ function IndexInner() {
 
 
 
-      // ── 1. Lê a base Excel (Etapa 2) ──────────────────────────────────────────
-      // Coluna 3 (índice 2) = Cod Produto
-      if (!baseFile) throw new Error("Faça o upload da planilha de produtos na Etapa 2.");
-
-      const baseRows = await readExcelAsRows(baseFile);
-      if (baseRows.length === 0) throw new Error("A planilha de produtos está vazia ou não foi lida corretamente.");
-
-      // Pega o nome real das colunas da base
-      const baseCols = Object.keys(baseRows[0]);
-      const baseColBU   = baseCols[0]; // coluna A → BU (FOODS / HC)
-      const baseColCod  = baseCols[2]; // coluna C → Cod Produto
-      const baseColDesc = baseCols[3]; // coluna D → Descrição
-
-      // Monta Map: cod_normalizado → { cod original, desc, bu }
+      // ── 1. Normalização de código ──────────────────────────────────────────────
       const normCod = (v: any): string => {
         let s = String(v ?? "").trim();
-        s = s.replace(/\.0+$/, "");       // Excel converte números para 114667.0
-        s = s.replace(/^0+(\d)/, "$1");   // remove zeros à esquerda
+        s = s.replace(/\.0+$/, "");
+        s = s.replace(/^0+(\d)/, "$1");
         return s;
       };
 
-      const baseColFamilia = baseCols.find((col) => normalizeHeader(col).includes("FAMILIA"));
+      // ── Regra Unilever: filtra Fornecedor e deriva BU ─────────────────────────
+      // - Contém "HC"            → BU = HC
+      // - Contém "FOODS"/"ALIMENTOS" → BU = FR
+      // - Demais (incl. BW, PC)  → excluir
+      const deriveBU = (fornecedor: string): "" | "HC" | "FR" => {
+        const f = String(fornecedor ?? "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toUpperCase();
+        if (!f.includes("UNILEVER")) return "";
+        if (/\bHC\b/.test(f)) return "HC";
+        if (/\b(FOODS?|ALIMENTOS?)\b/.test(f)) return "FR";
+        return "";
+      };
 
-      const baseMap = new Map<string, { cod: string; desc: string; bu: string; familia: string }>();
-      baseRows.forEach((r) => {
-        const cod = normCod(r[baseColCod]);
-        if (cod) {
-          const desc = String(r[baseColDesc] ?? "").trim();
-          const bu   = String(r[baseColBU]   ?? "").trim().toUpperCase();
-          const familia = String(baseColFamilia ? r[baseColFamilia] ?? "" : "").trim();
-          baseMap.set(cod, { cod, desc, bu, familia });
-        }
-      });
-
-      if (baseMap.size === 0)
-        throw new Error(`Nenhum código encontrado na coluna 3 ("${baseColCod}") da base de produtos.`);
 
       // ── 2. Parser CSV por posição ──────────────────────────────────────────────
       // Retorna array de arrays (sem depender de nomes de colunas)
