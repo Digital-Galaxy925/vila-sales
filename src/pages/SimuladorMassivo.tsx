@@ -870,7 +870,7 @@ export default function SimuladorMassivo() {
                         "PREÇO ATUAL",
                         "PREÇO PROMOCIONAL",
                         "MARGEM ATUAL",
-                        "PROPOSTA",
+                        "PREÇO PROPOSTO",
                         "MARGEM PROPOSTA",
                         "CONTRA PROPOSTA",
                         "MARGEM CONTRA PROPOSTA",
