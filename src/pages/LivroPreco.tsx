@@ -366,10 +366,17 @@ const LivroPreco = () => {
           const promoc = Number(p?.promoc) || 0;
           const custoLiq = Number(p?.custoLiq) || 0;
           const estoque = Number(p?.estoque) || 0;
+          const vAtu = Number(p?.vAtu) || 0;
+          const v1 = Number(p?.v1) || 0;
+          const v2 = Number(p?.v2) || 0;
+          const v3 = Number(p?.v3) || 0;
           const inPromo = promoc > 0 && promoc < atual;
           const ref = inPromo ? promoc : atual;
           if (!ref || ref <= 0) continue;
-          const trend: Trend = "flat";
+          const media3 = (v1 + v2 + v3) / 3;
+          let trend: Trend = "flat";
+          if (vAtu > media3) trend = "up";
+          else if (vAtu < v1 && v1 < v2 && v2 < v3) trend = "down";
           const sug = computeSugerido(ref, atual, inPromo, trend, promoc, descPct, true);
           const familia = String(p?.familia ?? "");
           const produto = String(p?.seqProd ?? "");
@@ -386,7 +393,10 @@ const LivroPreco = () => {
             custoLiq,
             atual,
             promoc,
-            vAtu: 0, v1: 0, v2: 0, v3: 0,
+            vAtu,
+            v1,
+            v2,
+            v3,
             inPromo,
             trend,
             sugeridoCalc: sug,
