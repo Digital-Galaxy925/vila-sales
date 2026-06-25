@@ -130,9 +130,9 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
 
     (async () => {
       try {
-        const { loadLivrosFromSupabase } = await import("@/lib/livrosSync");
+        const { hasWeeklySalesData, loadLivrosFromSupabase } = await import("@/lib/livrosSync");
         const remote = await loadLivrosFromSupabase();
-        if (cancelled || !remote) return;
+        if (cancelled || !remote || !hasWeeklySalesData(remote)) return;
         try {
           localStorage.setItem("vilasales_data", JSON.stringify(remote));
         } catch {
