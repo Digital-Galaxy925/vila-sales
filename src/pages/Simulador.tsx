@@ -202,9 +202,50 @@ export default function Simulador() {
           {/* ─── Inputs ─── */}
           <div style={{ background: "#fff", borderRadius: 12, padding: "18px 22px", border: "1px solid #e5e7eb", marginBottom: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, alignItems: "end" }}>
-              <div>
-                <label style={labelStyle}>Código do Produto</label>
-                <input type="text" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ex: 125545" style={inputStyle} />
+              <div style={{ position: "relative" }}>
+                <label style={labelStyle}>Código ou Descrição do Produto</label>
+                <input
+                  type="text"
+                  value={codigo}
+                  onChange={(e) => { setCodigo(e.target.value); setSelectedCod(""); setShowSug(true); }}
+                  onFocus={() => setShowSug(true)}
+                  onBlur={() => setTimeout(() => setShowSug(false), 150)}
+                  placeholder="Ex: 125545 ou nome do produto"
+                  style={inputStyle}
+                  autoComplete="off"
+                />
+                {showSug && suggestions.length > 0 && (
+                  <div style={{
+                    position: "absolute", top: "100%", left: 0, right: 0, zIndex: 20,
+                    marginTop: 4, background: "#fff", border: "1px solid #d1d5db",
+                    borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    maxHeight: 280, overflowY: "auto",
+                  }}>
+                    {suggestions.map((p) => {
+                      const cod = normCod(p.seqProd);
+                      return (
+                        <div
+                          key={`${cod}-${p.filial}`}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setSelectedCod(cod);
+                            setCodigo(cod);
+                            setShowSug(false);
+                          }}
+                          style={{
+                            padding: "8px 12px", fontSize: 12, cursor: "pointer",
+                            borderBottom: "1px solid #f3f4f6", color: "#1f2937",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f9ff")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                        >
+                          <div style={{ fontWeight: 600, color: "#0071e3" }}>{cod}</div>
+                          <div style={{ color: "#374151" }}>{p.descricao}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
               <div>
                 <label style={labelStyle}>Filial</label>
