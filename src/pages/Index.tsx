@@ -611,51 +611,31 @@ function DropZone({
 
 function UploadPanel({
   files,
-  baseFile,
   onCsvFiles,
-  onBaseFile,
   onClear,
   unrecognized,
 }: {
   files: UploadedFiles;
-  baseFile: File | null;
   onCsvFiles: (newFiles: Partial<UploadedFiles>, unrecognized: string[]) => void;
-  onBaseFile: (f: File) => void;
   onClear: () => void;
   unrecognized: string[];
 }) {
   const csvLoaded = LIVRO_META.filter(({ key }) => !!files[key]).length;
   const step1Done = csvLoaded > 0;
-  const step2Done = !!baseFile;
 
   const handleCsvFileList = (fileList: FileList) => {
     const result: Partial<UploadedFiles> = {};
     const bad: string[] = [];
     Array.from(fileList).forEach((f) => {
       const key = detectFileKey(f.name);
-      // only accept CSV keys (not base) in step 1
       if (key && key !== "base") result[key] = f;
       else if (!key) bad.push(f.name);
     });
     onCsvFiles(result, bad);
   };
 
-  const handleBaseFileList = (fileList: FileList) => {
-    const f = Array.from(fileList)[0];
-    if (f) onBaseFile(f);
-  };
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-
-      {/* Step indicators */}
-      <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-        <StepBadge n={1} label="Arquivos das Filiais (CSV)" active={!step1Done} done={step1Done} />
-        <div style={{ flex: 1, height: 2, margin: "0 12px", background: step1Done ? "#bbf7d0" : "#e5e7eb", transition: "background .4s" }} />
-        <StepBadge n={2} label="Base de Produtos (Excel)" active={step1Done && !step2Done} done={step2Done} />
-      </div>
-
-      {/* ── STEP 1 ── */}
       <div style={{
         border: `1px solid ${step1Done ? "#bbf7d0" : "#e5e7eb"}`,
         borderRadius: 16,
@@ -666,7 +646,7 @@ function UploadPanel({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <div>
             <div style={{ fontWeight: 600, fontSize: 14, color: step1Done ? "#16a34a" : "#1f2937" }}>
-              {step1Done ? `✅ Passo 1 concluído — ${csvLoaded} de ${LIVRO_META.length} arquivos carregados` : "Passo 1 — Arquivos das Filiais"}
+              {step1Done ? `✅ ${csvLoaded} de ${LIVRO_META.length} arquivos carregados` : "Arquivos das Filiais"}
             </div>
             <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>
               Selecione todos os livros CSV de uma vez. O sistema identifica cada filial automaticamente pelo nome do arquivo.
@@ -689,7 +669,6 @@ function UploadPanel({
           draggingColor="#3B82F6"
         />
 
-        {/* Status grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6, marginTop: 14 }}>
           {LIVRO_META.map(({ key, label, desc }) => {
             const loaded = !!files[key];
@@ -711,7 +690,6 @@ function UploadPanel({
           })}
         </div>
 
-        {/* Progress */}
         <div style={{ marginTop: 12, background: "#e5e7eb", borderRadius: 99, height: 4 }}>
           <div style={{
             height: 4, borderRadius: 99, transition: "width .4s",
@@ -727,63 +705,11 @@ function UploadPanel({
         )}
       </div>
 
-      {/* ── STEP 2 ── */}
-      <div style={{
-        border: `1px solid ${!step1Done ? "#ffffff" : step2Done ? "#bbf7d0" : "rgba(0,113,227,0.12)"}`,
-        borderRadius: 16,
-        padding: 20,
-        background: !step1Done ? "#fafafa" : step2Done ? "#f0fdf4" : "#fafafa",
-        opacity: step1Done ? 1 : 0.45,
-        transition: "all .3s",
-        pointerEvents: step1Done ? "auto" : "none",
-      }}>
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontWeight: 600, fontSize: 14, color: step2Done ? "#16a34a" : step1Done ? "#1f2937" : "#d1d5db" }}>
-            {step2Done ? `✅ Passo 2 concluído — ${baseFile!.name}` : "Passo 2 — Base de Produtos"}
-          </div>
-          <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>
-            Planilha Excel com os produtos que serão analisados. Deve conter colunas de <strong style={{ color: "#9ca3af" }}>código</strong> e <strong style={{ color: "#9ca3af" }}>descrição</strong>.
-          </div>
-        </div>
-
-        {!step2Done ? (
-          <>
-            <DropZone
-              onFiles={handleBaseFileList}
-              multiple={false}
-              accept=".xlsx,.xls,.xlsm,.xlsb,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-              label="Arraste ou clique para selecionar a base de produtos"
-              sublabel="Aceita .xlsx ou .csv — com colunas: BU, Cod Família, Cod Produto, DESCRICAO"
-              icon="📋"
-              draggingColor="#8B5CF6"
-            />
-            <div style={{ marginTop: 10, padding: "10px 14px", background: "#f8f9fa", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 11, color: "#6b7280" }}>
-              <strong style={{ color: "#6b7280" }}>💡 Recomendado:</strong> Se o upload do .xlsx falhar, salve a planilha como <strong style={{ color: "#9ca3af" }}>.csv (separado por ponto-e-vírgula)</strong> no Excel (Arquivo → Salvar como → CSV UTF-8) e faça upload do CSV.
-            </div>
-          </>
-        ) : (
-          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", background: "#f0fdf4", borderRadius: 10, border: "1px solid #bbf7d0" }}>
-            <span style={{ fontSize: 28 }}>📋</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#16a34a" }}>{baseFile!.name}</div>
-              <div style={{ fontSize: 11, color: "#6b7280" }}>{(baseFile!.size / 1024).toFixed(1)} KB · Base de produtos carregada</div>
-            </div>
-            <button
-              onClick={() => onBaseFile(null as any)}
-              style={{ background: "#fecaca", border: "none", borderRadius: 6, color: "#dc2626", cursor: "pointer", padding: "4px 10px", fontSize: 11, fontWeight: 700 }}
-            >
-              Trocar
-            </button>
-          </div>
-        )}
-
-        <div style={{ marginTop: 14, padding: "10px 14px", background: "#f8f9fa", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 11, color: "#6b7280" }}>
-          <strong style={{ color: "#6b7280" }}>💡 Dica:</strong> A base de produtos funciona como <strong style={{ color: "#9ca3af" }}>filtro</strong> — somente os produtos presentes nela serão exibidos nas análises. Se quiser ver todos os produtos das filiais, pode pular este passo e clicar em Gerar Análise diretamente.
-        </div>
+      <div style={{ padding: "12px 16px", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 12, fontSize: 12, color: "#0c4a6e" }}>
+        ℹ️ <strong>Filtro automático Unilever:</strong> as análises consideram apenas itens cuja coluna <strong>Fornecedor</strong> seja Unilever — <strong>HC</strong> → BU HC e <strong>FOODS / ALIMENTOS</strong> → BU FR. Demais fornecedores (incl. UNILEVER BRASIL LTDA BW e PC) são excluídos.
       </div>
 
-      {/* Ready state */}
-      {step1Done && step2Done && (
+      {step1Done && (
         <div style={{ padding: "14px 20px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 24 }}>🚀</span>
           <div>
