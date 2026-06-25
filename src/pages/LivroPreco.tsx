@@ -214,7 +214,6 @@ const LivroPreco = () => {
     for (const fil of Object.keys(rawByFilial)) {
       byFilial[fil] = matrixToRecords(rawByFilial[fil]);
     }
-    }
 
     const rowKey = (r: Record<string, string>) =>
       `${(r["SEQ.PROD"] || r["SEQ. PROD"] || "").trim()}__${(r["FAMILIA"] || "").trim()}`;
