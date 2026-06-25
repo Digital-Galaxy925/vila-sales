@@ -878,9 +878,9 @@ export default function SimuladorMassivo() {
                         
                         "MARGEM AJUSTADA",
                         "SELL OUT AJUSTADO",
-                        "VOLUME",
+                        "PEDIDO (CX)",
                         "INVESTIMENTO TOTAL",
-                        "VALOR PEDIDO",
+                        "VALOR TOTAL PEDIDO",
                         "% INVESTIMENTO",
                         "",
                       ].map((h, idx) => (
