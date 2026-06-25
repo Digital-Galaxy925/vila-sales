@@ -2944,12 +2944,12 @@ function IndexInner() {
     } finally {
       setLoading(false);
     }
-  }, [files, baseFile]);
+  }, [files]);
 
   const hasData = Object.values(data).some((arr) => arr.length > 0);
   const totalLoaded = Object.values(files).filter(Boolean).length;
   const csvLoaded = LIVRO_META.filter(({ key }) => !!files[key]).length;
-  const canGenerate = csvLoaded > 0 && !!baseFile;
+  const canGenerate = csvLoaded > 0;
 
   const modules: { id: Module; label: string; icon: string }[] = [
     { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
