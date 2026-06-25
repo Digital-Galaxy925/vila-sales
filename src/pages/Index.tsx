@@ -2516,6 +2516,8 @@ function IndexInner() {
     return {};
   });
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(() => {
     if (typeof window !== "undefined" && window.location.pathname === "/upload-livros") return true;
@@ -2584,8 +2586,16 @@ function IndexInner() {
 
   const processFiles = useCallback(async () => {
     setLoading(true);
+    setCompleted(false);
+    setProgress(5);
     setError(null);
+    let succeeded = false;
+    const progressTimer = setInterval(() => {
+      setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
+    }, 220);
     try {
+
+
 
       // ── 1. Lê a base Excel (Etapa 2) ──────────────────────────────────────────
       // Coluna 3 (índice 2) = Cod Produto
@@ -3001,18 +3011,25 @@ function IndexInner() {
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
       // Espelha no backend antes de liberar a navegação para evitar recarregar dados antigos.
       await saveLivrosToSupabase(newData);
-      // Difere updates de estado para o próximo tick para evitar
-      // conflito de renderização (NotFoundError: removeChild on Node).
+      succeeded = true;
+      clearInterval(progressTimer);
+      setProgress(100);
+      setCompleted(true);
+      // Mostra a mensagem de conclusão antes de navegar
       setTimeout(() => {
         setData(newData);
         setLastUpdate(updateTime);
         setShowUpload(false);
         setActiveModule("cruzamento");
         notifyAppDataChanged();
-      }, 0);
+        setTimeout(() => { setCompleted(false); setProgress(0); }, 2500);
+      }, 1500);
 
     } catch (e: any) {
       setError("Erro: " + e.message);
+      clearInterval(progressTimer);
+      setProgress(0);
+      setCompleted(false);
     } finally {
       setLoading(false);
     }
@@ -3136,6 +3153,94 @@ function IndexInner() {
             📤 Novo Upload
           </button>
         </div>
+
+        {(loading || completed || progress > 0) && (
+          <div style={{ padding: "14px 32px 0" }}>
+            <div
+              style={{
+                background: "#ffffff",
+                border: `1px solid ${completed ? "#bbf7d0" : "#d2e3fb"}`,
+                borderRadius: 12,
+                padding: "14px 18px",
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                transition: "all .25s ease",
+              }}
+              role="status"
+              aria-live="polite"
+            >
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 8,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: completed ? "#16a34a" : "#0071e3",
+                  }}
+                >
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    {completed ? (
+                      <>
+                        <span
+                          style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: "50%",
+                            background: "#16a34a",
+                            color: "#fff",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 14,
+                            fontWeight: 800,
+                          }}
+                          aria-hidden
+                        >
+                          ✓
+                        </span>
+                        Análise concluída
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</span>
+                        Processando arquivos...
+                      </>
+                    )}
+                  </span>
+                  <span style={{ fontVariantNumeric: "tabular-nums", color: "#6b7280", fontWeight: 600 }}>
+                    {Math.round(progress)}%
+                  </span>
+                </div>
+                <div
+                  style={{
+                    width: "100%",
+                    height: 8,
+                    background: "#eef2f7",
+                    borderRadius: 999,
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${progress}%`,
+                      height: "100%",
+                      background: completed
+                        ? "linear-gradient(90deg, #22c55e, #16a34a)"
+                        : "linear-gradient(90deg, #60a5fa, #0071e3)",
+                      transition: "width .35s ease",
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
 
         <div style={{ padding: 32 }}>
           {/* Upload panel */}
