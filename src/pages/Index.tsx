@@ -2886,6 +2886,19 @@ function IndexInner() {
       }
 
       try {
+        // Salva matrizes CSV brutas por filial para outras telas (ex.: Livro Preço)
+        const rawByFilial: Record<string, string[][]> = {};
+        const rawKeys: Array<keyof typeof files> = [
+          "livro_01","livro_10","livro_11","livro_12","livro_14","livro_501","livro_502","livro_510",
+        ];
+        for (const k of rawKeys) {
+          const f = (files as any)[k] as File | undefined;
+          if (f) rawByFilial[(k as string).replace("livro_","")] = await parseCSVRaw(f);
+        }
+        localStorage.setItem("vilasales_livros_raw", JSON.stringify(rawByFilial));
+      } catch (_) {}
+
+      try {
         localStorage.setItem("vilasales_data", JSON.stringify(newData));
         localStorage.setItem(LIVRO_METRICS_STORAGE_KEY, JSON.stringify(livroMetricsData));
       } catch(_) {}
