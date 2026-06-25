@@ -592,7 +592,7 @@ const LivroPreco = () => {
       />
 
       {/* control bar */}
-      <div className="rounded-lg border border-border bg-card p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="rounded-xl border border-[#d2e3fb] bg-[#f5f9ff] p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <div>
           <Label className="text-xs text-muted-foreground">DDV mínimo</Label>
           <Select value={ddvMin} onValueChange={setDdvMin}>
