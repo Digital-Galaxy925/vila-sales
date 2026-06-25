@@ -321,10 +321,20 @@ export default function SimuladorMassivo() {
       const headerKeywords = ["codigo", "sku", "cod", "produto", "volume", "preco", "qtd", "quantidade", "caixa", "cx", "valor", "pedido"];
       const scoreHeader = (row: unknown[]) => {
         const cells = row.map(normalizeText);
-        const hasCod = cells.some((h) => ["codigo", "cod", "sku", "produto"].some((k) => h.includes(k)));
-        const hasVol = cells.some((h) => ["pedido", "volume", "quantidade", "qtd", "caixa", "cx"].some((k) => h.includes(k)));
-        const hasPreco = cells.some((h) => ["preco", "precos", "venda", "proposta", "valor", "unit"].some((k) => h.includes(k)));
-        return (hasCod ? 2 : 0) + (hasVol ? 2 : 0) + (hasPreco ? 2 : 0) + cells.filter((h) => headerKeywords.some((k) => h.includes(k))).length;
+        const codIdx = cells.findIndex((h) => ["codigo", "cod", "sku", "produto"].some((k) => h.includes(k)));
+        const volIdx = cells.findIndex((h) => ["pedido", "volume", "quantidade", "qtd", "caixa", "cx"].some((k) => h.includes(k)));
+        const precoIdx = cells.findIndex((h) => ["preco", "precos", "venda", "proposta", "valor", "unit"].some((k) => h.includes(k)));
+        const distinctMatches = new Set([codIdx, volIdx, precoIdx].filter((i) => i >= 0)).size;
+        const usedColumns = cells.filter(Boolean).length;
+        const compactTitlePenalty = usedColumns <= 1 && distinctMatches >= 2 ? -4 : 0;
+        return (
+          (codIdx >= 0 ? 2 : 0) +
+          (volIdx >= 0 ? 2 : 0) +
+          (precoIdx >= 0 ? 2 : 0) +
+          distinctMatches * 2 +
+          cells.filter((h) => headerKeywords.some((k) => h.includes(k))).length +
+          compactTitlePenalty
+        );
       };
       const headerRowIndex = rows.reduce(
         (best, row, index) => {
@@ -469,6 +479,8 @@ export default function SimuladorMassivo() {
         alert(
           `A planilha foi lida, mas ${semPedido === parsed.length ? "a coluna Pedido/Quantidade" : "a coluna Preço"} não foi identificada corretamente. Verifique se há cabeçalhos como Código do Produto, Quantidade e Preço.`,
         );
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
       }
       setPendingRows(parsed);
       setNotFound([]);
