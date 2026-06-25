@@ -326,7 +326,7 @@ export default function SimuladorMassivo() {
         const precoIdx = cells.findIndex((h) => ["preco", "precos", "venda", "proposta", "valor", "unit"].some((k) => h.includes(k)));
         const distinctMatches = new Set([codIdx, volIdx, precoIdx].filter((i) => i >= 0)).size;
         const usedColumns = cells.filter(Boolean).length;
-        const compactTitlePenalty = usedColumns <= 1 && distinctMatches >= 2 ? -4 : 0;
+        const compactTitlePenalty = usedColumns <= 1 && distinctMatches >= 2 ? -20 : 0;
         return (
           (codIdx >= 0 ? 2 : 0) +
           (volIdx >= 0 ? 2 : 0) +
