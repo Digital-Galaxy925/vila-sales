@@ -564,7 +564,7 @@ const LivroPreco = () => {
           if (cell && typeof cell.v === "number") { cell.t = "n"; cell.z = "#,##0"; }
         });
       }
-      const sheetName = `Filial ${f}`.slice(0, 31);
+      const sheetName = filialLabel(f).slice(0, 31);
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
     XLSX.writeFile(wb, `LivroPreco_${new Date().toISOString().slice(0, 10)}.xlsx`);
