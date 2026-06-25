@@ -2716,10 +2716,11 @@ function IndexInner() {
         dataRows.forEach((cols) => {
           const rawCod = cols[finalColCod] ?? "";
           const cod = normCod(rawCod);
-          if (!cod || !baseMap.has(cod)) return;
-
-          const baseEntry = baseMap.get(cod)!;
-          const desc = baseEntry.desc || cols[finalColDesc] || rawCod;
+          if (!cod) return;
+          const fornecedor = finalColFornecedor >= 0 ? (cols[finalColFornecedor] ?? "") : "";
+          const bu = deriveBU(fornecedor);
+          if (!bu) return;
+          const desc = (cols[finalColDesc] ?? "").trim() || rawCod;
           const overridePrecosRow = overridePrecos?.get(cod);
           const overrideEstoqueRow = overrideEstoque?.get(cod);
           const estoqueStr = overrideEstoqueRow?.estoque && num(overrideEstoqueRow.estoque) !== 0
