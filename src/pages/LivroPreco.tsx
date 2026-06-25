@@ -476,11 +476,11 @@ const LivroPreco = () => {
       "Unid/cx",
       "Estoque",
       "DDV",
-      "VD.SEM.ATU",
       "VD.SEM. -1",
       "VD.SEM. -2",
       "VD.SEM. -3",
       "Venda Média",
+      "Venda Atual",
       "Custo Líquido",
       "Atual",
       "PROMOC",
@@ -503,11 +503,11 @@ const LivroPreco = () => {
         i.unidCx,
         i.estoque,
         i.ddv,
-        i.vAtu,
         i.v1,
         i.v2,
         i.v3,
         (i.v1 + i.v2 + i.v3) / 3,
+        i.vAtu,
         i.custoLiq,
         i.atual,
         i.promoc,
@@ -610,7 +610,7 @@ const LivroPreco = () => {
             <tr className="text-left">
               {[
                 "BU","Filial","Cód. Família","Cód. Produto","Descrição","Unid/cx",
-                "Estoque","DDV","V.ATU","V-1","V-2","V-3","Venda Média",
+                "Estoque","DDV","V-1","V-2","V-3","Venda Média","Venda Atual",
                 "Custo Líq.","Atual","PROMOC","Preço Sugerido","Variação","Margem","Margem Atual","",
               ].map((h) => (
                 <th key={h} className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
@@ -648,11 +648,11 @@ const LivroPreco = () => {
                   <td className="px-2 py-1.5">{i.unidCx}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.estoque)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.ddv)}</td>
-                  <td className="px-2 py-1.5 text-right">{fmtNum(i.vAtu)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.v1)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.v2)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.v3)}</td>
                   <td className="px-2 py-1.5 text-right font-medium">{fmtNum((i.v1 + i.v2 + i.v3) / 3)}</td>
+                  <td className="px-2 py-1.5 text-right">{fmtNum(i.vAtu)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtBRL(i.custoLiq)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtBRL(i.atual)}</td>
                   <td className="px-2 py-1.5 text-right">
