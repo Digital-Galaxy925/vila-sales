@@ -166,11 +166,41 @@ const DDV_OPTIONS = [
   { value: "0", label: "Todos os DDVs" },
 ];
 
+/** Normalize a header label: uppercase, strip accents/spaces/punctuation. */
+function normHeader(s: string): string {
+  return String(s ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]/g, "");
+}
+
+/** Return a value from a row by trying multiple header candidates (normalized). */
+function pick(row: Record<string, string>, candidates: string[]): string {
+  const want = candidates.map(normHeader);
+  for (const k of Object.keys(row)) {
+    if (want.includes(normHeader(k))) {
+      const v = row[k];
+      if (v !== undefined && v !== null && String(v).trim() !== "") return v;
+    }
+  }
+  return "";
+}
+
+/** Detect the header row inside the first rows of a CSV matrix. */
 function matrixToRecords(mat: string[][]): Record<string, string>[] {
   if (!Array.isArray(mat) || mat.length < 2) return [];
-  const headers = (mat[0] || []).map((h) => String(h ?? "").trim());
+  let headerIdx = 0;
+  for (let i = 0; i < Math.min(mat.length, 6); i++) {
+    const norm = (mat[i] || []).map(normHeader);
+    if (norm.includes("VDSEMATU") || norm.includes("DESCRICAO") || norm.includes("SEQPROD")) {
+      headerIdx = i;
+      break;
+    }
+  }
+  const headers = (mat[headerIdx] || []).map((h) => String(h ?? "").trim());
   const out: Record<string, string>[] = [];
-  for (let i = 1; i < mat.length; i++) {
+  for (let i = headerIdx + 1; i < mat.length; i++) {
     const row = mat[i] || [];
     const obj: Record<string, string> = {};
     headers.forEach((h, idx) => {
