@@ -657,7 +657,7 @@ const LivroPreco = () => {
       {/* table */}
       <div className="rounded-lg border border-border bg-card overflow-auto max-h-[calc(100vh-260px)]">
         <table className="w-full text-xs">
-          <thead className="bg-muted/50 sticky top-0 z-20">
+          <thead className="bg-[#eef4fb] sticky top-0 z-20 border-b border-[#d2e3fb]">
             <tr className="text-left">
               {[
                 { h: "BU", sticky: 0, w: 50 },
