@@ -321,7 +321,7 @@ export default function SimuladorMassivo() {
       const headerKeywords = ["codigo", "sku", "cod", "produto", "volume", "preco", "qtd", "quantidade", "caixa", "cx", "valor", "pedido"];
       const scoreHeader = (row: unknown[]) => {
         const cells = row.map(normalizeText);
-        const codIdx = cells.findIndex((h) => ["codigo", "cod", "sku", "produto"].some((k) => h.includes(k)));
+        const codIdx = cells.findIndex((h) => ["codigo", "cod", "sku"].some((k) => h.includes(k)));
         const volIdx = cells.findIndex((h) => ["pedido", "volume", "quantidade", "qtd", "caixa", "cx"].some((k) => h.includes(k)));
         const precoIdx = cells.findIndex((h) => ["preco", "precos", "venda", "proposta", "valor", "unit"].some((k) => h.includes(k)));
         const distinctMatches = new Set([codIdx, volIdx, precoIdx].filter((i) => i >= 0)).size;
@@ -344,7 +344,7 @@ export default function SimuladorMassivo() {
         { index: 0, score: 0 },
       ).index;
       const header = rows[headerRowIndex]?.map(normalizeText) ?? [];
-      const hasHeader = scoreHeader(rows[headerRowIndex] ?? []) >= 2;
+      const hasHeader = scoreHeader(rows[headerRowIndex] ?? []) >= 6;
       let idxCod = 0;
       let idxDesc = -1;
       let idxVol = -1;
