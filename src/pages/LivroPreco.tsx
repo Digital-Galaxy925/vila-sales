@@ -471,6 +471,7 @@ const LivroPreco = () => {
       "VD.SEM. -1",
       "VD.SEM. -2",
       "VD.SEM. -3",
+      "Venda Média",
       "Custo Líquido",
       "Atual",
       "PROMOC",
@@ -497,6 +498,7 @@ const LivroPreco = () => {
         i.v1,
         i.v2,
         i.v3,
+        (i.v1 + i.v2 + i.v3) / 3,
         i.custoLiq,
         i.atual,
         i.promoc,
@@ -599,7 +601,7 @@ const LivroPreco = () => {
             <tr className="text-left">
               {[
                 "BU","Filial","Cód. Família","Cód. Produto","Descrição","Unid/cx",
-                "Estoque","DDV","V.ATU","V-1","V-2","V-3",
+                "Estoque","DDV","V.ATU","V-1","V-2","V-3","Venda Média",
                 "Custo Líq.","Atual","PROMOC","Preço Sugerido","Variação","Margem","Margem Atual","",
               ].map((h) => (
                 <th key={h} className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
@@ -611,7 +613,7 @@ const LivroPreco = () => {
           <tbody>
             {visible.length === 0 && (
               <tr>
-                <td colSpan={20} className="text-center text-muted-foreground py-8">
+                <td colSpan={21} className="text-center text-muted-foreground py-8">
                   Faça upload dos arquivos LIVRO_*.CSV e clique em "Gerar Livro Preço".
                 </td>
               </tr>
@@ -641,6 +643,7 @@ const LivroPreco = () => {
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.v1)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.v2)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.v3)}</td>
+                  <td className="px-2 py-1.5 text-right font-medium">{fmtNum((i.v1 + i.v2 + i.v3) / 3)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtBRL(i.custoLiq)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtBRL(i.atual)}</td>
                   <td className="px-2 py-1.5 text-right">
