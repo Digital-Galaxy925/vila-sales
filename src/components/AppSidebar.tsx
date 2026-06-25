@@ -18,9 +18,11 @@ import {
   Wallet,
   Menu,
   X,
+  UploadCloud,
 } from "lucide-react";
 
 const navItems = [
+  { to: "/upload-livros", label: "Upload de Livros", icon: UploadCloud },
   { to: "/gerencial", label: "Análise Gerencial", icon: BriefcaseBusiness },
   { to: "/", label: "Análise Geral", icon: LayoutDashboard },
   { to: "/dashboard-unilever", label: "Dashboard Unilever", icon: BarChart3 },

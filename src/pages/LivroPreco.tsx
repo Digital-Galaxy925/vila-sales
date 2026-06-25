@@ -425,21 +425,6 @@ const LivroPreco = () => {
         description="Sugestão de preços (sáb→sex) por filial e BU para Unilever HC/FR."
         actions={
           <div className="flex items-center gap-2">
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv"
-              multiple
-              className="hidden"
-              onChange={handleUpload}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fileRef.current?.click()}
-            >
-              <Upload className="w-4 h-4 mr-2" /> Upload LIVRO_*.CSV
-            </Button>
             <Button size="sm" onClick={gerar}>
               <FileSpreadsheet className="w-4 h-4 mr-2" /> Gerar Livro Preço
             </Button>

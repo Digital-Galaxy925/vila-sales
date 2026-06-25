@@ -44,6 +44,7 @@ const App = () => (
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/" element={<AnaliseGeral />} />
+            <Route path="/upload-livros" element={<Index />} />
             <Route path="/manual" element={<Index />} />
             <Route path="/gerencial" element={<AnaliseGerencial />} />
             <Route path="/simulador" element={<Simulador />} />
