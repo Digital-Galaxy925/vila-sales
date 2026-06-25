@@ -286,7 +286,7 @@ export default function SimuladorMassivo() {
           header.findIndex((h) => keys.some((k) => h.includes(k)));
         const c = find(["codigo", "sku", "cod"]);
         const v = find(["volume", "quantidade", "qtd", "caixa", "cx"]);
-        const p = find(["preco", "venda", "proposta"]);
+        const p = find(["preco", "preço", "venda", "proposta", "valor", "unit"]);
         if (c >= 0) idxCod = c;
         if (v >= 0) idxVol = v;
         if (p >= 0) idxPreco = p;
