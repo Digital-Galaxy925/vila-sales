@@ -242,29 +242,31 @@ const LivroPreco = () => {
       }
 
       const rowKey = (r: Record<string, string>) =>
-        `${(r["SEQ.PROD"] || r["SEQ. PROD"] || "").trim()}__${(r["FAMILIA"] || "").trim()}`;
+        `${pick(r, ["SEQ.PROD", "SEQ PROD", "SEQPROD", "COD"]).trim()}__${pick(r, ["FAMILIA"]).trim()}`;
 
       type Pair = { filial: string; salesRows: Record<string, string>[]; stockMap: Map<string, Record<string, string>> };
       const pairs: Pair[] = [];
       const handled = new Set<string>();
 
-      if (byFilial["01"] || byFilial["10"]) {
-        const sales = byFilial["10"] || byFilial["01"] || [];
-        const stock = byFilial["01"] || byFilial["10"] || [];
+      // Mapeamento explícito filial → (estoque, vendas) conforme regras de negócio.
+      const pairing: Array<[string, string, string]> = [
+        ["01", "01", "10"],   // Poços de Caldas: estoque 01, vendas 10
+        ["11", "11", "11"],   // Campinas
+        ["12", "12", "12"],   // Osasco
+        ["14", "14", "14"],   // Betim
+        ["501", "501", "501"],// Focomix SP
+        ["502", "502", "510"],// Focomix MG: estoque 502, vendas 510
+      ];
+
+      for (const [label, stockK, salesK] of pairing) {
+        const sales = byFilial[salesK] || byFilial[stockK];
+        const stock = byFilial[stockK] || byFilial[salesK];
+        if (!sales && !stock) continue;
         const sm = new Map<string, Record<string, string>>();
-        stock.forEach((r) => sm.set(rowKey(r), r));
-        pairs.push({ filial: "01", salesRows: sales, stockMap: sm });
-        handled.add("01");
-        handled.add("10");
-      }
-      if (byFilial["502"] || byFilial["510"]) {
-        const sales = byFilial["510"] || byFilial["502"] || [];
-        const stock = byFilial["502"] || byFilial["510"] || [];
-        const sm = new Map<string, Record<string, string>>();
-        stock.forEach((r) => sm.set(rowKey(r), r));
-        pairs.push({ filial: "502", salesRows: sales, stockMap: sm });
-        handled.add("502");
-        handled.add("510");
+        (stock || []).forEach((r) => sm.set(rowKey(r), r));
+        pairs.push({ filial: label, salesRows: sales || [], stockMap: sm });
+        handled.add(stockK);
+        handled.add(salesK);
       }
       for (const fil of Object.keys(byFilial)) {
         if (handled.has(fil)) continue;
@@ -275,24 +277,24 @@ const LivroPreco = () => {
 
       for (const { filial, salesRows, stockMap } of pairs) {
         for (const r of salesRows) {
-          const fornecedor = r["Fornecedor"] || r["FORNECEDOR"] || r["fornecedor"] || "";
+          const fornecedor = pick(r, ["Fornecedor", "FORNECEDOR"]);
           const bu = deriveBU(fornecedor);
           if (!bu) continue;
 
           const stockRow = stockMap.get(rowKey(r)) || r;
 
-          const ddv = parseBR(stockRow["DDV"] ?? r["DDV"]);
+          const ddv = parseBR(pick(stockRow, ["DDV"]) || pick(r, ["DDV"]));
           if (!ddv || ddv <= 0) continue;
           if (ddvLimite > 0 && ddv < ddvLimite) continue;
 
-          const atual = parseBR(r["ATUAL"]);
-          const promoc = parseBR(r["PROMOC"]);
-          const custoLiq = parseBR(r["CUSTO LIQ"]);
-          const estoque = parseBR(stockRow["ESTOQUE"] ?? r["ESTOQUE"]);
-          const vAtu = parseBR(r["VD.SEM.ATU"]);
-          const v1 = parseBR(r["VD.SEM. -1"] ?? r["VD.SEM.-1"]);
-          const v2 = parseBR(r["VD.SEM. -2"] ?? r["VD.SEM.-2"]);
-          const v3 = parseBR(r["VD.SEM. -3"] ?? r["VD.SEM.-3"]);
+          const atual = parseBR(pick(r, ["ATUAL"]));
+          const promoc = parseBR(pick(r, ["PROMOC", "PROMOCAO"]));
+          const custoLiq = parseBR(pick(r, ["CUSTO LIQ", "CUSTO.LIQ", "CUSTOLIQ", "CUSTO LIQUIDO"]));
+          const estoque = parseBR(pick(stockRow, ["ESTOQUE"]) || pick(r, ["ESTOQUE"]));
+          const vAtu = parseBR(pick(r, ["VD.SEM.ATU", "VD SEM ATU", "VDSEMATU"]));
+          const v1 = parseBR(pick(r, ["VD.SEM. -1", "VD.SEM.-1", "VD SEM -1", "VDSEM-1"]));
+          const v2 = parseBR(pick(r, ["VD.SEM. -2", "VD.SEM.-2", "VD SEM -2", "VDSEM-2"]));
+          const v3 = parseBR(pick(r, ["VD.SEM. -3", "VD.SEM.-3", "VD SEM -3", "VDSEM-3"]));
 
           const inPromo = promoc > 0 && promoc < atual;
           const ref = inPromo ? promoc : atual;
@@ -305,16 +307,16 @@ const LivroPreco = () => {
 
           const sug = computeSugerido(ref, atual, inPromo, trend, promoc, descPct, true);
 
-          const familia = r["FAMILIA"] || "";
-          const produto = r["SEQ.PROD"] || r["SEQ. PROD"] || "";
+          const familia = pick(r, ["FAMILIA"]);
+          const produto = pick(r, ["SEQ.PROD", "SEQ PROD", "SEQPROD"]);
           out.push({
             key: `${filial}__${produto}__${familia}`,
             bu,
             filial,
             familia,
             produto,
-            descricao: r["DESCRICAO"] || "",
-            unidCx: r["EMB.CMP"] || "",
+            descricao: pick(r, ["DESCRICAO", "DESCRIÇÃO"]),
+            unidCx: pick(r, ["EMB.CMP", "EMB CMP", "EMBCMP"]),
             estoque,
             ddv,
             custoLiq,
