@@ -14,6 +14,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { Upload, FileSpreadsheet, RotateCcw, Download, AlertTriangle } from "lucide-react";
 import { loadLivrosFromSupabase } from "@/lib/livrosSync";
+import { notifyAppDataChanged } from "@/contexts/AppDataContext";
 
 /* ---------- parsing helpers ---------- */
 
@@ -376,6 +377,7 @@ const LivroPreco = () => {
           data = remote;
           try {
             localStorage.setItem("vilasales_data", JSON.stringify(remote));
+            notifyAppDataChanged("vilasales_data");
           } catch (_) {}
         }
       }
@@ -457,7 +459,7 @@ const LivroPreco = () => {
     setOverrides({});
     toast({
       title: "Livro Preço gerado",
-      description: `${out.length} item(ns) sugeridos.${hasRaw ? "" : " (sem vendas semanais — refaça o upload em 'Upload de Livros' para tendências.)"}`,
+      description: `${out.length} item(ns) sugeridos.${hasRaw ? "" : " (usando dados salvos no Upload de Livros.)"}`,
     });
     } finally {
       setGerando(false);
