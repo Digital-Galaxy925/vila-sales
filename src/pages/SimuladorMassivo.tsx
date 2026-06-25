@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import NoDataNotice from "@/components/NoDataNotice";
 
 
 
@@ -430,6 +431,8 @@ export default function SimuladorMassivo() {
     return { totalSellOut, totalUnidades, totalLucro };
   }, [simulacoes]);
 
+  if (!hasData) return <NoDataNotice />;
+
   return (
     <div
       style={{
@@ -570,24 +573,6 @@ export default function SimuladorMassivo() {
                   }}
                 >
                   + Adicionar
-                </button>
-                <button
-                  onClick={handleUploadClick}
-                  title="Importar até 300 itens de uma planilha Excel"
-                  style={{
-                    height: 38,
-                    padding: "0 14px",
-                    borderRadius: 8,
-                    border: "1px solid #0071e3",
-                    background: "#fff",
-                    color: "#0071e3",
-                    fontWeight: 600,
-                    fontSize: 13,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  ⬆ Upload Planilha
                 </button>
                 <input
                   ref={fileInputRef}
