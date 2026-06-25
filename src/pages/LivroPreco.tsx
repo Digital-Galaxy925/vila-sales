@@ -78,6 +78,21 @@ function filialFromName(name: string): string {
   return m ? m[1] : name.replace(/\.csv$/i, "");
 }
 
+/** Map filial code → friendly display name. */
+const FILIAL_LABELS: Record<string, string> = {
+  "01": "01 - Poços de Caldas",
+  "1": "01 - Poços de Caldas",
+  "11": "11 - Campinas",
+  "12": "12 - Osasco",
+  "14": "14 - Betim",
+  "501": "501 - Focomix SP",
+  "502": "502 - Focomix MG",
+};
+function filialLabel(code: string): string {
+  const k = String(code ?? "").trim();
+  return FILIAL_LABELS[k] ?? FILIAL_LABELS[k.replace(/^0+/, "")] ?? k;
+}
+
 /** Derive BU from Fornecedor. */
 function deriveBU(fornecedor: string): "HC" | "FR" | null {
   const f = (fornecedor || "").toUpperCase();
@@ -549,7 +564,7 @@ const LivroPreco = () => {
           if (cell && typeof cell.v === "number") { cell.t = "n"; cell.z = "#,##0"; }
         });
       }
-      const sheetName = `Filial ${f}`.slice(0, 31);
+      const sheetName = filialLabel(f).slice(0, 31);
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     });
     XLSX.writeFile(wb, `LivroPreco_${new Date().toISOString().slice(0, 10)}.xlsx`);
@@ -605,7 +620,7 @@ const LivroPreco = () => {
               <SelectItem value="ALL">Todas</SelectItem>
               {filiais.map((f) => (
                 <SelectItem key={f} value={f}>
-                  Filial {f}
+                  {filialLabel(f)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -642,10 +657,10 @@ const LivroPreco = () => {
             <tr className="text-left">
               {[
                 { h: "BU", sticky: 0, w: 50 },
-                { h: "Filial", sticky: 50, w: 60 },
-                { h: "Cód. Família", sticky: 110, w: 90 },
-                { h: "Cód. Produto", sticky: 200, w: 90 },
-                { h: "Descrição", sticky: 290, w: 240 },
+                { h: "Filial", sticky: 50, w: 150 },
+                { h: "Cód. Família", sticky: 200, w: 90 },
+                { h: "Cód. Produto", sticky: 290, w: 90 },
+                { h: "Descrição", sticky: 380, w: 240 },
                 { h: "Unid/cx" }, { h: "Estoque" }, { h: "DDV" },
                 { h: "V-3" }, { h: "V-2" }, { h: "V-1" },
                 { h: "Venda Média" }, { h: "Venda Atual" },
@@ -683,10 +698,10 @@ const LivroPreco = () => {
               return (
                 <tr key={i.key} className="border-t border-border hover:bg-muted/30 group">
                   <td className="px-2 py-1.5 font-medium sticky left-0 z-10 bg-card group-hover:bg-muted/30" style={{ minWidth: 50 }}>{i.bu}</td>
-                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 50, minWidth: 60 }}>{i.filial}</td>
-                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 110, minWidth: 90 }}>{i.familia}</td>
-                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 200, minWidth: 90 }}>{i.produto}</td>
-                  <td className="px-2 py-1.5 max-w-[240px] truncate sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 290, minWidth: 240 }} title={i.descricao}>
+                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30 whitespace-nowrap" style={{ left: 50, minWidth: 150 }}>{filialLabel(i.filial)}</td>
+                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 200, minWidth: 90 }}>{i.familia}</td>
+                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 290, minWidth: 90 }}>{i.produto}</td>
+                  <td className="px-2 py-1.5 max-w-[240px] truncate sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 380, minWidth: 240 }} title={i.descricao}>
                     {i.descricao}
                   </td>
 
