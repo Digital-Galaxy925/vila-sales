@@ -3011,15 +3011,19 @@ function IndexInner() {
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
       // Espelha no backend antes de liberar a navegação para evitar recarregar dados antigos.
       await saveLivrosToSupabase(newData);
-      // Difere updates de estado para o próximo tick para evitar
-      // conflito de renderização (NotFoundError: removeChild on Node).
+      succeeded = true;
+      clearInterval(progressTimer);
+      setProgress(100);
+      setCompleted(true);
+      // Mostra a mensagem de conclusão antes de navegar
       setTimeout(() => {
         setData(newData);
         setLastUpdate(updateTime);
         setShowUpload(false);
         setActiveModule("cruzamento");
         notifyAppDataChanged();
-      }, 0);
+        setTimeout(() => { setCompleted(false); setProgress(0); }, 2500);
+      }, 1500);
 
     } catch (e: any) {
       setError("Erro: " + e.message);
@@ -3027,16 +3031,7 @@ function IndexInner() {
       setProgress(0);
       setCompleted(false);
     } finally {
-      clearInterval(progressTimer);
       setLoading(false);
-      if (!error) {
-        setProgress(100);
-        setCompleted(true);
-        setTimeout(() => {
-          setCompleted(false);
-          setProgress(0);
-        }, 4000);
-      }
     }
   }, [files, baseFile]);
 
