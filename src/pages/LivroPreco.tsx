@@ -471,6 +471,7 @@ const LivroPreco = () => {
       "VD.SEM. -1",
       "VD.SEM. -2",
       "VD.SEM. -3",
+      "Venda Média",
       "Custo Líquido",
       "Atual",
       "PROMOC",
@@ -497,6 +498,7 @@ const LivroPreco = () => {
         i.v1,
         i.v2,
         i.v3,
+        (i.v1 + i.v2 + i.v3) / 3,
         i.custoLiq,
         i.atual,
         i.promoc,
@@ -611,7 +613,7 @@ const LivroPreco = () => {
           <tbody>
             {visible.length === 0 && (
               <tr>
-                <td colSpan={20} className="text-center text-muted-foreground py-8">
+                <td colSpan={21} className="text-center text-muted-foreground py-8">
                   Faça upload dos arquivos LIVRO_*.CSV e clique em "Gerar Livro Preço".
                 </td>
               </tr>
