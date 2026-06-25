@@ -4,7 +4,7 @@ import ExcelJS from "exceljs";
 import * as XLSX from "xlsx";
 import { unzipSync, zipSync } from "fflate";
 import { notifyAppDataChanged } from "@/contexts/AppDataContext";
-import { saveLivrosToSupabase, clearLivrosFromSupabase, loadLivrosFromSupabase } from "@/lib/livrosSync";
+import { saveLivrosToSupabase, clearLivrosFromSupabase, loadLivrosFromSupabase, hasWeeklySalesData } from "@/lib/livrosSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -2539,7 +2539,12 @@ function IndexInner() {
 
     loadLivrosFromSupabase()
       .then((remote) => {
-        if (cancelled || !remote || !Object.values(remote).some((arr) => Array.isArray(arr) && arr.length > 0)) return;
+        if (
+          cancelled ||
+          !remote ||
+          !Object.values(remote).some((arr) => Array.isArray(arr) && arr.length > 0) ||
+          !hasWeeklySalesData(remote)
+        ) return;
         setData(remote as FilialData);
         setShowUpload(false);
         try {
