@@ -611,7 +611,7 @@ const LivroPreco = () => {
         <div>
           <Label className="text-xs font-medium text-[#6e6e73]">Desconto alvo (%) — máx 10</Label>
           <Input
-            className="h-9 mt-1"
+            className="h-9 mt-1 bg-white border-[#d2d2d7] rounded-lg focus-visible:ring-2 focus-visible:ring-[#0071e3]/30 focus-visible:border-[#0071e3]"
             value={descontoStr}
             onChange={(e) => setDescontoStr(e.target.value)}
             placeholder="10"
