@@ -3195,9 +3195,7 @@ function IndexInner() {
               </div>
               <UploadPanel
                 files={files}
-                baseFile={baseFile}
                 onCsvFiles={handleFiles}
-                onBaseFile={handleBaseFile}
                 onClear={handleClear}
                 unrecognized={unrecognizedFiles}
               />
