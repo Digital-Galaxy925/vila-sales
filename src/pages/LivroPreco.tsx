@@ -594,7 +594,7 @@ const LivroPreco = () => {
       {/* control bar */}
       <div className="rounded-xl border border-[#d2e3fb] bg-[#f5f9ff] p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
         <div>
-          <Label className="text-xs text-muted-foreground">DDV mínimo</Label>
+          <Label className="text-xs font-medium text-[#6e6e73]">DDV mínimo</Label>
           <Select value={ddvMin} onValueChange={setDdvMin}>
             <SelectTrigger className="h-9 mt-1">
               <SelectValue />
@@ -609,7 +609,7 @@ const LivroPreco = () => {
           </Select>
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground">Desconto alvo (%) — máx 10</Label>
+          <Label className="text-xs font-medium text-[#6e6e73]">Desconto alvo (%) — máx 10</Label>
           <Input
             className="h-9 mt-1"
             value={descontoStr}
@@ -618,7 +618,7 @@ const LivroPreco = () => {
           />
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground">Filtrar Filial</Label>
+          <Label className="text-xs font-medium text-[#6e6e73]">Filtrar Filial</Label>
           <Select value={filtroFilial} onValueChange={setFiltroFilial}>
             <SelectTrigger className="h-9 mt-1">
               <SelectValue />
@@ -634,7 +634,7 @@ const LivroPreco = () => {
           </Select>
         </div>
         <div>
-          <Label className="text-xs text-muted-foreground">Filtrar BU</Label>
+          <Label className="text-xs font-medium text-[#6e6e73]">Filtrar BU</Label>
           <Select value={filtroBU} onValueChange={setFiltroBU}>
             <SelectTrigger className="h-9 mt-1">
               <SelectValue />
