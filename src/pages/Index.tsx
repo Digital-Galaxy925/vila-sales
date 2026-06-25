@@ -611,51 +611,31 @@ function DropZone({
 
 function UploadPanel({
   files,
-  baseFile,
   onCsvFiles,
-  onBaseFile,
   onClear,
   unrecognized,
 }: {
   files: UploadedFiles;
-  baseFile: File | null;
   onCsvFiles: (newFiles: Partial<UploadedFiles>, unrecognized: string[]) => void;
-  onBaseFile: (f: File) => void;
   onClear: () => void;
   unrecognized: string[];
 }) {
   const csvLoaded = LIVRO_META.filter(({ key }) => !!files[key]).length;
   const step1Done = csvLoaded > 0;
-  const step2Done = !!baseFile;
 
   const handleCsvFileList = (fileList: FileList) => {
     const result: Partial<UploadedFiles> = {};
     const bad: string[] = [];
     Array.from(fileList).forEach((f) => {
       const key = detectFileKey(f.name);
-      // only accept CSV keys (not base) in step 1
       if (key && key !== "base") result[key] = f;
       else if (!key) bad.push(f.name);
     });
     onCsvFiles(result, bad);
   };
 
-  const handleBaseFileList = (fileList: FileList) => {
-    const f = Array.from(fileList)[0];
-    if (f) onBaseFile(f);
-  };
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-
-      {/* Step indicators */}
-      <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-        <StepBadge n={1} label="Arquivos das Filiais (CSV)" active={!step1Done} done={step1Done} />
-        <div style={{ flex: 1, height: 2, margin: "0 12px", background: step1Done ? "#bbf7d0" : "#e5e7eb", transition: "background .4s" }} />
-        <StepBadge n={2} label="Base de Produtos (Excel)" active={step1Done && !step2Done} done={step2Done} />
-      </div>
-
-      {/* ── STEP 1 ── */}
       <div style={{
         border: `1px solid ${step1Done ? "#bbf7d0" : "#e5e7eb"}`,
         borderRadius: 16,
@@ -666,7 +646,7 @@ function UploadPanel({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <div>
             <div style={{ fontWeight: 600, fontSize: 14, color: step1Done ? "#16a34a" : "#1f2937" }}>
-              {step1Done ? `✅ Passo 1 concluído — ${csvLoaded} de ${LIVRO_META.length} arquivos carregados` : "Passo 1 — Arquivos das Filiais"}
+              {step1Done ? `✅ ${csvLoaded} de ${LIVRO_META.length} arquivos carregados` : "Arquivos das Filiais"}
             </div>
             <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>
               Selecione todos os livros CSV de uma vez. O sistema identifica cada filial automaticamente pelo nome do arquivo.
@@ -689,7 +669,6 @@ function UploadPanel({
           draggingColor="#3B82F6"
         />
 
-        {/* Status grid */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6, marginTop: 14 }}>
           {LIVRO_META.map(({ key, label, desc }) => {
             const loaded = !!files[key];
@@ -711,7 +690,6 @@ function UploadPanel({
           })}
         </div>
 
-        {/* Progress */}
         <div style={{ marginTop: 12, background: "#e5e7eb", borderRadius: 99, height: 4 }}>
           <div style={{
             height: 4, borderRadius: 99, transition: "width .4s",
@@ -727,63 +705,11 @@ function UploadPanel({
         )}
       </div>
 
-      {/* ── STEP 2 ── */}
-      <div style={{
-        border: `1px solid ${!step1Done ? "#ffffff" : step2Done ? "#bbf7d0" : "rgba(0,113,227,0.12)"}`,
-        borderRadius: 16,
-        padding: 20,
-        background: !step1Done ? "#fafafa" : step2Done ? "#f0fdf4" : "#fafafa",
-        opacity: step1Done ? 1 : 0.45,
-        transition: "all .3s",
-        pointerEvents: step1Done ? "auto" : "none",
-      }}>
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontWeight: 600, fontSize: 14, color: step2Done ? "#16a34a" : step1Done ? "#1f2937" : "#d1d5db" }}>
-            {step2Done ? `✅ Passo 2 concluído — ${baseFile!.name}` : "Passo 2 — Base de Produtos"}
-          </div>
-          <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>
-            Planilha Excel com os produtos que serão analisados. Deve conter colunas de <strong style={{ color: "#9ca3af" }}>código</strong> e <strong style={{ color: "#9ca3af" }}>descrição</strong>.
-          </div>
-        </div>
-
-        {!step2Done ? (
-          <>
-            <DropZone
-              onFiles={handleBaseFileList}
-              multiple={false}
-              accept=".xlsx,.xls,.xlsm,.xlsb,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-              label="Arraste ou clique para selecionar a base de produtos"
-              sublabel="Aceita .xlsx ou .csv — com colunas: BU, Cod Família, Cod Produto, DESCRICAO"
-              icon="📋"
-              draggingColor="#8B5CF6"
-            />
-            <div style={{ marginTop: 10, padding: "10px 14px", background: "#f8f9fa", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 11, color: "#6b7280" }}>
-              <strong style={{ color: "#6b7280" }}>💡 Recomendado:</strong> Se o upload do .xlsx falhar, salve a planilha como <strong style={{ color: "#9ca3af" }}>.csv (separado por ponto-e-vírgula)</strong> no Excel (Arquivo → Salvar como → CSV UTF-8) e faça upload do CSV.
-            </div>
-          </>
-        ) : (
-          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", background: "#f0fdf4", borderRadius: 10, border: "1px solid #bbf7d0" }}>
-            <span style={{ fontSize: 28 }}>📋</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#16a34a" }}>{baseFile!.name}</div>
-              <div style={{ fontSize: 11, color: "#6b7280" }}>{(baseFile!.size / 1024).toFixed(1)} KB · Base de produtos carregada</div>
-            </div>
-            <button
-              onClick={() => onBaseFile(null as any)}
-              style={{ background: "#fecaca", border: "none", borderRadius: 6, color: "#dc2626", cursor: "pointer", padding: "4px 10px", fontSize: 11, fontWeight: 700 }}
-            >
-              Trocar
-            </button>
-          </div>
-        )}
-
-        <div style={{ marginTop: 14, padding: "10px 14px", background: "#f8f9fa", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 11, color: "#6b7280" }}>
-          <strong style={{ color: "#6b7280" }}>💡 Dica:</strong> A base de produtos funciona como <strong style={{ color: "#9ca3af" }}>filtro</strong> — somente os produtos presentes nela serão exibidos nas análises. Se quiser ver todos os produtos das filiais, pode pular este passo e clicar em Gerar Análise diretamente.
-        </div>
+      <div style={{ padding: "12px 16px", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 12, fontSize: 12, color: "#0c4a6e" }}>
+        ℹ️ <strong>Filtro automático Unilever:</strong> as análises consideram apenas itens cuja coluna <strong>Fornecedor</strong> seja Unilever — <strong>HC</strong> → BU HC e <strong>FOODS / ALIMENTOS</strong> → BU FR. Demais fornecedores (incl. UNILEVER BRASIL LTDA BW e PC) são excluídos.
       </div>
 
-      {/* Ready state */}
-      {step1Done && step2Done && (
+      {step1Done && (
         <div style={{ padding: "14px 20px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 24 }}>🚀</span>
           <div>
@@ -2506,7 +2432,7 @@ function IndexInner() {
   const forceUpload = location.pathname === "/upload-livros";
   const [activeModule, setActiveModule] = useState<Module>("cruzamento");
   const [files, setFiles] = useState<UploadedFiles>({});
-  const [baseFile, setBaseFile] = useState<File | null>(null);
+  
   const [unrecognizedFiles, setUnrecognizedFiles] = useState<string[]>([]);
   const [data, setData] = useState<FilialData>(() => {
     try {
@@ -2563,13 +2489,9 @@ function IndexInner() {
     setUnrecognizedFiles(unrecognized);
   }, []);
 
-  const handleBaseFile = useCallback((f: File | null) => {
-    setBaseFile(f);
-  }, []);
 
   const handleClear = useCallback(() => {
     setFiles({});
-    setBaseFile(null);
     setUnrecognizedFiles([]);
     setData({});
     setLastUpdate(null);
@@ -2597,42 +2519,29 @@ function IndexInner() {
 
 
 
-      // ── 1. Lê a base Excel (Etapa 2) ──────────────────────────────────────────
-      // Coluna 3 (índice 2) = Cod Produto
-      if (!baseFile) throw new Error("Faça o upload da planilha de produtos na Etapa 2.");
-
-      const baseRows = await readExcelAsRows(baseFile);
-      if (baseRows.length === 0) throw new Error("A planilha de produtos está vazia ou não foi lida corretamente.");
-
-      // Pega o nome real das colunas da base
-      const baseCols = Object.keys(baseRows[0]);
-      const baseColBU   = baseCols[0]; // coluna A → BU (FOODS / HC)
-      const baseColCod  = baseCols[2]; // coluna C → Cod Produto
-      const baseColDesc = baseCols[3]; // coluna D → Descrição
-
-      // Monta Map: cod_normalizado → { cod original, desc, bu }
+      // ── 1. Normalização de código ──────────────────────────────────────────────
       const normCod = (v: any): string => {
         let s = String(v ?? "").trim();
-        s = s.replace(/\.0+$/, "");       // Excel converte números para 114667.0
-        s = s.replace(/^0+(\d)/, "$1");   // remove zeros à esquerda
+        s = s.replace(/\.0+$/, "");
+        s = s.replace(/^0+(\d)/, "$1");
         return s;
       };
 
-      const baseColFamilia = baseCols.find((col) => normalizeHeader(col).includes("FAMILIA"));
+      // ── Regra Unilever: filtra Fornecedor e deriva BU ─────────────────────────
+      // - Contém "HC"            → BU = HC
+      // - Contém "FOODS"/"ALIMENTOS" → BU = FR
+      // - Demais (incl. BW, PC)  → excluir
+      const deriveBU = (fornecedor: string): "" | "HC" | "FR" => {
+        const f = String(fornecedor ?? "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toUpperCase();
+        if (!f.includes("UNILEVER")) return "";
+        if (/\bHC\b/.test(f)) return "HC";
+        if (/\b(FOODS?|ALIMENTOS?)\b/.test(f)) return "FR";
+        return "";
+      };
 
-      const baseMap = new Map<string, { cod: string; desc: string; bu: string; familia: string }>();
-      baseRows.forEach((r) => {
-        const cod = normCod(r[baseColCod]);
-        if (cod) {
-          const desc = String(r[baseColDesc] ?? "").trim();
-          const bu   = String(r[baseColBU]   ?? "").trim().toUpperCase();
-          const familia = String(baseColFamilia ? r[baseColFamilia] ?? "" : "").trim();
-          baseMap.set(cod, { cod, desc, bu, familia });
-        }
-      });
-
-      if (baseMap.size === 0)
-        throw new Error(`Nenhum código encontrado na coluna 3 ("${baseColCod}") da base de produtos.`);
 
       // ── 2. Parser CSV por posição ──────────────────────────────────────────────
       // Retorna array de arrays (sem depender de nomes de colunas)
@@ -2799,6 +2708,7 @@ function IndexInner() {
         const finalColV1 = findHeaderIndex(header, ["VD.SEM. -1", "VD.SEM.-1", "VD SEM -1", "VDSEM-1"], 56);
         const finalColV2 = findHeaderIndex(header, ["VD.SEM. -2", "VD.SEM.-2", "VD SEM -2", "VDSEM-2"], 57);
         const finalColV3 = findHeaderIndex(header, ["VD.SEM. -3", "VD.SEM.-3", "VD SEM -3", "VDSEM-3"], 58);
+        const finalColFornecedor = findHeaderIndex(header, ["FORNECEDOR", "FORNEC", "NOME FORNECEDOR", "RAZAO FORNECEDOR"], -1);
 
         const dataRows = rawRows.slice(1);
         const result: Product[] = [];
@@ -2806,10 +2716,11 @@ function IndexInner() {
         dataRows.forEach((cols) => {
           const rawCod = cols[finalColCod] ?? "";
           const cod = normCod(rawCod);
-          if (!cod || !baseMap.has(cod)) return;
-
-          const baseEntry = baseMap.get(cod)!;
-          const desc = baseEntry.desc || cols[finalColDesc] || rawCod;
+          if (!cod) return;
+          const fornecedor = finalColFornecedor >= 0 ? (cols[finalColFornecedor] ?? "") : "";
+          const bu = deriveBU(fornecedor);
+          if (!bu) return;
+          const desc = (cols[finalColDesc] ?? "").trim() || rawCod;
           const overridePrecosRow = overridePrecos?.get(cod);
           const overrideEstoqueRow = overrideEstoque?.get(cod);
           const estoqueStr = overrideEstoqueRow?.estoque && num(overrideEstoqueRow.estoque) !== 0
@@ -2886,8 +2797,8 @@ function IndexInner() {
             familia: (finalColFamilia >= 0 ? (cols[finalColFamilia] ?? "") : "") ||
               overrideEstoqueRow?.familia ||
               overridePrecosRow?.familia ||
-              baseEntry.familia,
-            seqProd: baseEntry.cod,
+              "",
+            seqProd: cod,
             descricao: desc,
             embCmp: finalColEmbCmp >= 0 ? (cols[finalColEmbCmp] ?? "") : "",
             embVir: "",
@@ -2910,7 +2821,7 @@ function IndexInner() {
             v2,
             v3,
             filial,
-            bu: baseEntry.bu,
+            bu,
           });
         });
 
@@ -3033,12 +2944,12 @@ function IndexInner() {
     } finally {
       setLoading(false);
     }
-  }, [files, baseFile]);
+  }, [files]);
 
   const hasData = Object.values(data).some((arr) => arr.length > 0);
   const totalLoaded = Object.values(files).filter(Boolean).length;
   const csvLoaded = LIVRO_META.filter(({ key }) => !!files[key]).length;
-  const canGenerate = csvLoaded > 0 && !!baseFile;
+  const canGenerate = csvLoaded > 0;
 
   const modules: { id: Module; label: string; icon: string }[] = [
     { id: "cruzamento", label: "Análise de Custos", icon: "🔗" },
@@ -3124,7 +3035,6 @@ function IndexInner() {
               setShowUpload(true);
               setData({});
               setFiles({});
-              setBaseFile(null);
               setUnrecognizedFiles([]);
               try {
                 localStorage.removeItem("vilasales_data");
@@ -3269,9 +3179,7 @@ function IndexInner() {
               </div>
               <UploadPanel
                 files={files}
-                baseFile={baseFile}
                 onCsvFiles={handleFiles}
-                onBaseFile={handleBaseFile}
                 onClear={handleClear}
                 unrecognized={unrecognizedFiles}
               />
