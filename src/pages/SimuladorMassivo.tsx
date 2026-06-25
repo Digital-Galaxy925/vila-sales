@@ -733,71 +733,89 @@ export default function SimuladorMassivo() {
               >
                 Simulações Adicionadas ({simulacoes.length})
               </h3>
-              {simulacoes.length > 0 && (
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    onClick={handleSalvarTodas}
-                    disabled={salvando}
-                    style={{
-                      background: salvando ? "#94a3b8" : "#0071e3",
-                      border: "none",
-                      color: "#fff",
-                      borderRadius: 8,
-                      padding: "6px 14px",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: salvando ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {salvando ? "Salvando..." : "💾 Salvar"}
-                  </button>
-                  <button
-                    onClick={() => navigate("/controle-investimentos")}
-                    style={{
-                      background: "#fff",
-                      border: "1px solid #0071e3",
-                      color: "#0071e3",
-                      borderRadius: 8,
-                      padding: "6px 14px",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Ver Controle
-                  </button>
-                  <button
-                    onClick={handleExportExcel}
-                    style={{
-                      background: "#16a34a",
-                      border: "1px solid #15803d",
-                      color: "#fff",
-                      borderRadius: 8,
-                      padding: "6px 14px",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ⬇ Exportar Excel
-                  </button>
-                  <button
-                    onClick={handleLimpar}
-                    style={{
-                      background: "#fff",
-                      border: "1px solid #e5e7eb",
-                      color: "#dc2626",
-                      borderRadius: 8,
-                      padding: "6px 14px",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Limpar Tudo
-                  </button>
-                </div>
-              )}
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={handleUploadClick}
+                  style={{
+                    background: "#7c3aed",
+                    border: "none",
+                    color: "#fff",
+                    borderRadius: 8,
+                    padding: "6px 14px",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                  title="Importar planilha Excel/CSV com colunas: código, descrição, volume, preço"
+                >
+                  📥 Upload Planilha
+                </button>
+                {simulacoes.length > 0 && (
+                  <>
+                    <button
+                      onClick={handleSalvarTodas}
+                      disabled={salvando}
+                      style={{
+                        background: salvando ? "#94a3b8" : "#0071e3",
+                        border: "none",
+                        color: "#fff",
+                        borderRadius: 8,
+                        padding: "6px 14px",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: salvando ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      {salvando ? "Salvando..." : "💾 Salvar"}
+                    </button>
+                    <button
+                      onClick={() => navigate("/controle-investimentos")}
+                      style={{
+                        background: "#fff",
+                        border: "1px solid #0071e3",
+                        color: "#0071e3",
+                        borderRadius: 8,
+                        padding: "6px 14px",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Ver Controle
+                    </button>
+                    <button
+                      onClick={handleExportExcel}
+                      style={{
+                        background: "#16a34a",
+                        border: "1px solid #15803d",
+                        color: "#fff",
+                        borderRadius: 8,
+                        padding: "6px 14px",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ⬇ Exportar Excel
+                    </button>
+                    <button
+                      onClick={handleLimpar}
+                      style={{
+                        background: "#fff",
+                        border: "1px solid #e5e7eb",
+                        color: "#dc2626",
+                        borderRadius: 8,
+                        padding: "6px 14px",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Limpar Tudo
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
             {simulacoes.length === 0 ? (
