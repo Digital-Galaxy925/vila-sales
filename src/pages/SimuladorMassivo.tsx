@@ -291,10 +291,25 @@ export default function SimuladorMassivo() {
         if (p >= 0) idxPreco = p;
       }
       const toNumericText = (value: unknown) => {
-        const raw = String(value ?? "").trim();
+        if (value === null || value === undefined || value === "") return "";
+        if (typeof value === "number" && Number.isFinite(value)) {
+          return String(value).replace(".", ",");
+        }
+        const raw = String(value).trim();
         if (!raw) return "";
-        const normalized = raw.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
-        return /^-?\d+(\.\d+)?$/.test(normalized) ? raw.replace(".", ",") : "";
+        // Mantém só dígitos, separadores e sinal — tolera "10 CX", "10,00 un", "1.234,56".
+        const cleaned = raw.replace(/[^\d,.\-]/g, "");
+        if (!cleaned) return "";
+        // Se tem vírgula, vírgula é decimal e pontos são milhares; senão último ponto é decimal.
+        let normalized: string;
+        if (cleaned.includes(",")) {
+          normalized = cleaned.replace(/\./g, "").replace(",", ".");
+        } else {
+          normalized = cleaned;
+        }
+        const n = parseFloat(normalized);
+        if (!Number.isFinite(n)) return "";
+        return String(n).replace(".", ",");
       };
       const startIdx = hasHeader ? 1 : 0;
       const parsed = rows
