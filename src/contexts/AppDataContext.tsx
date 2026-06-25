@@ -119,18 +119,12 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
-  // Hidrata `vilasales_data` a partir do Supabase no boot caso o cache local
-  // esteja vazio (ex.: usuário acessando de outra máquina/navegador).
+  // Hidrata `vilasales_data` a partir do Supabase no boot.
+  // Importante: mesmo quando existe cache local, a versão publicada precisa
+  // buscar o backend novamente para refletir os livros atualizados hoje em
+  // outro navegador/dispositivo e não ficar presa em localStorage antigo.
   useEffect(() => {
     let cancelled = false;
-    const current = readKey("vilasales_data") as Record<string, unknown> | null;
-    const isEmpty =
-      !current || (typeof current === "object" && Object.keys(current).length === 0);
-    const hasWeeklyData = Object.values(current ?? {}).some((produtos) =>
-      Array.isArray(produtos) &&
-      produtos.some((p: any) => p?.vAtu !== undefined || p?.v1 !== undefined || p?.v2 !== undefined || p?.v3 !== undefined)
-    );
-    if (!isEmpty && hasWeeklyData) return;
 
     (async () => {
       try {
