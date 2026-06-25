@@ -88,96 +88,6 @@ const AnaliseGerencial = () => {
     if (e.key === "Enter") handleSearch();
   };
 
-  const handleBulkUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const arrayBuffer = e.target?.result;
-        const workbook = XLSX.read(arrayBuffer, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as Record<string, unknown>[];
-
-        const codes: string[] = [];
-        rows.forEach((row: unknown) => {
-          const arr = row as unknown[];
-          if (arr && arr.length > 0) {
-            const val = String(arr[0]).trim();
-            if (val && val !== "" && !/^(codigo|code|cod|produto|seq)/i.test(val)) {
-              codes.push(val);
-            }
-          }
-        });
-
-        const results: BulkProductResult[] = [];
-        codes.forEach((code) => {
-          const found = findProductInData(code, data);
-          if (found.length > 0) {
-            const filiais: Record<string, { estoque: number; custoLiq: number; atual: number; sellout: number; promoc: number }> = {};
-            found.forEach((f) => {
-              filiais[f.filial] = { estoque: f.estoque, custoLiq: f.custoLiq, atual: f.atual, sellout: f.sellout, promoc: f.promoc };
-            });
-            results.push({ code, descricao: found[0].descricao, filiais });
-          } else {
-            results.push({ code, descricao: "Não encontrado", filiais: {} });
-          }
-        });
-
-        setBulkResults(results);
-        setBulkFileName(file.name);
-      } catch {
-        console.error("Erro ao processar arquivo");
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleBulkUpload(file);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const clearBulk = () => {
-    setBulkResults([]);
-    setBulkFileName("");
-  };
-
-  const exportBulkToExcel = () => {
-    const headerRow1 = ["CÓDIGO", "PRODUTO"];
-    const headerRow2 = ["", ""];
-    const availableFiliais = FILIAL_ORDER.filter((f) =>
-      bulkResults.some((r) => r.filiais[f])
-    );
-    availableFiliais.forEach((f) => {
-      const name = FILIAL_NAMES[f]?.split(" - ")[1] || f;
-      headerRow1.push(`${name} | ${f}`, "", "", "", "");
-      headerRow2.push("ESTOQUE", "CUSTO", "VENDA", "PROMOÇÃO", "SELLOUT");
-    });
-
-    const rows = bulkResults.map((r) => {
-      const row: (string | number)[] = [r.code, r.descricao || r.code];
-      availableFiliais.forEach((f) => {
-        const d = r.filiais[f];
-        row.push(d ? d.estoque : 0, d ? d.custoLiq : 0, d ? d.atual : 0, d ? d.promoc : 0, d ? d.sellout : 0);
-      });
-      return row;
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet([headerRow1, headerRow2, ...rows]);
-    // Merge filial header cells
-    const merges: XLSX.Range[] = [];
-    let col = 2;
-    availableFiliais.forEach(() => {
-      merges.push({ s: { r: 0, c: col }, e: { r: 0, c: col + 4 } });
-      col += 5;
-    });
-    ws["!merges"] = merges;
-    ws["!cols"] = [{ wch: 12 }, { wch: 30 }, ...availableFiliais.flatMap(() => [{ wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 12 }])];
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Visão Consolidada");
-    XLSX.writeFile(wb, `analise_gerencial_massa_${new Date().toISOString().slice(0, 10)}.xlsx`);
-  };
 
   // Find product across all filiais
   const results = useMemo(() => {
@@ -211,10 +121,6 @@ const AnaliseGerencial = () => {
     };
   }, [results]);
 
-  const bulkAvailableFiliais = useMemo(() =>
-    FILIAL_ORDER.filter((f) => bulkResults.some((r) => r.filiais[f])),
-    [bulkResults]
-  );
 
   const tableHeaderStyle =
     "px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground";
