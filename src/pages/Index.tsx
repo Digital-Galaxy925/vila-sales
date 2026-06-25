@@ -2797,8 +2797,8 @@ function IndexInner() {
             familia: (finalColFamilia >= 0 ? (cols[finalColFamilia] ?? "") : "") ||
               overrideEstoqueRow?.familia ||
               overridePrecosRow?.familia ||
-              baseEntry.familia,
-            seqProd: baseEntry.cod,
+              "",
+            seqProd: cod,
             descricao: desc,
             embCmp: finalColEmbCmp >= 0 ? (cols[finalColEmbCmp] ?? "") : "",
             embVir: "",
@@ -2821,7 +2821,7 @@ function IndexInner() {
             v2,
             v3,
             filial,
-            bu: baseEntry.bu,
+            bu,
           });
         });
 
