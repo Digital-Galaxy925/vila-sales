@@ -59,6 +59,49 @@ const fmt = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const fmtPct = (v: number) => (v * 100).toFixed(2) + "%";
 
+const normalizeText = (value: unknown) =>
+  String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+const parseLocaleNumber = (value: unknown): number => {
+  if (value === null || value === undefined || value === "") return 0;
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  const raw = String(value).trim();
+  if (!raw) return 0;
+  const cleaned = raw.replace(/[^\d,.-]/g, "");
+  if (!cleaned || cleaned === "-" || cleaned === "," || cleaned === ".") return 0;
+
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+  let normalized = cleaned;
+
+  if (lastComma >= 0 && lastDot >= 0) {
+    normalized =
+      lastComma > lastDot
+        ? cleaned.replace(/\./g, "").replace(",", ".")
+        : cleaned.replace(/,/g, "");
+  } else if (lastComma >= 0) {
+    const decimalDigits = cleaned.length - lastComma - 1;
+    normalized = decimalDigits === 3 ? cleaned.replace(/,/g, "") : cleaned.replace(/\./g, "").replace(",", ".");
+  } else if (lastDot >= 0) {
+    const parts = cleaned.split(".");
+    const decimalDigits = cleaned.length - lastDot - 1;
+    normalized = parts.length > 2 || decimalDigits === 3 ? cleaned.replace(/\./g, "") : cleaned;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const toNumericText = (value: unknown) => {
+  const n = parseLocaleNumber(value);
+  return n > 0 ? String(n).replace(".", ",") : "";
+};
+
 const normCod = (v: string): string => {
   let s = v.trim();
   s = s.replace(/\.0+$/, "");
@@ -104,13 +147,21 @@ export default function SimuladorMassivo() {
     return null;
   };
 
+  const getPrecoProposto = (s: Simulacao, p: Product) => {
+    const pvInput = parseLocaleNumber(s.precoVendaDesejado);
+    if (pvInput > 0) return pvInput;
+    return s.viaUpload ? ((p.promoc ?? 0) > 0 ? p.promoc ?? 0 : p.atual ?? 0) : 0;
+  };
+
+  const getVolumePedido = (s: Simulacao) => parseLocaleNumber(s.volumeCaixas);
+
   const produtoAtual = useMemo(
     () => findProduto(codigo, filial),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [codigo, filial, data],
   );
   const custoAtual = produtoAtual?.custoLiq ?? 0;
-  const precoAtual = parseFloat(precoVendaDesejado.replace(",", ".")) || 0;
+  const precoAtual = parseLocaleNumber(precoVendaDesejado);
 
   // ─── Lista de simulações (persistida em localStorage) ──────────────────────
   const STORAGE_KEY = "vilasales_simulador_massivo";
@@ -135,7 +186,7 @@ export default function SimuladorMassivo() {
 
   const podeAdicionar =
     !!produtoAtual &&
-    parseFloat(volumeCaixas.replace(",", ".")) > 0 &&
+    parseLocaleNumber(volumeCaixas) > 0 &&
     precoAtual > 0;
 
   const handleAdicionar = () => {
@@ -148,7 +199,7 @@ export default function SimuladorMassivo() {
         volumeCaixas,
         precoVendaDesejado,
         produto: produtoAtual,
-        margemAjustada: "",
+        margemAjustada: "17",
       },
       ...prev,
     ]);
@@ -184,8 +235,8 @@ export default function SimuladorMassivo() {
   const [salvando, setSalvando] = useState(false);
   const handleSalvarTodas = async () => {
     const validas = simulacoes.filter((s) => {
-      const pv = parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
-      const vol = parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
+      const pv = s.produto ? getPrecoProposto(s, s.produto) : 0;
+      const vol = getVolumePedido(s);
       return s.produto && pv > 0 && vol > 0;
     });
     if (validas.length === 0) {
@@ -196,11 +247,11 @@ export default function SimuladorMassivo() {
     try {
       const rows = validas.map((s) => {
         const p = s.produto!;
-        const pv = parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
-        const vol = parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
-        const qpc = parseFloat(p.embCmp) || 1;
+        const pv = getPrecoProposto(s, p);
+        const vol = getVolumePedido(s);
+        const qpc = parseLocaleNumber(p.embCmp) || 1;
         const un = vol * qpc;
-        const margAjustFrac = (parseFloat(s.margemAjustada.replace(",", ".")) || 0) / 100;
+        const margAjustFrac = parseLocaleNumber(s.margemAjustada) / 100;
         const margReal = pv > 0 ? (pv - p.custoLiq) / pv : 0;
         const totalSellOut = un * pv;
         const investUnit = margAjustFrac > 0 && margAjustFrac < 1 && pv > 0 ? p.custoLiq - pv * (1 - margAjustFrac) : 0;
@@ -242,7 +293,7 @@ export default function SimuladorMassivo() {
   // ─── Upload de planilha ─────────────────────────────────────────────────────
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingRows, setPendingRows] = useState<
-    { codigo: string; volume: string; preco: string }[]
+    { codigo: string; descricao: string; volume: string; preco: string }[]
   >([]);
   const [uploadFilial, setUploadFilial] = useState("01");
   const [showFilialModal, setShowFilialModal] = useState(false);
@@ -266,67 +317,67 @@ export default function SimuladorMassivo() {
         blankrows: false,
         defval: "",
       });
-      // Detecta cabeçalho e mapeia colunas por nome
-      const norm = (v: unknown) =>
-        String(v ?? "")
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .trim();
-      const header = rows[0]?.map(norm) ?? [];
-      const headerKeywords = ["codigo", "sku", "cod", "produto", "volume", "preco", "qtd", "quantidade", "caixa", "valor", "pedido"];
-      const hasHeader = header.some((h) =>
-        headerKeywords.some((k) => h.includes(k)),
-      );
+      // Detecta cabeçalho e mapeia colunas por nome, mesmo com linhas de título acima.
+      const headerKeywords = ["codigo", "sku", "cod", "produto", "volume", "preco", "qtd", "quantidade", "caixa", "cx", "valor", "pedido"];
+      const scoreHeader = (row: unknown[]) => {
+        const cells = row.map(normalizeText);
+        const hasCod = cells.some((h) => ["codigo", "cod", "sku", "produto"].some((k) => h.includes(k)));
+        const hasVol = cells.some((h) => ["pedido", "volume", "quantidade", "qtd", "caixa", "cx"].some((k) => h.includes(k)));
+        const hasPreco = cells.some((h) => ["preco", "precos", "venda", "proposta", "valor", "unit"].some((k) => h.includes(k)));
+        return (hasCod ? 2 : 0) + (hasVol ? 2 : 0) + (hasPreco ? 2 : 0) + cells.filter((h) => headerKeywords.some((k) => h.includes(k))).length;
+      };
+      const headerRowIndex = rows.reduce(
+        (best, row, index) => {
+          const score = Array.isArray(row) ? scoreHeader(row) : 0;
+          return score > best.score ? { index, score } : best;
+        },
+        { index: 0, score: 0 },
+      ).index;
+      const header = rows[headerRowIndex]?.map(normalizeText) ?? [];
+      const hasHeader = scoreHeader(rows[headerRowIndex] ?? []) >= 2;
       let idxCod = 0;
+      let idxDesc = -1;
       let idxVol = -1;
       let idxPreco = -1;
       if (hasHeader) {
-        const find = (keys: string[]) =>
-          header.findIndex((h) => keys.some((k) => h.includes(k)));
-        const c = find(["codigo", "sku", "cod"]);
-        // "pedido" / "quantidade" / "volume" / "qtd" / "caixa"/"cx" todos viram volume (pedido em caixas)
-        const v = find(["pedido", "volume", "quantidade", "qtd", "caixa", "cx"]);
-        const p = find(["preco", "preço", "venda", "proposta", "valor", "unit"]);
+        const find = (keys: string[], exclude: string[] = []) =>
+          header.findIndex((h) => keys.some((k) => h.includes(k)) && !exclude.some((k) => h.includes(k)));
+        const c = find(["codigo produto", "cod produto", "codigo", "sku", "cod"], ["familia", "fornecedor", "barras", "ean"]);
+        const d = find(["descricao", "descr", "produto", "item"], ["codigo", "cod", "sku"]);
+        // "pedido" / "quantidade" / "volume" / "qtd" / "caixa"/"cx" todos viram pedido em caixas.
+        const v = find(["pedido", "pedida", "quantidade", "quant", "qtde", "qtd", "qnt", "volume", "caixa", "cx"], ["valor", "preco", "unit", "unid", "unidade"]);
+        const p = find(["preco proposto", "precos", "preco", "valor unit", "unitario", "venda", "proposta", "valor"], ["total", "pedido total"]);
         if (c >= 0) idxCod = c;
+        if (d >= 0) idxDesc = d;
         if (v >= 0) idxVol = v;
         if (p >= 0) idxPreco = p;
       }
-      const toNumericText = (value: unknown) => {
-        if (value === null || value === undefined || value === "") return "";
-        if (typeof value === "number" && Number.isFinite(value)) {
-          return String(value).replace(".", ",");
-        }
-        const raw = String(value).trim();
-        if (!raw) return "";
-        // Mantém só dígitos, separadores e sinal — tolera "10 CX", "10,00 un", "1.234,56".
-        const cleaned = raw.replace(/[^\d,.\-]/g, "");
-        if (!cleaned) return "";
-        // Se tem vírgula, vírgula é decimal e pontos são milhares; senão último ponto é decimal.
-        let normalized: string;
-        if (cleaned.includes(",")) {
-          normalized = cleaned.replace(/\./g, "").replace(",", ".");
-        } else {
-          normalized = cleaned;
-        }
-        const n = parseFloat(normalized);
-        if (!Number.isFinite(n)) return "";
-        return String(n).replace(".", ",");
-      };
-      const startIdx = hasHeader ? 1 : 0;
+      const startIdx = hasHeader ? headerRowIndex + 1 : 0;
       const parsed = rows
         .slice(startIdx)
-        .map((r) => ({
-          codigo: String(r[idxCod] ?? "").trim(),
-          volume: idxVol >= 0 ? toNumericText(r[idxVol]) : "",
-          preco: idxPreco >= 0 ? toNumericText(r[idxPreco]) : "",
-        }))
+        .map((r) => {
+          const rawCodigo = String(r[idxCod] ?? "").trim();
+          const codigoExtraido = normCod(String((rawCodigo.match(/\d+(?:\.0+)?/)?.[0]) ?? rawCodigo));
+          return {
+            codigo: codigoExtraido,
+            descricao: idxDesc >= 0 ? String(r[idxDesc] ?? "").trim() : "",
+            volume: idxVol >= 0 ? toNumericText(r[idxVol]) : "",
+            preco: idxPreco >= 0 ? toNumericText(r[idxPreco]) : "",
+          };
+        })
         .filter((r) => r.codigo)
-        .slice(0, 300);
+        .slice(0, 5000);
       if (parsed.length === 0) {
         alert("Nenhum item válido encontrado na planilha.");
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
+      }
+      const semPedido = parsed.filter((r) => parseLocaleNumber(r.volume) <= 0).length;
+      const semPreco = parsed.filter((r) => parseLocaleNumber(r.preco) <= 0).length;
+      if (semPedido === parsed.length || semPreco === parsed.length) {
+        alert(
+          `A planilha foi lida, mas ${semPedido === parsed.length ? "a coluna Pedido/Quantidade" : "a coluna Preço"} não foi identificada corretamente. Verifique se há cabeçalhos como Código do Produto, Quantidade e Preço.`,
+        );
       }
       setPendingRows(parsed);
       setNotFound([]);
@@ -355,7 +406,7 @@ export default function SimuladorMassivo() {
         volumeCaixas: r.volume,
         precoVendaDesejado: r.preco,
         produto: prod,
-        margemAjustada: "",
+        margemAjustada: "17",
         viaUpload: true,
       });
     });
@@ -375,19 +426,18 @@ export default function SimuladorMassivo() {
     if (simulacoes.length === 0) return;
     const data = simulacoes.map((s) => {
       const p = s.produto!;
-      const pvInput = parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
-      const vol = parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
-      const qpc = parseFloat(p.embCmp) || 1;
+      const vol = getVolumePedido(s);
+      const qpc = parseLocaleNumber(p.embCmp) || 1;
       const un = vol * qpc;
       const promo = p.promoc ?? 0;
       const precoRef = promo > 0 ? promo : p.atual;
-      const pv = pvInput > 0 ? pvInput : (s.viaUpload ? precoRef : 0);
+      const pv = getPrecoProposto(s, p);
       const margAtual = precoRef > 0 ? (precoRef - p.custoLiq) / precoRef : 0;
       const margProposta = pv > 0 ? (pv - p.custoLiq) / pv : 0;
-      const contraProp = parseFloat(s.contraProposta?.replace(",", ".") || "") || 0;
+      const contraProp = parseLocaleNumber(s.contraProposta);
       const margContra = contraProp > 0 ? (contraProp - p.custoLiq) / contraProp : 0;
       const valorPedido = un * pv;
-      const margAjustFrac = (parseFloat(s.margemAjustada.replace(",", ".")) || 0) / 100;
+      const margAjustFrac = parseLocaleNumber(s.margemAjustada) / 100;
       const investUnit =
         margAjustFrac > 0 && margAjustFrac < 1 && pv > 0
           ? p.custoLiq - pv * (1 - margAjustFrac)
@@ -437,9 +487,9 @@ export default function SimuladorMassivo() {
     simulacoes.forEach((s) => {
       const p = s.produto;
       if (!p) return;
-      const pv = parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
-      const vol = parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
-      const qpc = parseFloat(p.embCmp) || 1;
+      const pv = getPrecoProposto(s, p);
+      const vol = getVolumePedido(s);
+      const qpc = parseLocaleNumber(p.embCmp) || 1;
       const un = vol * qpc;
       totalSellOut += un * pv;
       totalUnidades += un;
@@ -632,7 +682,7 @@ export default function SimuladorMassivo() {
                     />
                     <Chip
                       label="Unid/CX"
-                      value={String(parseFloat(produtoAtual.embCmp) || 1)}
+                      value={String(parseLocaleNumber(produtoAtual.embCmp) || 1)}
                       color="#374151"
                     />
                     <Chip
@@ -907,24 +957,19 @@ export default function SimuladorMassivo() {
                   <tbody>
                     {simulacoes.map((s) => {
                        const p = s.produto!;
-                       const pvInput =
-                         parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
-                       const vol =
-                         parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
-                       const qpc = parseFloat(p.embCmp) || 1;
+                       const vol = getVolumePedido(s);
+                       const qpc = parseLocaleNumber(p.embCmp) || 1;
                        const un = vol * qpc;
                        const promo = p.promoc ?? 0;
                        const precoRef = promo > 0 ? promo : p.atual;
-                       // Em upload sem preço informado, usa preço de referência (promo/atual)
-                       const pv = pvInput > 0 ? pvInput : (s.viaUpload ? precoRef : 0);
+                       const pv = getPrecoProposto(s, p);
                       const margAtual =
                         precoRef > 0 ? (precoRef - p.custoLiq) / precoRef : 0;
                       const margProposta = pv > 0 ? (pv - p.custoLiq) / pv : 0;
                       const sellOutNecUn = Math.max(0, p.custoLiq - pv);
                       const sellOutNecTotal = sellOutNecUn * un;
                       const valorPedido = un * pv;
-                      const margAjustNumRow =
-                        parseFloat(s.margemAjustada.replace(",", ".")) || 0;
+                      const margAjustNumRow = parseLocaleNumber(s.margemAjustada);
                       const margAjustFracRow = margAjustNumRow / 100;
                       const investUnitAjustRow =
                         margAjustFracRow > 0 && margAjustFracRow < 1 && pv > 0
@@ -950,7 +995,7 @@ export default function SimuladorMassivo() {
                           : margProposta >= 0.1
                             ? "#d97706"
                             : "#dc2626";
-                      const contraProp = parseFloat(s.contraProposta?.replace(",", ".") || "") || 0;
+                      const contraProp = parseLocaleNumber(s.contraProposta);
                       const margContra = contraProp > 0 ? (contraProp - p.custoLiq) / contraProp : 0;
                       const corMC =
                         margContra >= 0.17
@@ -974,7 +1019,7 @@ export default function SimuladorMassivo() {
                             {(p.estoque ?? 0).toLocaleString("pt-BR")}
                           </td>
                           <td style={cellStyle}>
-                            {(parseFloat(p.embCmp) || 1).toLocaleString("pt-BR")}
+                            {(parseLocaleNumber(p.embCmp) || 1).toLocaleString("pt-BR")}
                           </td>
                           <td style={cellStyle}>{fmt(p.custoLiq)}</td>
                           <td style={cellStyle}>{fmt(p.sellout ?? 0)}</td>
@@ -1030,10 +1075,7 @@ export default function SimuladorMassivo() {
                             {contraProp > 0 ? fmtPct(margContra) : "—"}
                           </td>
                           {(() => {
-                            const margAjustNum =
-                              parseFloat(
-                                s.margemAjustada.replace(",", "."),
-                              ) || 0;
+                            const margAjustNum = parseLocaleNumber(s.margemAjustada);
                             const margAjustFrac = margAjustNum / 100;
                             const investUnitAjust =
                               margAjustFrac > 0 && margAjustFrac < 1 && pv > 0
@@ -1185,16 +1227,12 @@ export default function SimuladorMassivo() {
                     const tot = simulacoes.reduce(
                       (acc, s) => {
                         const p = s.produto!;
-                        const pv =
-                          parseFloat(s.precoVendaDesejado.replace(",", ".")) || 0;
-                        const vol =
-                          parseFloat(s.volumeCaixas.replace(",", ".")) || 0;
-                        const qpc = parseFloat(p.embCmp) || 1;
+                        const pv = getPrecoProposto(s, p);
+                        const vol = getVolumePedido(s);
+                        const qpc = parseLocaleNumber(p.embCmp) || 1;
                         const un = vol * qpc;
                         const margProp = pv > 0 ? (pv - p.custoLiq) / pv : 0;
-                        const margAjustFrac =
-                          (parseFloat(s.margemAjustada.replace(",", ".")) || 0) /
-                          100;
+                        const margAjustFrac = parseLocaleNumber(s.margemAjustada) / 100;
                         const investUnit =
                           margAjustFrac > 0 && margAjustFrac < 1 && pv > 0
                             ? p.custoLiq - pv * (1 - margAjustFrac)
