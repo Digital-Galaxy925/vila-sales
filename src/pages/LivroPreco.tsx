@@ -166,11 +166,22 @@ const DDV_OPTIONS = [
   { value: "0", label: "Todos os DDVs" },
 ];
 
+function matrixToRecords(mat: string[][]): Record<string, string>[] {
+  if (!Array.isArray(mat) || mat.length < 2) return [];
+  const headers = (mat[0] || []).map((h) => String(h ?? "").trim());
+  const out: Record<string, string>[] = [];
+  for (let i = 1; i < mat.length; i++) {
+    const row = mat[i] || [];
+    const obj: Record<string, string> = {};
+    headers.forEach((h, idx) => {
+      obj[h] = String(row[idx] ?? "").trim();
+    });
+    out.push(obj);
+  }
+  return out;
+}
+
 const LivroPreco = () => {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [files, setFiles] = useState<{ name: string; rows: Record<string, string>[] }[]>(
-    [],
-  );
   const [ddvMin, setDdvMin] = useState<string>("15");
   const [descontoStr, setDescontoStr] = useState<string>("10");
   const [items, setItems] = useState<Item[]>([]);
@@ -178,30 +189,17 @@ const LivroPreco = () => {
   const [filtroFilial, setFiltroFilial] = useState<string>("ALL");
   const [filtroBU, setFiltroBU] = useState<string>("ALL");
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const list = e.target.files;
-    if (!list || list.length === 0) return;
-    const arr = Array.from(list).slice(0, 7);
-    const out: { name: string; rows: Record<string, string>[] }[] = [];
-    for (const f of arr) {
-      const text = await f.text();
-      out.push({ name: f.name, rows: parseCSV(text) });
-    }
-    setFiles(out);
-    setItems([]);
-    setOverrides({});
-    toast({
-      title: "Arquivos carregados",
-      description: `${out.length} arquivo(s) prontos. Clique em "Gerar Livro Preço".`,
-    });
-    if (fileRef.current) fileRef.current.value = "";
-  }
-
   function gerar() {
-    if (files.length === 0) {
+    let rawByFilial: Record<string, string[][]> = {};
+    try {
+      const saved = localStorage.getItem("vilasales_livros_raw");
+      if (saved) rawByFilial = JSON.parse(saved);
+    } catch (_) {}
+
+    if (!rawByFilial || Object.keys(rawByFilial).length === 0) {
       toast({
-        title: "Nenhum arquivo",
-        description: "Faça upload de até 7 arquivos LIVRO_*.CSV.",
+        title: "Nenhum livro carregado",
+        description: "Vá em 'Upload de Livros' e envie os arquivos LIVRO_*.CSV.",
         variant: "destructive",
       });
       return;
@@ -211,13 +209,10 @@ const LivroPreco = () => {
     if (descPct < 0) descPct = 0;
     if (descPct > 0.1) descPct = 0.1;
 
-    // Build map filial -> rows. Special merge rules:
-    //  - Filial 01: estoque from LIVRO_01, vendas/preços from LIVRO_10
-    //  - Filial 502: estoque from LIVRO_502, vendas/preços from LIVRO_510
+    // Build map filial -> rows a partir das matrizes brutas salvas no upload central.
     const byFilial: Record<string, Record<string, string>[]> = {};
-    for (const f of files) {
-      const fil = filialFromName(f.name);
-      byFilial[fil] = f.rows;
+    for (const fil of Object.keys(rawByFilial)) {
+      byFilial[fil] = matrixToRecords(rawByFilial[fil]);
     }
 
     const rowKey = (r: Record<string, string>) =>
@@ -425,21 +420,6 @@ const LivroPreco = () => {
         description="Sugestão de preços (sáb→sex) por filial e BU para Unilever HC/FR."
         actions={
           <div className="flex items-center gap-2">
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv"
-              multiple
-              className="hidden"
-              onChange={handleUpload}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fileRef.current?.click()}
-            >
-              <Upload className="w-4 h-4 mr-2" /> Upload LIVRO_*.CSV
-            </Button>
             <Button size="sm" onClick={gerar}>
               <FileSpreadsheet className="w-4 h-4 mr-2" /> Gerar Livro Preço
             </Button>
@@ -512,12 +492,6 @@ const LivroPreco = () => {
         </div>
       </div>
 
-      {/* file chips */}
-      {files.length > 0 && (
-        <div className="text-xs text-muted-foreground">
-          Arquivos: {files.map((f) => `${f.name} → Filial ${filialFromName(f.name)}`).join(" • ")}
-        </div>
-      )}
 
       {/* table */}
       <div className="rounded-lg border border-border bg-card overflow-auto">

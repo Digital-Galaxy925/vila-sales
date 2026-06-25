@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ExcelJS from "exceljs";
 import * as XLSX from "xlsx";
 import { unzipSync, zipSync } from "fflate";
@@ -2481,6 +2481,8 @@ function ShelfLifeAnalysis({ data }: { data: FilialData }) {
 // ─── Main App ─────────────────────────────────────────────────────────────────
 function IndexInner() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const forceUpload = location.pathname === "/upload-livros";
   const [activeModule, setActiveModule] = useState<Module>("cruzamento");
   const [files, setFiles] = useState<UploadedFiles>({});
   const [baseFile, setBaseFile] = useState<File | null>(null);
@@ -2495,6 +2497,7 @@ function IndexInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(() => {
+    if (typeof window !== "undefined" && window.location.pathname === "/upload-livros") return true;
     try {
       const saved = localStorage.getItem("vilasales_data");
       if (saved) {
@@ -2504,6 +2507,9 @@ function IndexInner() {
     } catch (_) {}
     return true;
   });
+  useEffect(() => {
+    if (forceUpload) setShowUpload(true);
+  }, [forceUpload]);
   const [lastUpdate, setLastUpdate] = useState<string | null>(() => {
     return localStorage.getItem("vilasales_lastUpdate") || null;
   });
@@ -2547,6 +2553,7 @@ function IndexInner() {
       localStorage.removeItem("vilasales_data");
       localStorage.removeItem("vilasales_lastUpdate");
       localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
+      localStorage.removeItem("vilasales_livros_raw");
     } catch (_) {}
     notifyAppDataChanged();
     // Espelha no Supabase (não bloqueia a UI)
@@ -2878,6 +2885,19 @@ function IndexInner() {
         livroMetricsData["502"] = buildLivroMetrics(raw, 1, 6, 7);
         newData["502"] = buildProducts(raw, "502", 1, 2, 6, 7, 16, 19, undefined, map510.size > 0 ? map510 : undefined);
       }
+
+      try {
+        // Salva matrizes CSV brutas por filial para outras telas (ex.: Livro Preço)
+        const rawByFilial: Record<string, string[][]> = {};
+        const rawKeys: Array<keyof typeof files> = [
+          "livro_01","livro_10","livro_11","livro_12","livro_14","livro_501","livro_502","livro_510",
+        ];
+        for (const k of rawKeys) {
+          const f = (files as any)[k] as File | undefined;
+          if (f) rawByFilial[(k as string).replace("livro_","")] = await parseCSVRaw(f);
+        }
+        localStorage.setItem("vilasales_livros_raw", JSON.stringify(rawByFilial));
+      } catch (_) {}
 
       try {
         localStorage.setItem("vilasales_data", JSON.stringify(newData));
