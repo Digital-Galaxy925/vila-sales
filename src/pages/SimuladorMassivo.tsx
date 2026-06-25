@@ -274,8 +274,9 @@ export default function SimuladorMassivo() {
           .replace(/[\u0300-\u036f]/g, "")
           .trim();
       const header = rows[0]?.map(norm) ?? [];
+      const headerKeywords = ["codigo", "sku", "cod", "produto", "volume", "preco", "qtd", "quantidade", "caixa", "valor"];
       const hasHeader = header.some((h) =>
-        ["codigo", "sku", "volume", "preco", "qtd", "quantidade"].includes(h),
+        headerKeywords.some((k) => h.includes(k)),
       );
       let idxCod = 0;
       let idxVol = -1;
@@ -869,7 +870,7 @@ export default function SimuladorMassivo() {
                         "PREÇO ATUAL",
                         "PREÇO PROMOCIONAL",
                         "MARGEM ATUAL",
-                        "PROPOSTA",
+                        "PREÇO PROPOSTO",
                         "MARGEM PROPOSTA",
                         "CONTRA PROPOSTA",
                         "MARGEM CONTRA PROPOSTA",
