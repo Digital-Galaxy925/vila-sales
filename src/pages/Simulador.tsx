@@ -64,22 +64,31 @@ export default function Simulador() {
   const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
   const [observacao, setObservacao] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [selectedCod, setSelectedCod] = useState<string>("");
+  const [showSug, setShowSug] = useState(false);
 
   const normCod = (v: string): string => {
-    let s = v.trim();
+    let s = (v ?? "").toString().trim();
     s = s.replace(/\.0+$/, "");
     s = s.replace(/^0+(\d)/, "$1");
     return s;
   };
 
   const produto = useMemo(() => {
-    if (!codigo.trim()) return null;
-    const cod = normCod(codigo);
-    if (!cod) return null;
+    const q = codigo.trim();
+    if (!q) return null;
+    const codNorm = normCod(selectedCod || q);
+    const qLower = q.toLowerCase();
     const searchInFilial = (fid: string) => {
       const arr = data[fid];
       if (!Array.isArray(arr)) return null;
-      return arr.find((p) => normCod(p.seqProd) === cod) ?? null;
+      let f = arr.find((p) => normCod(p.seqProd) === codNorm);
+      if (f) return f;
+      if (!selectedCod) {
+        f = arr.find((p) => (p.descricao ?? "").toLowerCase().includes(qLower));
+        if (f) return f;
+      }
+      return null;
     };
     const found = searchInFilial(filial);
     if (found) return found;
@@ -88,7 +97,32 @@ export default function Simulador() {
       if (f) return f;
     }
     return null;
-  }, [codigo, filial, data]);
+  }, [codigo, filial, data, selectedCod]);
+
+  const suggestions = useMemo(() => {
+    const q = codigo.trim().toLowerCase();
+    if (!q || q.length < 2 || selectedCod) return [];
+    const qCod = normCod(codigo);
+    const seen = new Set<string>();
+    const out: Product[] = [];
+    const arr = data[filial];
+    const pools: Product[][] = [];
+    if (Array.isArray(arr)) pools.push(arr);
+    for (const k of Object.keys(data)) if (k !== filial && Array.isArray(data[k])) pools.push(data[k]);
+    for (const pool of pools) {
+      for (const p of pool) {
+        const cod = normCod(p.seqProd);
+        if (seen.has(cod)) continue;
+        const desc = (p.descricao ?? "").toLowerCase();
+        if ((qCod && cod.includes(qCod)) || desc.includes(q)) {
+          seen.add(cod);
+          out.push(p);
+          if (out.length >= 15) return out;
+        }
+      }
+    }
+    return out;
+  }, [codigo, filial, data, selectedCod]);
 
   const custoUnitario = produto?.custoLiq ?? 0;
   const precoVenda = parseFloat(precoVendaDesejado.replace(",", ".")) || 0;
@@ -168,9 +202,50 @@ export default function Simulador() {
           {/* ─── Inputs ─── */}
           <div style={{ background: "#fff", borderRadius: 12, padding: "18px 22px", border: "1px solid #e5e7eb", marginBottom: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, alignItems: "end" }}>
-              <div>
-                <label style={labelStyle}>Código do Produto</label>
-                <input type="text" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Ex: 125545" style={inputStyle} />
+              <div style={{ position: "relative" }}>
+                <label style={labelStyle}>Código ou Descrição do Produto</label>
+                <input
+                  type="text"
+                  value={codigo}
+                  onChange={(e) => { setCodigo(e.target.value); setSelectedCod(""); setShowSug(true); }}
+                  onFocus={() => setShowSug(true)}
+                  onBlur={() => setTimeout(() => setShowSug(false), 150)}
+                  placeholder="Ex: 125545 ou nome do produto"
+                  style={inputStyle}
+                  autoComplete="off"
+                />
+                {showSug && suggestions.length > 0 && (
+                  <div style={{
+                    position: "absolute", top: "100%", left: 0, right: 0, zIndex: 20,
+                    marginTop: 4, background: "#fff", border: "1px solid #d1d5db",
+                    borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    maxHeight: 280, overflowY: "auto",
+                  }}>
+                    {suggestions.map((p) => {
+                      const cod = normCod(p.seqProd);
+                      return (
+                        <div
+                          key={`${cod}-${p.filial}`}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setSelectedCod(cod);
+                            setCodigo(cod);
+                            setShowSug(false);
+                          }}
+                          style={{
+                            padding: "8px 12px", fontSize: 12, cursor: "pointer",
+                            borderBottom: "1px solid #f3f4f6", color: "#1f2937",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f9ff")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                        >
+                          <div style={{ fontWeight: 600, color: "#0071e3" }}>{cod}</div>
+                          <div style={{ color: "#374151" }}>{p.descricao}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
               <div>
                 <label style={labelStyle}>Filial</label>
