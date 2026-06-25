@@ -78,6 +78,21 @@ function filialFromName(name: string): string {
   return m ? m[1] : name.replace(/\.csv$/i, "");
 }
 
+/** Map filial code → friendly display name. */
+const FILIAL_LABELS: Record<string, string> = {
+  "01": "01 - Poços de Caldas",
+  "1": "01 - Poços de Caldas",
+  "11": "11 - Campinas",
+  "12": "12 - Osasco",
+  "14": "14 - Betim",
+  "501": "501 - Focomix SP",
+  "502": "502 - Focomix MG",
+};
+function filialLabel(code: string): string {
+  const k = String(code ?? "").trim();
+  return FILIAL_LABELS[k] ?? FILIAL_LABELS[k.replace(/^0+/, "")] ?? k;
+}
+
 /** Derive BU from Fornecedor. */
 function deriveBU(fornecedor: string): "HC" | "FR" | null {
   const f = (fornecedor || "").toUpperCase();
