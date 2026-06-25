@@ -3021,8 +3021,20 @@ function IndexInner() {
 
     } catch (e: any) {
       setError("Erro: " + e.message);
+      clearInterval(progressTimer);
+      setProgress(0);
+      setCompleted(false);
     } finally {
+      clearInterval(progressTimer);
       setLoading(false);
+      if (!error) {
+        setProgress(100);
+        setCompleted(true);
+        setTimeout(() => {
+          setCompleted(false);
+          setProgress(0);
+        }, 4000);
+      }
     }
   }, [files, baseFile]);
 
