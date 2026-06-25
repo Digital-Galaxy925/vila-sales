@@ -1,9 +1,10 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
-import { Upload, Download, Trash2, RefreshCw } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { loadLivrosFromSupabase, type FilialDataMap } from "@/lib/livrosSync";
+import NoDataNotice from "@/components/NoDataNotice";
 
 const FILIAIS: { code: string; label: string }[] = [
   { code: "501", label: "FOCOMIX SP - 501" },
@@ -49,9 +50,7 @@ const AnaliseDDV = () => {
   const [rawData, setRawData] = useState<FilialDataMap | null>(null);
   const [metrics510, setMetrics510] = useState<Record<string, { ddv: number; estoque: number }>>({});
   const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<RowItem[]>([]);
   const [buLookup, setBuLookup] = useState<Record<string, string>>({});
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // Carrega mapeamento código -> BU a partir da base de produtos (vilasales_data)
   useEffect(() => {
