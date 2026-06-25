@@ -133,73 +133,36 @@ const AnaliseGerencial = () => {
         description="Visão executiva consolidada dos principais indicadores comerciais"
       />
 
-      {/* Product search + bulk upload */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-2xl p-6 shadow-[var(--shadow-card)] mb-6"
-      >
-        <h3 className="font-heading text-base font-semibold text-card-foreground mb-4 flex items-center gap-2">
-          <Search className="w-4 h-4 text-primary" />
-          Consulta por Produto
-        </h3>
-
-        {!hasData ? (
-          <p className="text-muted-foreground text-sm text-center py-4">
-            Carregue os dados na página de Análise de Custos para consultar produtos.
-          </p>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex gap-3 items-center">
-              <Input
-                placeholder="Digite o código do produto..."
-                value={searchCode}
-                onChange={(e) => setSearchCode(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="max-w-xs"
-              />
-              <Button onClick={handleSearch} disabled={!searchCode.trim()}>
-                <Search className="w-4 h-4 mr-2" />
-                Buscar
-              </Button>
-            </div>
-
-            <div className="border-t border-border pt-4">
-              <div className="flex items-center gap-3 flex-wrap">
-                <p className="text-sm text-muted-foreground">Consulta em massa:</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Planilha de Códigos
-                </Button>
-                {bulkFileName && (
-                  <span className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
-                    <FileSpreadsheet className="w-3.5 h-3.5" />
-                    {bulkFileName} — {bulkResults.length} produtos
-                    <button onClick={clearBulk} className="hover:text-destructive transition-colors">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Envie um arquivo Excel ou CSV com os códigos dos produtos na primeira coluna.
-              </p>
-            </div>
+      {/* Product search */}
+      {!hasData ? (
+        <NoDataNotice />
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-card rounded-2xl p-6 shadow-[var(--shadow-card)] mb-6"
+        >
+          <h3 className="font-heading text-base font-semibold text-card-foreground mb-4 flex items-center gap-2">
+            <Search className="w-4 h-4 text-primary" />
+            Consulta por Produto
+          </h3>
+          <div className="flex gap-3 items-center">
+            <Input
+              placeholder="Digite o código do produto..."
+              value={searchCode}
+              onChange={(e) => setSearchCode(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="max-w-xs"
+            />
+            <Button onClick={handleSearch} disabled={!searchCode.trim()}>
+              <Search className="w-4 h-4 mr-2" />
+              Buscar
+            </Button>
           </div>
-        )}
-      </motion.div>
+        </motion.div>
+      )}
 
+      {hasData && (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -213,104 +176,8 @@ const AnaliseGerencial = () => {
         <KpiCard title="Filiais c/ Produto" value={kpis.filiaisPresentes} icon={BarChart3} />
         <KpiCard title="Valor Total Venda" value={kpis.valorEstoqueVenda} icon={ShoppingCart} />
       </motion.div>
+      )}
 
-      {/* Bulk results */}
-      <AnimatePresence>
-        {bulkResults.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="space-y-4 mb-8"
-          >
-            <div className="bg-card rounded-2xl p-4 shadow-[var(--shadow-card)] flex items-center justify-between flex-wrap gap-3">
-              <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-card-foreground">{bulkResults.length}</span> produtos consultados
-                {" · "}<span className="font-semibold text-card-foreground">{bulkResults.filter((r) => Object.keys(r.filiais).length > 0).length}</span> encontrados
-              </p>
-              <Button variant="outline" size="sm" onClick={exportBulkToExcel}>
-                <FileSpreadsheet className="w-4 h-4 mr-1" />
-                Exportar Excel
-              </Button>
-            </div>
-
-            <div className="bg-card rounded-2xl shadow-[var(--shadow-card)] overflow-hidden">
-              <div className="px-5 py-4 border-b border-border">
-                <h4 className="font-heading text-sm font-semibold text-card-foreground flex items-center gap-2">
-                  <LayoutGrid className="w-4 h-4 text-primary" />
-                  Visão Consolidada por Filial
-                </h4>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/30">
-                      <th rowSpan={2} className={`${tableHeaderStyle} border-r border-border sticky left-0 bg-muted/30 z-10 min-w-[90px]`}>Código</th>
-                      <th rowSpan={2} className={`${tableHeaderStyle} border-r border-border sticky left-[90px] bg-muted/30 z-10`}>Produto</th>
-                      {bulkAvailableFiliais.map((f) => (
-                        <th
-                          key={f}
-                          colSpan={5}
-                          className={`${tableHeaderStyle} text-center border-r border-border last:border-r-0`}
-                        >
-                          {FILIAL_NAMES[f]?.split(" - ")[1] || f} | {f}
-                        </th>
-                      ))}
-                    </tr>
-                    <tr className="border-b border-border bg-muted/20">
-                      {bulkAvailableFiliais.map((f) => (
-                        <React.Fragment key={f}>
-                          <th className={`${tableHeaderStyle} text-right`}>Estoque</th>
-                          <th className={`${tableHeaderStyle} text-right`}>Custo</th>
-                          <th className={`${tableHeaderStyle} text-right`}>Venda</th>
-                          <th className={`${tableHeaderStyle} text-right`}>Promoção</th>
-                          <th className={`${tableHeaderStyle} text-right border-r border-border last:border-r-0`}>Sellout</th>
-                        </React.Fragment>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bulkResults.map((r, i) => (
-                      <tr key={i} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                        <td className={`${tableCellStyle} font-mono text-card-foreground border-r border-border sticky left-0 bg-card z-10 min-w-[90px]`}>
-                          {r.code}
-                        </td>
-                        <td className={`${tableCellStyle} font-medium text-card-foreground border-r border-border sticky left-[90px] bg-card z-10 max-w-[200px] truncate`}>
-                          {r.descricao !== "Não encontrado" ? r.descricao : (
-                            <span className="text-muted-foreground italic">não encontrado</span>
-                          )}
-                        </td>
-                        {bulkAvailableFiliais.map((f) => {
-                          const d = r.filiais[f];
-                          return (
-                            <React.Fragment key={f}>
-                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>
-                                {d ? fmtNum(d.estoque) : "—"}
-                              </td>
-                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>
-                                {d ? fmt(d.custoLiq) : "—"}
-                              </td>
-                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>
-                                {d ? fmt(d.atual) : "—"}
-                              </td>
-                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground`}>
-                                {d ? fmt(d.promoc) : "—"}
-                              </td>
-                              <td className={`${tableCellStyle} text-right font-mono text-card-foreground border-r border-border last:border-r-0`}>
-                                {d ? fmtNum(d.sellout) : "—"}
-                              </td>
-                            </React.Fragment>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Single product results */}
       <AnimatePresence>
