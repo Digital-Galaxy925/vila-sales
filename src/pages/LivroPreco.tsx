@@ -606,19 +606,31 @@ const LivroPreco = () => {
       {/* table */}
       <div className="rounded-lg border border-border bg-card overflow-auto">
         <table className="w-full text-xs">
-          <thead className="bg-muted/50 sticky top-0">
+          <thead className="bg-muted/50 sticky top-0 z-20">
             <tr className="text-left">
               {[
-                "BU","Filial","Cód. Família","Cód. Produto","Descrição","Unid/cx",
-                "Estoque","DDV","V-3","V-2","V-1","Venda Média","Venda Atual",
-                "Custo Líq.","Atual","PROMOC","Preço Sugerido","Variação","Margem","Margem Atual","",
-              ].map((h) => (
-                <th key={h} className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
-                  {h}
+                { h: "BU", sticky: 0, w: 50 },
+                { h: "Filial", sticky: 50, w: 60 },
+                { h: "Cód. Família", sticky: 110, w: 90 },
+                { h: "Cód. Produto", sticky: 200, w: 90 },
+                { h: "Descrição", sticky: 290, w: 240 },
+                { h: "Unid/cx" }, { h: "Estoque" }, { h: "DDV" },
+                { h: "V-3" }, { h: "V-2" }, { h: "V-1" },
+                { h: "Venda Média" }, { h: "Venda Atual" },
+                { h: "Custo Líq." }, { h: "Atual" }, { h: "PROMOC" },
+                { h: "Preço Sugerido" }, { h: "Variação" }, { h: "Margem" }, { h: "Margem Atual" }, { h: "" },
+              ].map((c, idx) => (
+                <th
+                  key={c.h + idx}
+                  className={`px-2 py-2 font-semibold text-foreground whitespace-nowrap bg-muted/50 ${c.sticky !== undefined ? "sticky z-30" : ""}`}
+                  style={c.sticky !== undefined ? { left: c.sticky, minWidth: c.w } : undefined}
+                >
+                  {c.h}
                 </th>
               ))}
             </tr>
           </thead>
+
           <tbody>
             {visible.length === 0 && (
               <tr>
@@ -637,14 +649,15 @@ const LivroPreco = () => {
               const margemAtual = i.atual > 0 ? (i.atual - i.custoLiq) / i.atual : 0;
               const edited = overrides[i.key] !== undefined;
               return (
-                <tr key={i.key} className="border-t border-border hover:bg-muted/30">
-                  <td className="px-2 py-1.5 font-medium">{i.bu}</td>
-                  <td className="px-2 py-1.5">{i.filial}</td>
-                  <td className="px-2 py-1.5">{i.familia}</td>
-                  <td className="px-2 py-1.5">{i.produto}</td>
-                  <td className="px-2 py-1.5 max-w-[260px] truncate" title={i.descricao}>
+                <tr key={i.key} className="border-t border-border hover:bg-muted/30 group">
+                  <td className="px-2 py-1.5 font-medium sticky left-0 z-10 bg-card group-hover:bg-muted/30" style={{ minWidth: 50 }}>{i.bu}</td>
+                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 50, minWidth: 60 }}>{i.filial}</td>
+                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 110, minWidth: 90 }}>{i.familia}</td>
+                  <td className="px-2 py-1.5 sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 200, minWidth: 90 }}>{i.produto}</td>
+                  <td className="px-2 py-1.5 max-w-[240px] truncate sticky z-10 bg-card group-hover:bg-muted/30" style={{ left: 290, minWidth: 240 }} title={i.descricao}>
                     {i.descricao}
                   </td>
+
                   <td className="px-2 py-1.5">{i.unidCx}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.estoque)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.ddv)}</td>
