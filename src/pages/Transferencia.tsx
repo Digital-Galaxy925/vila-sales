@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import NoDataNotice from "@/components/NoDataNotice";
 import KpiCard from "@/components/KpiCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -684,6 +685,18 @@ const Transferencia = () => {
       </div>
     );
   };
+
+  if (filiaisDisponiveis.length === 0) {
+    return (
+      <div className="space-y-4">
+        <PageHeader
+          title="Transferência entre CDs"
+          description="Compare estoques entre Centros de Distribuição e identifique oportunidades de transferência"
+        />
+        <NoDataNotice />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
