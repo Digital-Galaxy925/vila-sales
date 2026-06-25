@@ -201,17 +201,13 @@ const AnaliseDDV = () => {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return enriched;
-    if (enriched.length === 0) {
-      // Sem upload: busca direta nos livros pelo código digitado
-      const row = buildRowFromLookup(search.trim());
-      return row.anyHit ? [{ codigo: row.codigo, descricao: row.descricao, cells: row.cells }] : [];
-    }
     return enriched.filter(
       (p) =>
         p.codigo.toLowerCase().includes(q) ||
         p.descricao.toLowerCase().includes(q),
     );
-  }, [enriched, search, lookup, metrics510]);
+  }, [enriched, search]);
+
 
   const exportExcel = () => {
     if (enriched.length === 0) return;
@@ -271,20 +267,15 @@ const AnaliseDDV = () => {
     XLSX.writeFile(wb, "analise_ddv.xlsx");
   };
 
+  const hasLivros = enriched.length > 0;
+
   return (
     <div>
       <PageHeader
         title="Análise DDV"
-        description="Faça upload de uma planilha de produtos para consultar Estoque e DDV em todos os CDs"
+        description="Consulta de Estoque e DDV em todos os CDs (base: Upload de Livros)"
         actions={
           <div className="flex gap-2">
-            <input
-              ref={inputRef}
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              onChange={handleUpload}
-              className="hidden"
-            />
             <Button
               onClick={fetchLivros}
               variant="outline"
@@ -294,41 +285,25 @@ const AnaliseDDV = () => {
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
               Atualizar Livros
             </Button>
-            <Button
-              onClick={() => inputRef.current?.click()}
-              className="bg-primary text-primary-foreground font-semibold"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Planilha
-            </Button>
-            {items.length > 0 && (
-              <>
-                <Button onClick={exportExcel} className="font-semibold text-white bg-[#217346] hover:bg-[#1a5c38]">
-                  <Download className="w-4 h-4 mr-2" />
-                  Exportar Excel
-                </Button>
-                <Button
-                  onClick={() => setItems([])}
-                  variant="outline"
-                  className="font-semibold text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Limpar
-                </Button>
-              </>
+            {hasLivros && (
+              <Button onClick={exportExcel} className="font-semibold text-white bg-[#217346] hover:bg-[#1a5c38]">
+                <Download className="w-4 h-4 mr-2" />
+                Exportar Excel
+              </Button>
             )}
           </div>
         }
       />
 
+      {!loading && !hasLivros ? (
+        <NoDataNotice />
+      ) : (
       <div className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
         <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-4">
           <h3 className="text-sm font-semibold text-foreground shrink-0">
             {filtered.length > 0
               ? `Resultado · ${filtered.length} produto${filtered.length !== 1 ? "s" : ""}`
-              : enriched.length > 0
-                ? "Nenhum produto corresponde à busca"
-                : "Aguardando upload — envie uma planilha .xlsx, .xls ou .csv com a coluna CODIGO"}
+              : "Nenhum produto corresponde à busca"}
           </h3>
           <input
             type="text"
@@ -338,6 +313,7 @@ const AnaliseDDV = () => {
             className="flex h-9 w-full max-w-xs rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
         </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
