@@ -517,9 +517,23 @@ const LivroPreco = () => {
         margemAtual,
       ];
     });
-    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Livro Preco");
+    const grupos = new Map<string, any[][]>();
+    rows.forEach((r) => {
+      const f = String(r[1] ?? "").trim() || "SEM_FILIAL";
+      if (!grupos.has(f)) grupos.set(f, []);
+      grupos.get(f)!.push(r);
+    });
+    const filiaisOrd = Array.from(grupos.keys()).sort((a, b) => {
+      const na = Number(a), nb = Number(b);
+      if (Number.isFinite(na) && Number.isFinite(nb)) return na - nb;
+      return a.localeCompare(b);
+    });
+    filiaisOrd.forEach((f) => {
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...grupos.get(f)!]);
+      const sheetName = `Filial ${f}`.slice(0, 31);
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
     XLSX.writeFile(wb, `LivroPreco_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
