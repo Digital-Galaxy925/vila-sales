@@ -533,6 +533,7 @@ const LivroPreco = () => {
       const ws = XLSX.utils.aoa_to_sheet([headers, ...grupos.get(f)!]);
       const moneyCols = ["N", "O", "P", "Q"]; // Custo Líq, Atual, PROMOC, Preço Sugerido
       const pctCols = ["R", "S", "T"]; // Variação, Margem, Margem Atual
+      const intCols = ["G", "H", "I", "J", "K", "L"]; // Estoque, DDV, V-3, V-2, V-1, Venda Média
       const dataLen = grupos.get(f)!.length;
       for (let r = 2; r <= dataLen + 1; r++) {
         moneyCols.forEach((c) => {
@@ -542,6 +543,10 @@ const LivroPreco = () => {
         pctCols.forEach((c) => {
           const cell = ws[`${c}${r}`];
           if (cell && typeof cell.v === "number") cell.z = "0.00%";
+        });
+        intCols.forEach((c) => {
+          const cell = ws[`${c}${r}`];
+          if (cell && typeof cell.v === "number") { cell.t = "n"; cell.z = "#,##0"; }
         });
       }
       const sheetName = `Filial ${f}`.slice(0, 31);
