@@ -280,7 +280,7 @@ export default function SimuladorMassivo() {
       );
       let idxCod = 0;
       let idxVol = -1;
-      let idxPreco = 2;
+      let idxPreco = -1;
       if (hasHeader) {
         const find = (keys: string[]) =>
           header.findIndex((h) => keys.some((k) => h.includes(k)));
