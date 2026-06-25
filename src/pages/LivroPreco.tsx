@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Upload, FileSpreadsheet, RotateCcw, Download, AlertTriangle } from "lucide-react";
+import { FileSpreadsheet, RotateCcw, Download, AlertTriangle } from "lucide-react";
 import { loadLivrosFromSupabase } from "@/lib/livrosSync";
 import { notifyAppDataChanged } from "@/contexts/AppDataContext";
 
