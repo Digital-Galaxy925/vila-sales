@@ -580,6 +580,13 @@ const LivroPreco = () => {
             <Button size="sm" onClick={gerar}>
               <FileSpreadsheet className="w-4 h-4 mr-2" /> Gerar Livro Preço
             </Button>
+            <Button
+              size="sm"
+              onClick={exportXLSX}
+              className="bg-[#107C41] hover:bg-[#0B5A2E] text-white border-0"
+            >
+              <Download className="w-4 h-4 mr-2" /> Exportar Excel
+            </Button>
           </div>
         }
       />
@@ -642,9 +649,6 @@ const LivroPreco = () => {
         <div className="flex items-end gap-2">
           <Button variant="outline" size="sm" onClick={restoreAll} className="flex-1">
             <RotateCcw className="w-4 h-4 mr-1" /> Restaurar tudo
-          </Button>
-          <Button variant="outline" size="sm" onClick={exportXLSX} className="flex-1">
-            <Download className="w-4 h-4 mr-1" /> Exportar
           </Button>
         </div>
       </div>
