@@ -2589,10 +2589,12 @@ function IndexInner() {
     setCompleted(false);
     setProgress(5);
     setError(null);
+    let succeeded = false;
     const progressTimer = setInterval(() => {
       setProgress((p) => (p < 90 ? p + Math.max(1, Math.round((92 - p) / 12)) : p));
     }, 220);
     try {
+
 
 
       // ── 1. Lê a base Excel (Etapa 2) ──────────────────────────────────────────
