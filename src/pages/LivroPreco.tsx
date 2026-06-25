@@ -647,7 +647,7 @@ const LivroPreco = () => {
           </Select>
         </div>
         <div className="flex items-end gap-2">
-          <Button variant="outline" size="sm" onClick={restoreAll} className="flex-1">
+          <Button variant="outline" size="sm" onClick={restoreAll} className="flex-1 bg-white border-[#d2d2d7] text-[#0071e3] hover:bg-[#0071e3]/5 hover:text-[#0071e3] rounded-lg">
             <RotateCcw className="w-4 h-4 mr-1" /> Restaurar tudo
           </Button>
         </div>
