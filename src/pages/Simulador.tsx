@@ -47,14 +47,16 @@ const fmtPct = (v: number) => (v * 100).toFixed(2) + "%";
 export default function Simulador() {
   const navigate = useNavigate();
 
+  const cached = useAppDataKey<DataMap>("vilasales_data");
   const data: DataMap = useMemo(() => {
+    if (cached && typeof cached === "object" && Object.keys(cached).length > 0) return cached;
     try {
       const raw = localStorage.getItem("vilasales_data");
       return raw ? JSON.parse(raw) : {};
     } catch {
       return {};
     }
-  }, []);
+  }, [cached]);
 
   const hasData = Object.keys(data).length > 0;
 
