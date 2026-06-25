@@ -196,113 +196,170 @@ const LivroPreco = () => {
       if (saved) rawByFilial = JSON.parse(saved);
     } catch (_) {}
 
-    if (!rawByFilial || Object.keys(rawByFilial).length === 0) {
-      toast({
-        title: "Nenhum livro carregado",
-        description: "Vá em 'Upload de Livros' e envie os arquivos LIVRO_*.CSV.",
-        variant: "destructive",
-      });
-      return;
-    }
     const ddvLimite = Number(ddvMin) || 0;
     let descPct = (parseBR(descontoStr) || 0) / 100;
     if (descPct < 0) descPct = 0;
     if (descPct > 0.1) descPct = 0.1;
 
-    // Build map filial -> rows a partir das matrizes brutas salvas no upload central.
-    const byFilial: Record<string, Record<string, string>[]> = {};
-    for (const fil of Object.keys(rawByFilial)) {
-      byFilial[fil] = matrixToRecords(rawByFilial[fil]);
-    }
-
-    const rowKey = (r: Record<string, string>) =>
-      `${(r["SEQ.PROD"] || r["SEQ. PROD"] || "").trim()}__${(r["FAMILIA"] || "").trim()}`;
-
-    type Pair = { filial: string; salesRows: Record<string, string>[]; stockMap: Map<string, Record<string, string>> };
-    const pairs: Pair[] = [];
-    const handled = new Set<string>();
-
-    if (byFilial["01"] || byFilial["10"]) {
-      const sales = byFilial["10"] || byFilial["01"] || [];
-      const stock = byFilial["01"] || byFilial["10"] || [];
-      const sm = new Map<string, Record<string, string>>();
-      stock.forEach((r) => sm.set(rowKey(r), r));
-      pairs.push({ filial: "01", salesRows: sales, stockMap: sm });
-      handled.add("01");
-      handled.add("10");
-    }
-    if (byFilial["502"] || byFilial["510"]) {
-      const sales = byFilial["510"] || byFilial["502"] || [];
-      const stock = byFilial["502"] || byFilial["510"] || [];
-      const sm = new Map<string, Record<string, string>>();
-      stock.forEach((r) => sm.set(rowKey(r), r));
-      pairs.push({ filial: "502", salesRows: sales, stockMap: sm });
-      handled.add("502");
-      handled.add("510");
-    }
-    for (const fil of Object.keys(byFilial)) {
-      if (handled.has(fil)) continue;
-      const sm = new Map<string, Record<string, string>>();
-      byFilial[fil].forEach((r) => sm.set(rowKey(r), r));
-      pairs.push({ filial: fil, salesRows: byFilial[fil], stockMap: sm });
-    }
-
     const out: Item[] = [];
-    for (const { filial, salesRows, stockMap } of pairs) {
-      for (const r of salesRows) {
-        const fornecedor = r["Fornecedor"] || r["FORNECEDOR"] || r["fornecedor"] || "";
-        const bu = deriveBU(fornecedor);
-        if (!bu) continue;
+    const hasRaw = rawByFilial && Object.keys(rawByFilial).length > 0;
 
-        const stockRow = stockMap.get(rowKey(r)) || r;
+    if (hasRaw) {
+      // Caminho principal: usa as matrizes CSV brutas salvas no upload central.
+      const byFilial: Record<string, Record<string, string>[]> = {};
+      for (const fil of Object.keys(rawByFilial)) {
+        byFilial[fil] = matrixToRecords(rawByFilial[fil]);
+      }
 
-        const ddv = parseBR(stockRow["DDV"] ?? r["DDV"]);
-        if (!ddv || ddv <= 0) continue;
-        if (ddvLimite > 0 && ddv < ddvLimite) continue;
+      const rowKey = (r: Record<string, string>) =>
+        `${(r["SEQ.PROD"] || r["SEQ. PROD"] || "").trim()}__${(r["FAMILIA"] || "").trim()}`;
 
-        const atual = parseBR(r["ATUAL"]);
-        const promoc = parseBR(r["PROMOC"]);
-        const custoLiq = parseBR(r["CUSTO LIQ"]);
-        const estoque = parseBR(stockRow["ESTOQUE"] ?? r["ESTOQUE"]);
-        const vAtu = parseBR(r["VD.SEM.ATU"]);
-        const v1 = parseBR(r["VD.SEM. -1"] ?? r["VD.SEM.-1"]);
-        const v2 = parseBR(r["VD.SEM. -2"] ?? r["VD.SEM.-2"]);
-        const v3 = parseBR(r["VD.SEM. -3"] ?? r["VD.SEM.-3"]);
+      type Pair = { filial: string; salesRows: Record<string, string>[]; stockMap: Map<string, Record<string, string>> };
+      const pairs: Pair[] = [];
+      const handled = new Set<string>();
 
-        const inPromo = promoc > 0 && promoc < atual;
-        const ref = inPromo ? promoc : atual;
-        if (!ref || ref <= 0) continue;
+      if (byFilial["01"] || byFilial["10"]) {
+        const sales = byFilial["10"] || byFilial["01"] || [];
+        const stock = byFilial["01"] || byFilial["10"] || [];
+        const sm = new Map<string, Record<string, string>>();
+        stock.forEach((r) => sm.set(rowKey(r), r));
+        pairs.push({ filial: "01", salesRows: sales, stockMap: sm });
+        handled.add("01");
+        handled.add("10");
+      }
+      if (byFilial["502"] || byFilial["510"]) {
+        const sales = byFilial["510"] || byFilial["502"] || [];
+        const stock = byFilial["502"] || byFilial["510"] || [];
+        const sm = new Map<string, Record<string, string>>();
+        stock.forEach((r) => sm.set(rowKey(r), r));
+        pairs.push({ filial: "502", salesRows: sales, stockMap: sm });
+        handled.add("502");
+        handled.add("510");
+      }
+      for (const fil of Object.keys(byFilial)) {
+        if (handled.has(fil)) continue;
+        const sm = new Map<string, Record<string, string>>();
+        byFilial[fil].forEach((r) => sm.set(rowKey(r), r));
+        pairs.push({ filial: fil, salesRows: byFilial[fil], stockMap: sm });
+      }
 
-        const media3 = (v1 + v2 + v3) / 3;
-        let trend: Trend = "flat";
-        if (vAtu > media3) trend = "up";
-        else if (vAtu < v1 && v1 < v2 && v2 < v3) trend = "down";
+      for (const { filial, salesRows, stockMap } of pairs) {
+        for (const r of salesRows) {
+          const fornecedor = r["Fornecedor"] || r["FORNECEDOR"] || r["fornecedor"] || "";
+          const bu = deriveBU(fornecedor);
+          if (!bu) continue;
 
-        const sug = computeSugerido(ref, atual, inPromo, trend, promoc, descPct, true);
+          const stockRow = stockMap.get(rowKey(r)) || r;
 
-        const familia = r["FAMILIA"] || "";
-        const produto = r["SEQ.PROD"] || r["SEQ. PROD"] || "";
-        out.push({
-          key: `${filial}__${produto}__${familia}`,
-          bu,
-          filial,
-          familia,
-          produto,
-          descricao: r["DESCRICAO"] || "",
-          unidCx: r["EMB.CMP"] || "",
-          estoque,
-          ddv,
-          custoLiq,
-          atual,
-          promoc,
-          vAtu,
-          v1,
-          v2,
-          v3,
-          inPromo,
-          trend,
-          sugeridoCalc: sug,
+          const ddv = parseBR(stockRow["DDV"] ?? r["DDV"]);
+          if (!ddv || ddv <= 0) continue;
+          if (ddvLimite > 0 && ddv < ddvLimite) continue;
+
+          const atual = parseBR(r["ATUAL"]);
+          const promoc = parseBR(r["PROMOC"]);
+          const custoLiq = parseBR(r["CUSTO LIQ"]);
+          const estoque = parseBR(stockRow["ESTOQUE"] ?? r["ESTOQUE"]);
+          const vAtu = parseBR(r["VD.SEM.ATU"]);
+          const v1 = parseBR(r["VD.SEM. -1"] ?? r["VD.SEM.-1"]);
+          const v2 = parseBR(r["VD.SEM. -2"] ?? r["VD.SEM.-2"]);
+          const v3 = parseBR(r["VD.SEM. -3"] ?? r["VD.SEM.-3"]);
+
+          const inPromo = promoc > 0 && promoc < atual;
+          const ref = inPromo ? promoc : atual;
+          if (!ref || ref <= 0) continue;
+
+          const media3 = (v1 + v2 + v3) / 3;
+          let trend: Trend = "flat";
+          if (vAtu > media3) trend = "up";
+          else if (vAtu < v1 && v1 < v2 && v2 < v3) trend = "down";
+
+          const sug = computeSugerido(ref, atual, inPromo, trend, promoc, descPct, true);
+
+          const familia = r["FAMILIA"] || "";
+          const produto = r["SEQ.PROD"] || r["SEQ. PROD"] || "";
+          out.push({
+            key: `${filial}__${produto}__${familia}`,
+            bu,
+            filial,
+            familia,
+            produto,
+            descricao: r["DESCRICAO"] || "",
+            unidCx: r["EMB.CMP"] || "",
+            estoque,
+            ddv,
+            custoLiq,
+            atual,
+            promoc,
+            vAtu, v1, v2, v3,
+            inPromo,
+            trend,
+            sugeridoCalc: sug,
+          });
+        }
+      }
+    } else {
+      // Fallback: usa os produtos já parseados em vilasales_data (sem vendas semanais).
+      let data: Record<string, any[]> = {};
+      try {
+        const saved = localStorage.getItem("vilasales_data");
+        if (saved) data = JSON.parse(saved) || {};
+      } catch (_) {}
+      const totalProds = Object.values(data).reduce(
+        (acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0),
+        0,
+      );
+      if (totalProds === 0) {
+        toast({
+          title: "Nenhum livro carregado",
+          description: "Vá em 'Upload de Livros' e envie os arquivos LIVRO_*.CSV.",
+          variant: "destructive",
         });
+        return;
+      }
+      const mapBU = (raw: string): "HC" | "FR" | null => {
+        const b = String(raw || "").toUpperCase().trim();
+        if (b === "HC") return "HC";
+        if (b === "FR" || b === "FOODS" || b === "FOOD" || b === "ALIMENTOS") return "FR";
+        return null;
+      };
+      for (const [filial, arr] of Object.entries(data)) {
+        if (!Array.isArray(arr)) continue;
+        for (const p of arr) {
+          const bu = mapBU(p?.bu);
+          if (!bu) continue;
+          const ddv = Number(p?.ddv) || 0;
+          if (!ddv || ddv <= 0) continue;
+          if (ddvLimite > 0 && ddv < ddvLimite) continue;
+          const atual = Number(p?.atual) || 0;
+          const promoc = Number(p?.promoc) || 0;
+          const custoLiq = Number(p?.custoLiq) || 0;
+          const estoque = Number(p?.estoque) || 0;
+          const inPromo = promoc > 0 && promoc < atual;
+          const ref = inPromo ? promoc : atual;
+          if (!ref || ref <= 0) continue;
+          const trend: Trend = "flat";
+          const sug = computeSugerido(ref, atual, inPromo, trend, promoc, descPct, true);
+          const familia = String(p?.familia ?? "");
+          const produto = String(p?.seqProd ?? "");
+          out.push({
+            key: `${filial}__${produto}__${familia}`,
+            bu,
+            filial,
+            familia,
+            produto,
+            descricao: String(p?.descricao ?? ""),
+            unidCx: String(p?.embCmp ?? ""),
+            estoque,
+            ddv,
+            custoLiq,
+            atual,
+            promoc,
+            vAtu: 0, v1: 0, v2: 0, v3: 0,
+            inPromo,
+            trend,
+            sugeridoCalc: sug,
+          });
+        }
       }
     }
 
@@ -315,7 +372,7 @@ const LivroPreco = () => {
     setOverrides({});
     toast({
       title: "Livro Preço gerado",
-      description: `${out.length} item(ns) sugeridos.`,
+      description: `${out.length} item(ns) sugeridos.${hasRaw ? "" : " (sem vendas semanais — refaça o upload em 'Upload de Livros' para tendências.)"}`,
     });
   }
 
