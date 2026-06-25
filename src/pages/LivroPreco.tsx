@@ -620,7 +620,7 @@ const LivroPreco = () => {
               <SelectItem value="ALL">Todas</SelectItem>
               {filiais.map((f) => (
                 <SelectItem key={f} value={f}>
-                  Filial {f}
+                  {filialLabel(f)}
                 </SelectItem>
               ))}
             </SelectContent>
