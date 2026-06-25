@@ -131,6 +131,7 @@ export const AppDataProvider = ({ children }: { children: ReactNode }) => {
         const { hasWeeklySalesData, loadLivrosFromSupabase } = await import("@/lib/livrosSync");
         const remote = await loadLivrosFromSupabase();
         if (cancelled || !remote || !hasWeeklySalesData(remote)) return;
+        setCache((prev) => ({ ...prev, vilasales_data: remote }));
         try {
           localStorage.setItem("vilasales_data", JSON.stringify(remote));
         } catch {
