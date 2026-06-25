@@ -657,10 +657,10 @@ const LivroPreco = () => {
             <tr className="text-left">
               {[
                 { h: "BU", sticky: 0, w: 50 },
-                { h: "Filial", sticky: 50, w: 60 },
-                { h: "Cód. Família", sticky: 110, w: 90 },
-                { h: "Cód. Produto", sticky: 200, w: 90 },
-                { h: "Descrição", sticky: 290, w: 240 },
+                { h: "Filial", sticky: 50, w: 150 },
+                { h: "Cód. Família", sticky: 200, w: 90 },
+                { h: "Cód. Produto", sticky: 290, w: 90 },
+                { h: "Descrição", sticky: 380, w: 240 },
                 { h: "Unid/cx" }, { h: "Estoque" }, { h: "DDV" },
                 { h: "V-3" }, { h: "V-2" }, { h: "V-1" },
                 { h: "Venda Média" }, { h: "Venda Atual" },
