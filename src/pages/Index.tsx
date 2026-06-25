@@ -2553,6 +2553,7 @@ function IndexInner() {
       localStorage.removeItem("vilasales_data");
       localStorage.removeItem("vilasales_lastUpdate");
       localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
+      localStorage.removeItem("vilasales_livros_raw");
     } catch (_) {}
     notifyAppDataChanged();
     // Espelha no Supabase (não bloqueia a UI)
