@@ -2516,6 +2516,8 @@ function IndexInner() {
     return {};
   });
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [completed, setCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(() => {
     if (typeof window !== "undefined" && window.location.pathname === "/upload-livros") return true;
