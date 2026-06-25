@@ -2990,10 +2990,8 @@ function IndexInner() {
       } catch(_) {}
       const updateTime = new Date().toLocaleString("pt-BR");
       try { localStorage.setItem("vilasales_lastUpdate", updateTime); } catch(_) {}
-      // Espelha no Supabase (em background — não bloqueia a navegação)
-      saveLivrosToSupabase(newData).catch((e) =>
-        console.warn("saveLivros:", e?.message || e)
-      );
+      // Espelha no backend antes de liberar a navegação para evitar recarregar dados antigos.
+      await saveLivrosToSupabase(newData);
       // Difere updates de estado para o próximo tick para evitar
       // conflito de renderização (NotFoundError: removeChild on Node).
       setTimeout(() => {
@@ -3106,6 +3104,7 @@ function IndexInner() {
                 localStorage.removeItem("vilasales_data");
                 localStorage.removeItem("vilasales_lastUpdate");
                 localStorage.removeItem(LIVRO_METRICS_STORAGE_KEY);
+                localStorage.removeItem("vilasales_livros_raw");
               } catch (_) {}
               notifyAppDataChanged();
               clearLivrosFromSupabase().catch((e) => console.warn("clearLivros:", e));
