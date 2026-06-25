@@ -599,7 +599,7 @@ const LivroPreco = () => {
             <tr className="text-left">
               {[
                 "BU","Filial","Cód. Família","Cód. Produto","Descrição","Unid/cx",
-                "Estoque","DDV","V.ATU","V-1","V-2","V-3",
+                "Estoque","DDV","V.ATU","V-1","V-2","V-3","Venda Média",
                 "Custo Líq.","Atual","PROMOC","Preço Sugerido","Variação","Margem","Margem Atual","",
               ].map((h) => (
                 <th key={h} className="px-2 py-2 font-semibold text-foreground whitespace-nowrap">
@@ -641,6 +641,7 @@ const LivroPreco = () => {
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.v1)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.v2)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtNum(i.v3)}</td>
+                  <td className="px-2 py-1.5 text-right font-medium">{fmtNum((i.v1 + i.v2 + i.v3) / 3)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtBRL(i.custoLiq)}</td>
                   <td className="px-2 py-1.5 text-right">{fmtBRL(i.atual)}</td>
                   <td className="px-2 py-1.5 text-right">
