@@ -1,9 +1,10 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
-import { Upload, Download, Trash2, RefreshCw } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { loadLivrosFromSupabase, type FilialDataMap } from "@/lib/livrosSync";
+import NoDataNotice from "@/components/NoDataNotice";
 
 const FILIAIS: { code: string; label: string }[] = [
   { code: "501", label: "FOCOMIX SP - 501" },
@@ -49,9 +50,7 @@ const AnaliseDDV = () => {
   const [rawData, setRawData] = useState<FilialDataMap | null>(null);
   const [metrics510, setMetrics510] = useState<Record<string, { ddv: number; estoque: number }>>({});
   const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState<RowItem[]>([]);
   const [buLookup, setBuLookup] = useState<Record<string, string>>({});
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // Carrega mapeamento código -> BU a partir da base de produtos (vilasales_data)
   useEffect(() => {
@@ -139,96 +138,41 @@ const AnaliseDDV = () => {
     return map;
   }, [rawData]);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: "array" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const aoa: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", blankrows: false });
-
-      const isCodeHeader = (v: any) =>
-        /^(c[oó]d(igo)?(\s*(produto|prod|item|sku))?|sku|seq\.?\s*prod|produto)$/i.test(
-          String(v ?? "").trim(),
-        );
-      const isDescHeader = (v: any) =>
-        /^(descri[cç][aã]o|desc|nome|produto[_\s]?desc)$/i.test(String(v ?? "").trim());
-
-      let headerRow = -1;
-      let codeCol = -1;
-      let descCol = -1;
-      for (let i = 0; i < Math.min(aoa.length, 20); i++) {
-        const row = aoa[i] || [];
-        const cIdx = row.findIndex(isCodeHeader);
-        if (cIdx !== -1) {
-          headerRow = i;
-          codeCol = cIdx;
-          descCol = row.findIndex(isDescHeader);
-          break;
-        }
-      }
-      if (codeCol === -1) {
-        headerRow = -1;
-        codeCol = 0;
-        descCol = 1;
-      }
-
-      const parsed: RowItem[] = [];
-      const seen = new Set<string>();
-      for (let i = headerRow + 1; i < aoa.length; i++) {
-        const row = aoa[i] || [];
-        const raw = row[codeCol];
-        if (raw == null || String(raw).trim() === "") continue;
-        const codigo =
-          typeof raw === "number"
-            ? String(Math.trunc(raw))
-            : String(raw).trim().replace(/\.0+$/, "");
-        if (!/\d/.test(codigo)) continue;
-        const key = normCode(codigo);
-        if (!key || seen.has(key)) continue;
-        seen.add(key);
-        const descricao = descCol >= 0 ? String(row[descCol] ?? "").trim() : "";
-        parsed.push({ codigo, descricao });
-      }
-
-      if (parsed.length === 0) {
-        alert("Nenhum código encontrado na planilha. Garanta uma coluna 'CODIGO' ou códigos na primeira coluna.");
-      }
-      setItems(parsed);
-    } catch (err: any) {
-      alert("Erro ao ler planilha: " + (err?.message || err));
-    } finally {
-      if (inputRef.current) inputRef.current.value = "";
-    }
-  };
-
   const [search, setSearch] = useState("");
 
+  // Lista enriquecida: agora vem direto de todos os produtos presentes nos livros (sem upload).
   const enriched = useMemo(() => {
-    return items.map((it) => {
-      const key = normCode(it.codigo);
-      const cells: Record<string, { estoque: number; ddv: number }> = {};
-      let descricao = it.descricao;
-      FILIAIS.forEach(({ code }) => {
-        const found = lookup[code]?.get(key);
-        if (found) {
-          cells[code] = { estoque: found.estoque, ddv: found.ddv };
-          if (!descricao) descricao = found.descricao;
-        } else {
-          cells[code] = { estoque: 0, ddv: 0 };
+    const seen = new Set<string>();
+    const out: { codigo: string; descricao: string; cells: Record<string, { estoque: number; ddv: number }> }[] = [];
+    FILIAIS.forEach(({ code }) => {
+      const m = lookup[code];
+      if (!m) return;
+      m.forEach((val, key) => {
+        if (seen.has(key)) return;
+        seen.add(key);
+        const cells: Record<string, { estoque: number; ddv: number }> = {};
+        let descricao = val.descricao;
+        FILIAIS.forEach(({ code: c }) => {
+          const f = lookup[c]?.get(key);
+          if (f) {
+            cells[c] = { estoque: f.estoque, ddv: f.ddv };
+            if (!descricao) descricao = f.descricao;
+          } else {
+            cells[c] = { estoque: 0, ddv: 0 };
+          }
+        });
+        if (cells["502"]) {
+          const found510 = lookup["510"]?.get(key);
+          const m510 = metrics510[key];
+          const ddv510 = found510?.ddv ?? m510?.ddv ?? 0;
+          cells["502"] = { estoque: cells["502"].estoque, ddv: ddv510 };
         }
+        out.push({ codigo: key, descricao, cells });
       });
-      // Filial 502: estoque vem do livro 502, mas DDV vem do livro 510
-      if (cells["502"]) {
-        const found510 = lookup["510"]?.get(key);
-        const m510 = metrics510[key];
-        const ddv510 = found510?.ddv ?? m510?.ddv ?? 0;
-        cells["502"] = { estoque: cells["502"].estoque, ddv: ddv510 };
-      }
-      return { codigo: it.codigo, descricao, cells };
     });
-  }, [items, lookup, metrics510]);
+    return out;
+  }, [lookup, metrics510]);
+
 
   const buildRowFromLookup = (codigo: string) => {
     const key = normCode(codigo);
@@ -257,17 +201,13 @@ const AnaliseDDV = () => {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return enriched;
-    if (enriched.length === 0) {
-      // Sem upload: busca direta nos livros pelo código digitado
-      const row = buildRowFromLookup(search.trim());
-      return row.anyHit ? [{ codigo: row.codigo, descricao: row.descricao, cells: row.cells }] : [];
-    }
     return enriched.filter(
       (p) =>
         p.codigo.toLowerCase().includes(q) ||
         p.descricao.toLowerCase().includes(q),
     );
-  }, [enriched, search, lookup, metrics510]);
+  }, [enriched, search]);
+
 
   const exportExcel = () => {
     if (enriched.length === 0) return;
@@ -327,20 +267,15 @@ const AnaliseDDV = () => {
     XLSX.writeFile(wb, "analise_ddv.xlsx");
   };
 
+  const hasLivros = enriched.length > 0;
+
   return (
     <div>
       <PageHeader
         title="Análise DDV"
-        description="Faça upload de uma planilha de produtos para consultar Estoque e DDV em todos os CDs"
+        description="Consulta de Estoque e DDV em todos os CDs (base: Upload de Livros)"
         actions={
           <div className="flex gap-2">
-            <input
-              ref={inputRef}
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              onChange={handleUpload}
-              className="hidden"
-            />
             <Button
               onClick={fetchLivros}
               variant="outline"
@@ -350,41 +285,25 @@ const AnaliseDDV = () => {
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
               Atualizar Livros
             </Button>
-            <Button
-              onClick={() => inputRef.current?.click()}
-              className="bg-primary text-primary-foreground font-semibold"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Planilha
-            </Button>
-            {items.length > 0 && (
-              <>
-                <Button onClick={exportExcel} className="font-semibold text-white bg-[#217346] hover:bg-[#1a5c38]">
-                  <Download className="w-4 h-4 mr-2" />
-                  Exportar Excel
-                </Button>
-                <Button
-                  onClick={() => setItems([])}
-                  variant="outline"
-                  className="font-semibold text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Limpar
-                </Button>
-              </>
+            {hasLivros && (
+              <Button onClick={exportExcel} className="font-semibold text-white bg-[#217346] hover:bg-[#1a5c38]">
+                <Download className="w-4 h-4 mr-2" />
+                Exportar Excel
+              </Button>
             )}
           </div>
         }
       />
 
+      {!loading && !hasLivros ? (
+        <NoDataNotice />
+      ) : (
       <div className="bg-card rounded-xl shadow-[var(--shadow-card)] overflow-hidden">
         <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-4">
           <h3 className="text-sm font-semibold text-foreground shrink-0">
             {filtered.length > 0
               ? `Resultado · ${filtered.length} produto${filtered.length !== 1 ? "s" : ""}`
-              : enriched.length > 0
-                ? "Nenhum produto corresponde à busca"
-                : "Aguardando upload — envie uma planilha .xlsx, .xls ou .csv com a coluna CODIGO"}
+              : "Nenhum produto corresponde à busca"}
           </h3>
           <input
             type="text"
@@ -394,6 +313,7 @@ const AnaliseDDV = () => {
             className="flex h-9 w-full max-w-xs rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
         </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
@@ -503,6 +423,7 @@ const AnaliseDDV = () => {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 };

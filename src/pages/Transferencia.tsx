@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import NoDataNotice from "@/components/NoDataNotice";
 import KpiCard from "@/components/KpiCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -685,6 +686,18 @@ const Transferencia = () => {
     );
   };
 
+  if (filiaisDisponiveis.length === 0) {
+    return (
+      <div className="space-y-4">
+        <PageHeader
+          title="Transferência entre CDs"
+          description="Compare estoques entre Centros de Distribuição e identifique oportunidades de transferência"
+        />
+        <NoDataNotice />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <PageHeader
@@ -737,15 +750,6 @@ const Transferencia = () => {
             onChange={onFileChange}
             className="hidden"
           />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            className="text-xs"
-          >
-            <Upload className="w-3.5 h-3.5 mr-1.5" />
-            {palletCount > 0 ? "Atualizar Palletização" : "Upload Palletização"}
-          </Button>
           {palletCount > 0 && (
             <Button
               variant="ghost"
@@ -889,19 +893,11 @@ const Transferencia = () => {
                   className="hidden"
                   onChange={onSkuListChange}
                 />
-                <Button
-                  type="button"
-                  variant={skuFilterList.size > 0 ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => skuListInputRef.current?.click()}
-                  className="text-xs h-8"
-                  title="Faça upload de uma planilha (.xlsx/.csv) com os códigos dos produtos a analisar"
-                >
-                  <ListFilter className="w-3.5 h-3.5 mr-1.5" />
-                  {skuFilterList.size > 0
-                    ? `Lista ativa: ${skuFilterList.size} ${skuFilterList.size === 1 ? "produto" : "produtos"}`
-                    : "Upload Lista de Produtos"}
-                </Button>
+                {skuFilterList.size > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    Lista ativa: {skuFilterList.size} {skuFilterList.size === 1 ? "produto" : "produtos"}
+                  </span>
+                )}
                 {skuFilterList.size > 0 && (
                   <>
                     {skuFilterFileName && (

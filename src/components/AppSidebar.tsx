@@ -44,7 +44,7 @@ const navItems = [
   { to: "/transferencia-automatica", label: "Transferência Automática", icon: Zap },
   { to: "/conta-corrente", label: "Conta Corrente", icon: FileText },
   { to: "/tabela-st", label: "Tabela de ST", icon: Table },
-  { to: "/upload-st", label: "Upload ST", icon: Upload },
+  { to: "/upload-st", label: "Tabela ST", icon: Upload },
   { to: "/preco", label: "Análise de Preço", icon: DollarSign },
   { to: "/shelf-life", label: "Análise de Shelf Life", icon: Clock },
   { to: "/upload", label: "Upload de Dados", icon: Upload },

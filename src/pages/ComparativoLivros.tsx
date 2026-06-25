@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import * as XLSX from "xlsx";
+import NoDataNotice from "@/components/NoDataNotice";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ProdutoComparativo {
@@ -526,8 +527,15 @@ export default function ComparativoLivros() {
         Compare os livros da semana anterior com os atuais para identificar alterações de preço.
       </p>
 
-      {/* Upload area */}
-      {!result && (<>
+      {!result && (
+        <div style={{ background: "#111827", borderRadius: 14, padding: 8, marginBottom: 24 }}>
+          <NoDataNotice
+            description="O Comparativo de Livros agora usa exclusivamente os dados do Upload de Livros. Faça o upload das semanas anterior e atual naquela tela para visualizar a comparação aqui."
+          />
+        </div>
+      )}
+
+      {false && !result && (<>
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 32 }}>
           {/* Anteriores */}
           <div
