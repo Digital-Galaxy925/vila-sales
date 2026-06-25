@@ -3050,7 +3050,6 @@ function IndexInner() {
               setShowUpload(true);
               setData({});
               setFiles({});
-              setBaseFile(null);
               setUnrecognizedFiles([]);
               try {
                 localStorage.removeItem("vilasales_data");
