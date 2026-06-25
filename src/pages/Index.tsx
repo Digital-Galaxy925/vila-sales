@@ -2967,10 +2967,14 @@ function IndexInner() {
         >
           <div>
             <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: "#1f2937" }}>
-              {modules.find((m) => m.id === activeModule)?.icon}{" "}
-              {modules.find((m) => m.id === activeModule)?.label}
+              {forceUpload ? "📂 Upload de Livros" : (
+                <>
+                  {modules.find((m) => m.id === activeModule)?.icon}{" "}
+                  {modules.find((m) => m.id === activeModule)?.label}
+                </>
+              )}
             </h1>
-            {hasData && (
+            {hasData && !forceUpload && (
               <p style={{ margin: 0, fontSize: 12, color: "#6b7280", marginTop: 2 }}>
                 {FILIAIS.flatMap((f) => data[f] || []).length} produtos carregados · {Object.keys(data).length} filiais
               </p>
@@ -3056,7 +3060,7 @@ function IndexInner() {
                 <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#1f2937" }}>
                   📂 Upload de Arquivos
                 </h2>
-                {hasData && (
+                {hasData && !forceUpload && (
                   <button
                     onClick={() => setShowUpload(false)}
                     style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 18 }}
@@ -3084,7 +3088,7 @@ function IndexInner() {
           )}
 
           {/* No data state */}
-          {!hasData && !showUpload && (
+          {!hasData && !showUpload && !forceUpload && (
             <div style={{ textAlign: "center", padding: "80px 20px", color: "#6b7280" }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
               <h3 style={{ color: "#6b7280", fontWeight: 700 }}>Nenhum dado carregado</h3>
@@ -3109,7 +3113,7 @@ function IndexInner() {
           )}
 
           {/* Analysis views */}
-          {hasData && (
+          {hasData && !forceUpload && (
             <>
               {activeModule === "cruzamento" && <CrossAnalysis data={data} />}
               {activeModule === "preco" && <PrecoAnalysis data={data} />}
