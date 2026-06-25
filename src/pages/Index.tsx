@@ -2539,14 +2539,10 @@ function IndexInner() {
 
     loadLivrosFromSupabase()
       .then((remote) => {
-        if (
-          cancelled ||
-          !remote ||
-          !Object.values(remote).some((arr) => Array.isArray(arr) && arr.length > 0) ||
-          !hasWeeklySalesData(remote)
-        ) return;
+        if (cancelled || !remote || !Object.values(remote).some((arr) => Array.isArray(arr) && arr.length > 0)) return;
+        if (!forceUpload && !hasWeeklySalesData(remote)) return;
         setData(remote as FilialData);
-        setShowUpload(false);
+        if (!forceUpload) setShowUpload(false);
         try {
           localStorage.setItem("vilasales_data", JSON.stringify(remote));
         } catch (_) {}
@@ -2557,7 +2553,7 @@ function IndexInner() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [forceUpload]);
 
   const handleFiles = useCallback((newFiles: Partial<UploadedFiles>, unrecognized: string[]) => {
     setFiles((prev) => ({ ...prev, ...newFiles }));
