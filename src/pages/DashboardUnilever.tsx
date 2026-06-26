@@ -335,7 +335,7 @@ const DashboardUnilever = () => {
                 );
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={15} className="px-4 py-8 text-center text-muted-foreground">Nenhum produto.</td></tr>
+                <tr><td colSpan={16} className="px-4 py-8 text-center text-muted-foreground">Nenhum produto.</td></tr>
               )}
             </tbody>
           </table>
