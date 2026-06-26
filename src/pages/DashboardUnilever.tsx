@@ -51,6 +51,7 @@ const DashboardUnilever = () => {
   const [filtroBu, setFiltroBu] = useState<string>("todas");
   const [filtroFilial, setFiltroFilial] = useState<string>("todas");
   const [busca, setBusca] = useState<string>("");
+  const [showSug, setShowSug] = useState<boolean>(false);
 
 
   useEffect(() => {
@@ -221,11 +222,29 @@ const DashboardUnilever = () => {
             <input
               type="text"
               value={busca}
-              onChange={(e) => setBusca(e.target.value)}
+              onChange={(e) => { setBusca(e.target.value); setShowSug(true); }}
+              onFocus={() => setShowSug(true)}
+              onBlur={() => setTimeout(() => setShowSug(false), 150)}
               placeholder="Buscar por código ou descrição do produto..."
               className="w-full pl-9 pr-3 py-1.5 text-xs border border-border rounded-lg bg-background"
+              autoComplete="off"
             />
+            {showSug && busca.trim().length >= 2 && produtosEncontrados.length > 0 && (
+              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-72 overflow-y-auto">
+                {produtosEncontrados.slice(0, 20).map((p) => (
+                  <div
+                    key={`${p.cod}-${p.descricao}`}
+                    onMouseDown={(e) => { e.preventDefault(); setBusca(p.cod); setShowSug(false); }}
+                    className="px-3 py-2 text-xs cursor-pointer border-b border-border/60 hover:bg-accent"
+                  >
+                    <div className="font-semibold text-primary">{p.cod}</div>
+                    <div className="text-foreground/80">{p.descricao}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
           <span className="text-xs text-muted-foreground">
             {loading ? "Carregando..." : `${fmtNum(skus)} produto(s)`}
           </span>
