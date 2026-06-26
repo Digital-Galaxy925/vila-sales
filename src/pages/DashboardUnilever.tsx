@@ -159,48 +159,64 @@ const DashboardUnilever = () => {
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-3 bg-card border border-border rounded-xl p-3">
-        <div className="flex items-center gap-2">
-          <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
-          <label className="text-xs font-medium text-muted-foreground">BU:</label>
-          <select
-            value={filtroBu}
-            onChange={(e) => setFiltroBu(e.target.value)}
-            className="px-3 py-1.5 text-xs border border-border rounded-lg bg-background"
-          >
-            <option value="todas">Todas as BUs</option>
-            {busDisponiveis.map((b) => (
-              <option key={b} value={b}>{b}</option>
-            ))}
-          </select>
+      <div className="bg-card border border-border rounded-xl p-3 space-y-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+            <label className="text-xs font-medium text-muted-foreground">BU:</label>
+            <select
+              value={filtroBu}
+              onChange={(e) => setFiltroBu(e.target.value)}
+              className="px-3 py-1.5 text-xs border border-border rounded-lg bg-background"
+            >
+              <option value="todas">Todas as BUs</option>
+              {busDisponiveis.map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-muted-foreground">Filial:</label>
+            <select
+              value={filtroFilial}
+              onChange={(e) => setFiltroFilial(e.target.value)}
+              className="px-3 py-1.5 text-xs border border-border rounded-lg bg-background"
+            >
+              <option value="todas">Todas as Filiais</option>
+              {filiaisDisponiveis.map((f) => (
+                <option key={f} value={f}>{FILIAL_LABELS[f] ?? f}</option>
+              ))}
+            </select>
+          </div>
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar por código ou descrição do produto..."
+              className="w-full pl-9 pr-3 py-1.5 text-xs border border-border rounded-lg bg-background"
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {loading ? "Carregando..." : `${fmtNum(skus)} produto(s)`}
+          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-muted-foreground">Filial:</label>
-          <select
-            value={filtroFilial}
-            onChange={(e) => setFiltroFilial(e.target.value)}
-            className="px-3 py-1.5 text-xs border border-border rounded-lg bg-background"
-          >
-            <option value="todas">Todas as Filiais</option>
-            {filiaisDisponiveis.map((f) => (
-              <option key={f} value={f}>{FILIAL_LABELS[f] ?? f}</option>
-            ))}
-          </select>
-        </div>
-        <div className="relative flex-1 min-w-[240px]">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar por código ou descrição do produto..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-border rounded-lg bg-background"
-          />
-        </div>
-        <span className="text-xs text-muted-foreground">
-          {loading ? "Carregando..." : `${fmtNum(skus)} produto(s)`}
-        </span>
+        {busca.trim() && (
+          <div className="text-[11px] text-muted-foreground pl-1">
+            {produtosEncontrados.length === 0 ? (
+              <span className="text-destructive">Nenhum produto localizado.</span>
+            ) : (
+              <span>
+                <span className="font-semibold text-foreground">Produto(s) localizado(s):</span>{" "}
+                {produtosEncontrados.slice(0, 5).map((p) => `${p.cod} — ${p.descricao}`).join(" • ")}
+                {produtosEncontrados.length > 5 && ` • +${produtosEncontrados.length - 5} outros`}
+              </span>
+            )}
+          </div>
+        )}
       </div>
+
 
 
       {/* Gráficos de Vendas Semanais */}
