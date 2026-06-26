@@ -336,7 +336,7 @@ const DashboardUnilever = () => {
           filtered.forEach((i) => {
             const key = i.cod || i.descricao;
             if (!key) return;
-            const total = i.v3 + i.v2 + i.v1 + i.vAtu;
+            const total = toCx(i.v3, i.cmp) + toCx(i.v2, i.cmp) + toCx(i.v1, i.cmp) + toCx(i.vAtu, i.cmp);
             const cur = agg.get(key);
             if (cur) cur.total += total;
             else agg.set(key, { cod: i.cod, descricao: i.descricao, total });
