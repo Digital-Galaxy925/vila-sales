@@ -417,7 +417,7 @@ const DashboardUnilever = () => {
           const agg = new Map<string, number>();
           itemsBuOnly.forEach((i) => {
             if (!i.filial) return;
-            agg.set(i.filial, (agg.get(i.filial) ?? 0) + i.v3 + i.v2 + i.v1 + i.vAtu);
+            agg.set(i.filial, (agg.get(i.filial) ?? 0) + toCx(i.v3, i.cmp) + toCx(i.v2, i.cmp) + toCx(i.v1, i.cmp) + toCx(i.vAtu, i.cmp));
           });
           const ranking = Array.from(agg.entries())
             .map(([filial, total]) => ({ filial, label: FILIAL_LABELS[filial] ?? filial, total: Math.round(total) }))
