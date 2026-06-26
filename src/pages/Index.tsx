@@ -159,21 +159,31 @@ function normalizeHeader(value: unknown): string {
 function findHeaderIndex(header: string[], candidates: string[], fallback: number): number {
   const normalizedHeader = header.map(normalizeHeader);
   const normalizedCandidates = candidates.map(normalizeHeader);
-  const index = normalizedHeader.findIndex((value) =>
-    normalizedCandidates.some((candidate) => value === candidate || value.includes(candidate))
+  const exactIndex = normalizedHeader.findIndex((value) =>
+    normalizedCandidates.some((candidate) => value === candidate)
   );
-  return index >= 0 ? index : fallback;
+  if (exactIndex >= 0) return exactIndex;
+
+  const partialIndex = normalizedHeader.findIndex((value) =>
+    normalizedCandidates.some((candidate) => value.includes(candidate) || candidate.includes(value))
+  );
+  return partialIndex >= 0 ? partialIndex : fallback;
 }
 
 function findCol(row: Record<string, string>, candidates: string[]): string {
   const entries = Object.entries(row);
   const normalizedCandidates = candidates.map(normalizeHeader);
 
+  // Primeiro tenta correspondência exata. Isso evita conflitos como
+  // "Seqfornecedor" ser escolhido antes da coluna correta "Fornecedor".
   for (const [key, value] of entries) {
     const normalizedKey = normalizeHeader(key);
-    const matched = normalizedCandidates.some(
-      (candidate) => normalizedKey === candidate || normalizedKey.includes(candidate) || candidate.includes(normalizedKey)
-    );
+    if (normalizedCandidates.some((candidate) => normalizedKey === candidate) && value !== undefined) return value;
+  }
+
+  for (const [key, value] of entries) {
+    const normalizedKey = normalizeHeader(key);
+    const matched = normalizedCandidates.some((candidate) => normalizedKey.includes(candidate) || candidate.includes(normalizedKey));
     if (matched && value !== undefined) return value;
   }
 
