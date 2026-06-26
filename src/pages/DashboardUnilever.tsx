@@ -226,8 +226,10 @@ const DashboardUnilever = () => {
             ) : (
               <span>
                 <span className="font-semibold text-foreground">Produto(s) localizado(s):</span>{" "}
-                {produtosEncontrados.slice(0, 5).map((p) => `${p.cod} — ${p.descricao}`).join(" • ")}
-                {produtosEncontrados.length > 5 && ` • +${produtosEncontrados.length - 5} outros`}
+                <span className="font-bold text-green-600">
+                  {produtosEncontrados.slice(0, 5).map((p) => `${p.cod} — ${p.descricao}`).join(" • ")}
+                  {produtosEncontrados.length > 5 && ` • +${produtosEncontrados.length - 5} outros`}
+                </span>
               </span>
             )}
           </div>
