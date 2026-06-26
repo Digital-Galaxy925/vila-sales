@@ -142,10 +142,15 @@ const DashboardUnilever = () => {
   }, [filtered, sortDesc]);
 
 
+  // Vendas vêm em UNIDADES nos livros. Convertemos para CAIXAS dividindo por cmp (unid/cx).
+  const toCx = (v: number, cmp: number) => (cmp > 0 ? v / cmp : v);
   const sumWeeks = (list: typeof items) => {
     const t = { v3: 0, v2: 0, v1: 0, vAtu: 0 };
     list.forEach((i) => {
-      t.v3 += i.v3; t.v2 += i.v2; t.v1 += i.v1; t.vAtu += i.vAtu;
+      t.v3 += toCx(i.v3, i.cmp);
+      t.v2 += toCx(i.v2, i.cmp);
+      t.v1 += toCx(i.v1, i.cmp);
+      t.vAtu += toCx(i.vAtu, i.cmp);
     });
     return t;
   };
