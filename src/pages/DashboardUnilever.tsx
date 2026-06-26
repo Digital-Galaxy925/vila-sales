@@ -68,7 +68,11 @@ const DashboardUnilever = () => {
 
   // Flat product list with filial context
   const items = useMemo(() => {
-    const out: { filial: string; bu: string; cod: string; descricao: string; vAtu: number; v1: number; v2: number; v3: number }[] = [];
+    const out: {
+      filial: string; bu: string; familia: string; cod: string; descricao: string;
+      cmp: number; estoque: number; custo: number; preco: number; promoc: number;
+      vAtu: number; v1: number; v2: number; v3: number;
+    }[] = [];
     const d = data || {};
     Object.entries(d).forEach(([filial, arr]) => {
       if (!Array.isArray(arr)) return;
@@ -76,8 +80,14 @@ const DashboardUnilever = () => {
         out.push({
           filial,
           bu: String(p?.bu ?? "").toUpperCase().trim(),
+          familia: String(p?.familia ?? "").trim(),
           cod: String(p?.seqProd ?? p?.codigo ?? "").trim(),
           descricao: String(p?.descricao ?? "").trim(),
+          cmp: num(p?.embCmp ?? p?.emb_cmp ?? p?.unidPorCaixa ?? p?.unid_por_caixa),
+          estoque: num(p?.estoque),
+          custo: num(p?.custoLiq ?? p?.custo_liq ?? p?.custo),
+          preco: num(p?.atual ?? p?.preco),
+          promoc: num(p?.promoc ?? p?.promocional),
           vAtu: num(p?.vAtu),
           v1: num(p?.v1),
           v2: num(p?.v2),
