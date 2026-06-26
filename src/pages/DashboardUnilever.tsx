@@ -68,7 +68,11 @@ const DashboardUnilever = () => {
 
   // Flat product list with filial context
   const items = useMemo(() => {
-    const out: { filial: string; bu: string; cod: string; descricao: string; vAtu: number; v1: number; v2: number; v3: number }[] = [];
+    const out: {
+      filial: string; bu: string; familia: string; cod: string; descricao: string;
+      cmp: number; estoque: number; custo: number; preco: number; promoc: number;
+      vAtu: number; v1: number; v2: number; v3: number;
+    }[] = [];
     const d = data || {};
     Object.entries(d).forEach(([filial, arr]) => {
       if (!Array.isArray(arr)) return;
@@ -76,8 +80,14 @@ const DashboardUnilever = () => {
         out.push({
           filial,
           bu: String(p?.bu ?? "").toUpperCase().trim(),
+          familia: String(p?.familia ?? "").trim(),
           cod: String(p?.seqProd ?? p?.codigo ?? "").trim(),
           descricao: String(p?.descricao ?? "").trim(),
+          cmp: num(p?.embCmp ?? p?.emb_cmp ?? p?.unidPorCaixa ?? p?.unid_por_caixa),
+          estoque: num(p?.estoque),
+          custo: num(p?.custoLiq ?? p?.custo_liq ?? p?.custo),
+          preco: num(p?.atual ?? p?.preco),
+          promoc: num(p?.promoc ?? p?.promocional),
           vAtu: num(p?.vAtu),
           v1: num(p?.v1),
           v2: num(p?.v2),
@@ -280,6 +290,60 @@ const DashboardUnilever = () => {
             </div>
           </motion.div>
         ))}
+      </div>
+
+      {/* Tabela detalhada */}
+      <div className="bg-card border border-border rounded-2xl shadow-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
+            <Package className="w-4 h-4 text-primary" />
+            Produtos ({fmtNum(filtered.length)})
+          </h3>
+        </div>
+        <div className="overflow-auto max-h-[600px]">
+          <table className="w-full text-xs">
+            <thead className="sticky top-0 bg-muted/80 backdrop-blur z-10">
+              <tr className="text-left text-muted-foreground">
+                {["BU","Filial","Cód. Família","Código","Descrição","Unid/CX","Estoque","Preço de Custo","Preço de Venda","Promocional","Margem","VD.SEM. -3","VD.SEM. -2","VD.SEM. -1","VD.SEM. ATU"].map((h, i) => (
+                  <th key={h} className={`px-2 py-2 font-semibold whitespace-nowrap ${i >= 5 ? "text-right" : ""}`}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.slice(0, 1000).map((i, idx) => {
+                const precoVenda = i.promoc > 0 ? i.promoc : i.preco;
+                const margem = precoVenda > 0 ? ((precoVenda - i.custo) / precoVenda) * 100 : 0;
+                return (
+                  <tr key={idx} className="border-t border-border hover:bg-muted/40">
+                    <td className="px-2 py-1.5 font-semibold">{i.bu}</td>
+                    <td className="px-2 py-1.5 whitespace-nowrap">{FILIAL_LABELS[i.filial] ?? i.filial}</td>
+                    <td className="px-2 py-1.5">{i.familia}</td>
+                    <td className="px-2 py-1.5 font-mono">{i.cod}</td>
+                    <td className="px-2 py-1.5 min-w-[260px]">{i.descricao}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(i.cmp)}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(i.estoque)}</td>
+                    <td className="px-2 py-1.5 text-right">{i.custo.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                    <td className="px-2 py-1.5 text-right">{i.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                    <td className="px-2 py-1.5 text-right">{i.promoc > 0 ? i.promoc.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</td>
+                    <td className={`px-2 py-1.5 text-right font-semibold ${margem < 0 ? "text-destructive" : "text-emerald-600"}`}>{margem.toFixed(1)}%</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(i.v3)}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(i.v2)}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(i.v1)}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(i.vAtu)}</td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr><td colSpan={15} className="px-4 py-8 text-center text-muted-foreground">Nenhum produto.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {filtered.length > 1000 && (
+          <div className="px-4 py-2 text-[11px] text-muted-foreground border-t border-border">
+            Exibindo primeiros 1.000 de {fmtNum(filtered.length)} produtos. Refine os filtros para ver mais.
+          </div>
+        )}
       </div>
 
     </div>
