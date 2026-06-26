@@ -329,6 +329,7 @@ const DashboardUnilever = () => {
                     <td className="px-2 py-1.5 text-right">{fmtNum(i.v3)}</td>
                     <td className="px-2 py-1.5 text-right">{fmtNum(i.v2)}</td>
                     <td className="px-2 py-1.5 text-right">{fmtNum(i.v1)}</td>
+                    <td className="px-2 py-1.5 text-right font-semibold">{fmtNum((i.v1 + i.v2 + i.v3) / 3)}</td>
                     <td className="px-2 py-1.5 text-right">{fmtNum(i.vAtu)}</td>
                   </tr>
                 );
