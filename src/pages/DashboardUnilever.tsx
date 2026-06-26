@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, Package, Boxes, Building2, Search, FileSpreadsheet } from "lucide-react";
+import { BarChart3, TrendingUp, Package, Boxes, Building2, Search, FileSpreadsheet, Trophy } from "lucide-react";
 import * as XLSX from "xlsx";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
