@@ -96,34 +96,39 @@ const DashboardUnilever = () => {
     return Array.from(s).sort();
   }, [items]);
 
-  const filtered = useMemo(() => {
-    return items.filter((i) => {
-      if (filtroBu !== "todas" && i.bu !== filtroBu) return false;
-      if (filtroFilial !== "todas" && i.filial !== filtroFilial) return false;
-      return true;
-    });
-  }, [items, filtroBu, filtroFilial]);
+  // Base do gráfico TOTAL: aplica apenas BU (ignora filial)
+  const itemsBuOnly = useMemo(
+    () => items.filter((i) => (filtroBu === "todas" ? true : i.bu === filtroBu)),
+    [items, filtroBu],
+  );
 
-  const totals = useMemo(() => {
+  // Base do gráfico por filial: aplica BU + filial
+  const filtered = useMemo(
+    () => itemsBuOnly.filter((i) => (filtroFilial === "todas" ? true : i.filial === filtroFilial)),
+    [itemsBuOnly, filtroFilial],
+  );
+
+  const sumWeeks = (list: typeof items) => {
     const t = { v3: 0, v2: 0, v1: 0, vAtu: 0 };
-    filtered.forEach((i) => {
-      t.v3 += i.v3;
-      t.v2 += i.v2;
-      t.v1 += i.v1;
-      t.vAtu += i.vAtu;
+    list.forEach((i) => {
+      t.v3 += i.v3; t.v2 += i.v2; t.v1 += i.v1; t.vAtu += i.vAtu;
     });
     return t;
-  }, [filtered]);
+  };
 
-  const chartData = useMemo(
-    () => [
-      { name: "VD.SEM. -3", vendas: Math.round(totals.v3) },
-      { name: "VD.SEM. -2", vendas: Math.round(totals.v2) },
-      { name: "VD.SEM. -1", vendas: Math.round(totals.v1) },
-      { name: "VD.SEM. ATU", vendas: Math.round(totals.vAtu) },
-    ],
-    [totals],
-  );
+  const totals = useMemo(() => sumWeeks(filtered), [filtered]);
+  const totalsGeral = useMemo(() => sumWeeks(itemsBuOnly), [itemsBuOnly]);
+
+  const toChart = (t: { v3: number; v2: number; v1: number; vAtu: number }) => [
+    { name: "VD.SEM. -3", vendas: Math.round(t.v3) },
+    { name: "VD.SEM. -2", vendas: Math.round(t.v2) },
+    { name: "VD.SEM. -1", vendas: Math.round(t.v1) },
+    { name: "VD.SEM. ATU", vendas: Math.round(t.vAtu) },
+  ];
+
+  const chartDataGeral = useMemo(() => toChart(totalsGeral), [totalsGeral]);
+  const chartDataFilial = useMemo(() => toChart(totals), [totals]);
+
 
   const mediaTres = (totals.v3 + totals.v2 + totals.v1) / 3;
   const variacao = mediaTres > 0 ? ((totals.vAtu - mediaTres) / mediaTres) * 100 : 0;
