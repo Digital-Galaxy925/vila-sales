@@ -77,8 +77,9 @@ const DashboardUnilever = () => {
       vAtu: number; v1: number; v2: number; v3: number;
     }[] = [];
     const d = data || {};
-    Object.entries(d).forEach(([filial, arr]) => {
+    Object.entries(d).forEach(([filialRaw, arr]) => {
       if (!Array.isArray(arr)) return;
+      const filial = filialRaw === "510" ? "502" : filialRaw;
       arr.forEach((p: any) => {
         out.push({
           filial,
