@@ -187,10 +187,21 @@ const DashboardUnilever = () => {
             ))}
           </select>
         </div>
-        <span className="text-xs text-muted-foreground ml-auto">
+        <div className="relative flex-1 min-w-[240px]">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar por código ou descrição do produto..."
+            className="w-full pl-9 pr-3 py-1.5 text-xs border border-border rounded-lg bg-background"
+          />
+        </div>
+        <span className="text-xs text-muted-foreground">
           {loading ? "Carregando..." : `${fmtNum(skus)} produto(s)`}
         </span>
       </div>
+
 
       {/* Gráficos de Vendas Semanais */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
