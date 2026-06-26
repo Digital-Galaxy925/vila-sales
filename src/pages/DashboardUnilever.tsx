@@ -49,6 +49,8 @@ const DashboardUnilever = () => {
   const [loading, setLoading] = useState(true);
   const [filtroBu, setFiltroBu] = useState<string>("todas");
   const [filtroFilial, setFiltroFilial] = useState<string>("todas");
+  const [busca, setBusca] = useState<string>("");
+
 
   useEffect(() => {
     (async () => {
