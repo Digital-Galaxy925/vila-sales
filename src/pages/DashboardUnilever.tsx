@@ -570,11 +570,11 @@ const DashboardUnilever = () => {
                     <td className="px-2 py-1.5 text-right">{i.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
                     <td className="px-2 py-1.5 text-right">{i.promoc > 0 ? i.promoc.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</td>
                     <td className={`px-2 py-1.5 text-right font-semibold ${margem < 0 ? "text-destructive" : "text-emerald-600"}`}>{margem.toFixed(1)}%</td>
-                    <td className="px-2 py-1.5 text-right">{fmtNum(i.v3)}</td>
-                    <td className="px-2 py-1.5 text-right">{fmtNum(i.v2)}</td>
-                    <td className="px-2 py-1.5 text-right">{fmtNum(i.v1)}</td>
-                    <td className="px-2 py-1.5 text-right font-semibold">{fmtNum((i.v1 + i.v2 + i.v3) / 3)}</td>
-                    <td className="px-2 py-1.5 text-right">{fmtNum(i.vAtu)}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(toCx(i.v3, i.cmp))}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(toCx(i.v2, i.cmp))}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(toCx(i.v1, i.cmp))}</td>
+                    <td className="px-2 py-1.5 text-right font-semibold">{fmtNum((toCx(i.v1, i.cmp) + toCx(i.v2, i.cmp) + toCx(i.v3, i.cmp)) / 3)}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(toCx(i.vAtu, i.cmp))}</td>
                   </tr>
                 );
               })}
