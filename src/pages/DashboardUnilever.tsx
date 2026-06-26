@@ -182,35 +182,50 @@ const DashboardUnilever = () => {
         </span>
       </div>
 
-      {/* Gráfico de Vendas Semanais */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-2xl p-6 shadow-card border border-border"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-primary" />
-            Vendas Semanais (Cx)
-          </h3>
-        </div>
-        <div className="h-[380px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 24, right: 24, left: 0, bottom: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => fmtNum(v)} />
-              <Tooltip
-                formatter={(v: number) => [`${fmtNum(v)} Cx`, "Vendas"]}
-                contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "12px" }}
-              />
-              <Bar dataKey="vendas" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]}>
-                <LabelList dataKey="vendas" position="top" formatter={(v: number) => fmtNum(v)} fontSize={11} fill="hsl(var(--muted-foreground))" />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </motion.div>
+      {/* Gráficos de Vendas Semanais */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {[
+          { title: "Vendas Semanais — Total (Cx)", data: chartDataGeral, color: "hsl(var(--primary))", delay: 0 },
+          {
+            title: `Vendas Semanais — ${filtroFilial === "todas" ? "Todas as Filiais" : FILIAL_LABELS[filtroFilial] ?? filtroFilial} (Cx)`,
+            data: chartDataFilial,
+            color: "#10b981",
+            delay: 0.1,
+          },
+        ].map((g, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: g.delay }}
+            className="bg-card rounded-2xl p-6 shadow-card border border-border"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" style={{ color: g.color }} />
+                {g.title}
+              </h3>
+            </div>
+            <div className="h-[380px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={g.data} margin={{ top: 24, right: 24, left: 0, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => fmtNum(v)} />
+                  <Tooltip
+                    formatter={(v: number) => [`${fmtNum(v)} Cx`, "Vendas"]}
+                    contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "12px" }}
+                  />
+                  <Bar dataKey="vendas" fill={g.color} radius={[6, 6, 0, 0]}>
+                    <LabelList dataKey="vendas" position="top" formatter={(v: number) => fmtNum(v)} fontSize={11} fill="hsl(var(--muted-foreground))" />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
     </div>
   );
 };
