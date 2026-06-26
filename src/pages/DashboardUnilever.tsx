@@ -52,6 +52,7 @@ const DashboardUnilever = () => {
   const [filtroFilial, setFiltroFilial] = useState<string>("todas");
   const [busca, setBusca] = useState<string>("");
   const [showSug, setShowSug] = useState<boolean>(false);
+  const [sortDesc, setSortDesc] = useState<"asc" | "desc" | null>(null);
 
 
   useEffect(() => {
