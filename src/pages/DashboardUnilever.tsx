@@ -107,11 +107,16 @@ const DashboardUnilever = () => {
     [items, filtroBu],
   );
 
-  // Base do gráfico por filial: aplica BU + filial
-  const filtered = useMemo(
-    () => itemsBuOnly.filter((i) => (filtroFilial === "todas" ? true : i.filial === filtroFilial)),
-    [itemsBuOnly, filtroFilial],
-  );
+  // Base do gráfico por filial: aplica BU + filial + busca por código/descrição
+  const filtered = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    return itemsBuOnly.filter((i) => {
+      if (filtroFilial !== "todas" && i.filial !== filtroFilial) return false;
+      if (!q) return true;
+      return i.cod.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q);
+    });
+  }, [itemsBuOnly, filtroFilial, busca]);
+
 
   const sumWeeks = (list: typeof items) => {
     const t = { v3: 0, v2: 0, v1: 0, vAtu: 0 };
