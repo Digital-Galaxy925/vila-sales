@@ -1,19 +1,8 @@
-import React, { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  BarChart3,
-  TrendingUp,
-  DollarSign,
-  Package,
-  ShoppingCart,
-  LayoutGrid,
-  Search,
-  Users,
-  Building2,
-} from "lucide-react";
+import { BarChart3, TrendingUp, Package, Boxes, Building2 } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
-import { Input } from "@/components/ui/input";
 import {
   BarChart,
   Bar,
@@ -22,218 +11,201 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
+  LabelList,
 } from "recharts";
+import { loadLivrosFromSupabase, type FilialDataMap } from "@/lib/livrosSync";
+import { toast } from "@/hooks/use-toast";
 
-const COLORS = ["#8b5cf6", "#10b981", "#f59e0b", "#3b82f6", "#ef4444", "#6366f1", "#ec4899"];
+const FILIAL_LABELS: Record<string, string> = {
+  "01": "01 - Poços de Caldas",
+  "11": "11 - Campinas",
+  "12": "12 - Osasco",
+  "14": "14 - Betim",
+  "501": "501 - Focomix SP",
+  "502": "502 - Focomix MG",
+};
 
-const fmt = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const num = (v: any): number => {
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+  if (v == null || v === "") return 0;
+  const s = String(v).trim().replace(/[^\d,.-]/g, "");
+  if (!s) return 0;
+  const lastComma = s.lastIndexOf(",");
+  const lastDot = s.lastIndexOf(".");
+  let n = s;
+  if (lastComma >= 0 && lastDot >= 0) {
+    n = lastComma > lastDot ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
+  } else if (lastComma >= 0) {
+    n = s.replace(/\./g, "").replace(",", ".");
+  }
+  const parsed = Number(n);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 
-const fmtNum = (v: number) => v.toLocaleString("pt-BR");
+const fmtNum = (v: number) => Math.round(v).toLocaleString("pt-BR");
 
 const DashboardUnilever = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [data, setData] = useState<FilialDataMap | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [filtroBu, setFiltroBu] = useState<string>("todas");
+  const [filtroFilial, setFiltroFilial] = useState<string>("todas");
 
-  // Simulated data based on the DIUNILEVER file structure
-  const stats = useMemo(() => ({
-    totalVendas: 1425678.90,
-    totalVendasMesAnterior: 1350000.00,
-    totalPedidos: 1245,
-    ticketMedio: 1145.12,
-    totalClientes: 856,
-    totalItens: 45678,
-  }), []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const remote = await loadLivrosFromSupabase();
+        setData(remote || {});
+      } catch (e: any) {
+        toast({ title: "Erro ao carregar livros", description: e?.message ?? String(e), variant: "destructive" });
+        setData({});
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
-  const topProdutos = useMemo(() => [
-    { name: "DES DOVE ROLL-ON 50ML", value: 45600, qty: 1200 },
-    { name: "DES AXE AERO 150ML", value: 38900, qty: 1050 },
-    { name: "DES REXONA AERO 150ML", value: 32400, qty: 980 },
-    { name: "COND SEDA 325ML", value: 28500, qty: 1500 },
-    { name: "SH CLEAR 200ML", value: 24500, qty: 850 },
-  ], []);
+  // Flat product list with filial context
+  const items = useMemo(() => {
+    const out: { filial: string; bu: string; vAtu: number; v1: number; v2: number; v3: number }[] = [];
+    const d = data || {};
+    Object.entries(d).forEach(([filial, arr]) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach((p: any) => {
+        out.push({
+          filial,
+          bu: String(p?.bu ?? "").toUpperCase().trim(),
+          vAtu: num(p?.vAtu),
+          v1: num(p?.v1),
+          v2: num(p?.v2),
+          v3: num(p?.v3),
+        });
+      });
+    });
+    return out;
+  }, [data]);
 
-  const vendasPorFilial = useMemo(() => [
-    { name: "Focomix SP", value: 545000 },
-    { name: "Focomix MG", value: 324000 },
-    { name: "Campinas", value: 215000 },
-    { name: "Osasco", value: 185000 },
-    { name: "Betim", value: 156678 },
-  ], []);
+  const busDisponiveis = useMemo(() => {
+    const s = new Set<string>();
+    items.forEach((i) => i.bu && s.add(i.bu));
+    return Array.from(s).sort();
+  }, [items]);
 
-  const evolucaoMensal = useMemo(() => [
-    { name: "Jan", vendas: 1100000 },
-    { name: "Fev", vendas: 1250000 },
-    { name: "Mar", vendas: 1180000 },
-    { name: "Abr", vendas: 1350000 },
-    { name: "Mai", vendas: 1425678 },
-  ], []);
+  const filiaisDisponiveis = useMemo(() => {
+    const s = new Set<string>();
+    items.forEach((i) => i.filial && s.add(i.filial));
+    return Array.from(s).sort();
+  }, [items]);
 
-  const filteredProdutos = topProdutos.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = useMemo(() => {
+    return items.filter((i) => {
+      if (filtroBu !== "todas" && i.bu !== filtroBu) return false;
+      if (filtroFilial !== "todas" && i.filial !== filtroFilial) return false;
+      return true;
+    });
+  }, [items, filtroBu, filtroFilial]);
+
+  const totals = useMemo(() => {
+    const t = { v3: 0, v2: 0, v1: 0, vAtu: 0 };
+    filtered.forEach((i) => {
+      t.v3 += i.v3;
+      t.v2 += i.v2;
+      t.v1 += i.v1;
+      t.vAtu += i.vAtu;
+    });
+    return t;
+  }, [filtered]);
+
+  const chartData = useMemo(
+    () => [
+      { name: "VD.SEM. -3", vendas: Math.round(totals.v3) },
+      { name: "VD.SEM. -2", vendas: Math.round(totals.v2) },
+      { name: "VD.SEM. -1", vendas: Math.round(totals.v1) },
+      { name: "VD.SEM. ATU", vendas: Math.round(totals.vAtu) },
+    ],
+    [totals],
   );
+
+  const mediaTres = (totals.v3 + totals.v2 + totals.v1) / 3;
+  const variacao = mediaTres > 0 ? ((totals.vAtu - mediaTres) / mediaTres) * 100 : 0;
+  const skus = filtered.length;
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Dashboard Unilever"
-        description="Indicadores de performance baseados em movimentações DI Unilever"
+        description="Indicadores de vendas semanais consolidados a partir dos livros"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
-          title="Faturamento Total"
-          value={fmt(stats.totalVendas)}
-          icon={DollarSign}
-          trend={stats.totalVendas > stats.totalVendasMesAnterior ? "up" : "down"}
-          trendValue={`${(((stats.totalVendas / stats.totalVendasMesAnterior) - 1) * 100).toFixed(1)}%`}
-        />
-        <KpiCard
-          title="Total de Pedidos"
-          value={fmtNum(stats.totalPedidos)}
-          icon={ShoppingCart}
-        />
-        <KpiCard
-          title="Ticket Médio"
-          value={fmt(stats.ticketMedio)}
-          icon={TrendingUp}
-        />
-        <KpiCard
-          title="Clientes Ativos"
-          value={fmtNum(stats.totalClientes)}
-          icon={Users}
-        />
+        <KpiCard title="Venda Semana Atual (Cx)" value={fmtNum(totals.vAtu)} icon={TrendingUp} trend={variacao >= 0 ? "up" : "down"} trendValue={`${variacao.toFixed(1)}%`} />
+        <KpiCard title="Média Últimas 3 Semanas" value={fmtNum(mediaTres)} icon={BarChart3} />
+        <KpiCard title="Total 4 Semanas (Cx)" value={fmtNum(totals.v3 + totals.v2 + totals.v1 + totals.vAtu)} icon={Boxes} />
+        <KpiCard title="SKUs Analisados" value={fmtNum(skus)} icon={Package} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Evolução de Vendas */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-card rounded-2xl p-6 shadow-card border border-border"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-primary" />
-              Evolução Mensal de Vendas
-            </h3>
-          </div>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={evolucaoMensal}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `R$${v/1000}k`} />
-                <Tooltip 
-                  formatter={(v: number) => fmt(v)}
-                  contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "12px" }}
-                />
-                <Bar dataKey="vendas" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-
-        {/* Vendas por Filial */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-card rounded-2xl p-6 shadow-card border border-border"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-primary" />
-              Participação por Filial
-            </h3>
-          </div>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={vendasPorFilial}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {vendasPorFilial.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v: number) => fmt(v)} />
-                <Legend verticalAlign="bottom" height={36}/>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-3 bg-card border border-border rounded-xl p-3">
+        <div className="flex items-center gap-2">
+          <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
+          <label className="text-xs font-medium text-muted-foreground">BU:</label>
+          <select
+            value={filtroBu}
+            onChange={(e) => setFiltroBu(e.target.value)}
+            className="px-3 py-1.5 text-xs border border-border rounded-lg bg-background"
+          >
+            <option value="todas">Todas as BUs</option>
+            {busDisponiveis.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-muted-foreground">Filial:</label>
+          <select
+            value={filtroFilial}
+            onChange={(e) => setFiltroFilial(e.target.value)}
+            className="px-3 py-1.5 text-xs border border-border rounded-lg bg-background"
+          >
+            <option value="todas">Todas as Filiais</option>
+            {filiaisDisponiveis.map((f) => (
+              <option key={f} value={f}>{FILIAL_LABELS[f] ?? f}</option>
+            ))}
+          </select>
+        </div>
+        <span className="text-xs text-muted-foreground ml-auto">
+          {loading ? "Carregando..." : `${fmtNum(skus)} produto(s)`}
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        {/* Top Produtos */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-card rounded-2xl p-6 shadow-card border border-border"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
-              <Package className="w-4 h-4 text-primary" />
-              Top Produtos (Curva A)
-            </h3>
-            <div className="relative max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Filtrar produto..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+      {/* Gráfico de Vendas Semanais */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-card rounded-2xl p-6 shadow-card border border-border"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-primary" />
+            Vendas Semanais (Cx)
+          </h3>
+        </div>
+        <div className="h-[380px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 24, right: 24, left: 0, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => fmtNum(v)} />
+              <Tooltip
+                formatter={(v: number) => [`${fmtNum(v)} Cx`, "Vendas"]}
+                contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "12px" }}
               />
-            </div>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Produto</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Qtd. Vendida</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-right">Valor Total</th>
-                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground text-center">Share</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {filteredProdutos.map((p, i) => (
-                  <tr key={i} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-4 text-sm font-medium text-card-foreground">{p.name}</td>
-                    <td className="px-4 py-4 text-sm text-right text-card-foreground">{fmtNum(p.qty)}</td>
-                    <td className="px-4 py-4 text-sm text-right font-semibold text-card-foreground">{fmt(p.value)}</td>
-                    <td className="px-4 py-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-primary" 
-                            style={{ width: `${(p.value / stats.totalVendas * 100).toFixed(1)}%` }}
-                          />
-                        </div>
-                        <span className="text-[11px] font-medium text-muted-foreground w-8">
-                          {((p.value / stats.totalVendas) * 100).toFixed(1)}%
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-      </div>
+              <Bar dataKey="vendas" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]}>
+                <LabelList dataKey="vendas" position="top" formatter={(v: number) => fmtNum(v)} fontSize={11} fill="hsl(var(--muted-foreground))" />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
     </div>
   );
 };
