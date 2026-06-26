@@ -304,7 +304,7 @@ const DashboardUnilever = () => {
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-muted/80 backdrop-blur z-10">
               <tr className="text-left text-muted-foreground">
-                {["BU","Filial","Cód. Família","Código","Descrição","Unid/CX","Estoque","Preço de Custo","Preço de Venda","Promocional","Margem","VD.SEM. -3","VD.SEM. -2","VD.SEM. -1","VD.SEM. ATU"].map((h, i) => (
+                {["BU","Filial","Cód. Família","Código","Descrição","Unid/CX","Estoque","Preço de Custo","Preço de Venda","Promocional","Margem","VD.SEM. -3","VD.SEM. -2","VD.SEM. -1","Venda Média","VD.SEM. ATU"].map((h, i) => (
                   <th key={h} className={`px-2 py-2 font-semibold whitespace-nowrap ${i >= 5 ? "text-right" : ""}`}>{h}</th>
                 ))}
               </tr>
@@ -329,12 +329,13 @@ const DashboardUnilever = () => {
                     <td className="px-2 py-1.5 text-right">{fmtNum(i.v3)}</td>
                     <td className="px-2 py-1.5 text-right">{fmtNum(i.v2)}</td>
                     <td className="px-2 py-1.5 text-right">{fmtNum(i.v1)}</td>
+                    <td className="px-2 py-1.5 text-right font-semibold">{fmtNum((i.v1 + i.v2 + i.v3) / 3)}</td>
                     <td className="px-2 py-1.5 text-right">{fmtNum(i.vAtu)}</td>
                   </tr>
                 );
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={15} className="px-4 py-8 text-center text-muted-foreground">Nenhum produto.</td></tr>
+                <tr><td colSpan={16} className="px-4 py-8 text-center text-muted-foreground">Nenhum produto.</td></tr>
               )}
             </tbody>
           </table>
