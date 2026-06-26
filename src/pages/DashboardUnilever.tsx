@@ -513,11 +513,11 @@ const DashboardUnilever = () => {
                   "Preço de Venda": i.preco,
                   Promocional: i.promoc,
                   "Margem (%)": Number(margem.toFixed(2)),
-                  "VD.SEM. -3": Math.round(i.v3),
-                  "VD.SEM. -2": Math.round(i.v2),
-                  "VD.SEM. -1": Math.round(i.v1),
-                  "Venda Média": Math.round((i.v1 + i.v2 + i.v3) / 3),
-                  "VD.SEM. ATU": Math.round(i.vAtu),
+                  "VD.SEM. -3 (Cx)": Math.round(toCx(i.v3, i.cmp)),
+                  "VD.SEM. -2 (Cx)": Math.round(toCx(i.v2, i.cmp)),
+                  "VD.SEM. -1 (Cx)": Math.round(toCx(i.v1, i.cmp)),
+                  "Venda Média (Cx)": Math.round((toCx(i.v1, i.cmp) + toCx(i.v2, i.cmp) + toCx(i.v3, i.cmp)) / 3),
+                  "VD.SEM. ATU (Cx)": Math.round(toCx(i.vAtu, i.cmp)),
                 };
               });
               const ws = XLSX.utils.json_to_sheet(rows);
