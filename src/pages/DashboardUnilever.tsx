@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, Package, Boxes, Building2, Search } from "lucide-react";
+import { BarChart3, TrendingUp, Package, Boxes, Building2, Search, FileSpreadsheet } from "lucide-react";
+import * as XLSX from "xlsx";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
 import {
@@ -299,6 +300,44 @@ const DashboardUnilever = () => {
             <Package className="w-4 h-4 text-primary" />
             Produtos ({fmtNum(filtered.length)})
           </h3>
+          <button
+            onClick={() => {
+              const rows = filtered.map((i) => {
+                const precoVenda = i.promoc > 0 ? i.promoc : i.preco;
+                const margem = precoVenda > 0 ? ((precoVenda - i.custo) / precoVenda) * 100 : 0;
+                return {
+                  BU: i.bu,
+                  Filial: FILIAL_LABELS[i.filial] ?? i.filial,
+                  "Cód. Família": i.familia,
+                  Código: i.cod,
+                  Descrição: i.descricao,
+                  "Unid/CX": Math.round(i.cmp),
+                  Estoque: Math.round(i.estoque),
+                  "Preço de Custo": i.custo,
+                  "Preço de Venda": i.preco,
+                  Promocional: i.promoc,
+                  "Margem (%)": Number(margem.toFixed(2)),
+                  "VD.SEM. -3": Math.round(i.v3),
+                  "VD.SEM. -2": Math.round(i.v2),
+                  "VD.SEM. -1": Math.round(i.v1),
+                  "Venda Média": Math.round((i.v1 + i.v2 + i.v3) / 3),
+                  "VD.SEM. ATU": Math.round(i.vAtu),
+                };
+              });
+              const ws = XLSX.utils.json_to_sheet(rows);
+              const wb = XLSX.utils.book_new();
+              XLSX.utils.book_append_sheet(wb, ws, "Dashboard");
+              const stamp = new Date().toISOString().slice(0, 10);
+              XLSX.writeFile(wb, `Dashboard_Unilever_${stamp}.xlsx`);
+            }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg text-white shadow-sm transition-colors"
+            style={{ backgroundColor: "#107C41" }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#0B5F31")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#107C41")}
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            Exportar Excel
+          </button>
         </div>
         <div className="overflow-auto max-h-[600px]">
           <table className="w-full text-xs">
