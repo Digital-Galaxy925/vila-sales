@@ -159,10 +159,15 @@ function normalizeHeader(value: unknown): string {
 function findHeaderIndex(header: string[], candidates: string[], fallback: number): number {
   const normalizedHeader = header.map(normalizeHeader);
   const normalizedCandidates = candidates.map(normalizeHeader);
-  const index = normalizedHeader.findIndex((value) =>
-    normalizedCandidates.some((candidate) => value === candidate || value.includes(candidate))
+  const exactIndex = normalizedHeader.findIndex((value) =>
+    normalizedCandidates.some((candidate) => value === candidate)
   );
-  return index >= 0 ? index : fallback;
+  if (exactIndex >= 0) return exactIndex;
+
+  const partialIndex = normalizedHeader.findIndex((value) =>
+    normalizedCandidates.some((candidate) => value.includes(candidate) || candidate.includes(value))
+  );
+  return partialIndex >= 0 ? partialIndex : fallback;
 }
 
 function findCol(row: Record<string, string>, candidates: string[]): string {
