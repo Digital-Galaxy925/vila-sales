@@ -142,10 +142,15 @@ const DashboardUnilever = () => {
   }, [filtered, sortDesc]);
 
 
+  // Vendas vêm em UNIDADES nos livros. Convertemos para CAIXAS dividindo por cmp (unid/cx).
+  const toCx = (v: number, cmp: number) => (cmp > 0 ? v / cmp : v);
   const sumWeeks = (list: typeof items) => {
     const t = { v3: 0, v2: 0, v1: 0, vAtu: 0 };
     list.forEach((i) => {
-      t.v3 += i.v3; t.v2 += i.v2; t.v1 += i.v1; t.vAtu += i.vAtu;
+      t.v3 += toCx(i.v3, i.cmp);
+      t.v2 += toCx(i.v2, i.cmp);
+      t.v1 += toCx(i.v1, i.cmp);
+      t.vAtu += toCx(i.vAtu, i.cmp);
     });
     return t;
   };
@@ -331,7 +336,7 @@ const DashboardUnilever = () => {
           filtered.forEach((i) => {
             const key = i.cod || i.descricao;
             if (!key) return;
-            const total = i.v3 + i.v2 + i.v1 + i.vAtu;
+            const total = toCx(i.v3, i.cmp) + toCx(i.v2, i.cmp) + toCx(i.v1, i.cmp) + toCx(i.vAtu, i.cmp);
             const cur = agg.get(key);
             if (cur) cur.total += total;
             else agg.set(key, { cod: i.cod, descricao: i.descricao, total });
@@ -412,7 +417,7 @@ const DashboardUnilever = () => {
           const agg = new Map<string, number>();
           itemsBuOnly.forEach((i) => {
             if (!i.filial) return;
-            agg.set(i.filial, (agg.get(i.filial) ?? 0) + i.v3 + i.v2 + i.v1 + i.vAtu);
+            agg.set(i.filial, (agg.get(i.filial) ?? 0) + toCx(i.v3, i.cmp) + toCx(i.v2, i.cmp) + toCx(i.v1, i.cmp) + toCx(i.vAtu, i.cmp));
           });
           const ranking = Array.from(agg.entries())
             .map(([filial, total]) => ({ filial, label: FILIAL_LABELS[filial] ?? filial, total: Math.round(total) }))
@@ -508,11 +513,11 @@ const DashboardUnilever = () => {
                   "Preço de Venda": i.preco,
                   Promocional: i.promoc,
                   "Margem (%)": Number(margem.toFixed(2)),
-                  "VD.SEM. -3": Math.round(i.v3),
-                  "VD.SEM. -2": Math.round(i.v2),
-                  "VD.SEM. -1": Math.round(i.v1),
-                  "Venda Média": Math.round((i.v1 + i.v2 + i.v3) / 3),
-                  "VD.SEM. ATU": Math.round(i.vAtu),
+                  "VD.SEM. -3 (Cx)": Math.round(toCx(i.v3, i.cmp)),
+                  "VD.SEM. -2 (Cx)": Math.round(toCx(i.v2, i.cmp)),
+                  "VD.SEM. -1 (Cx)": Math.round(toCx(i.v1, i.cmp)),
+                  "Venda Média (Cx)": Math.round((toCx(i.v1, i.cmp) + toCx(i.v2, i.cmp) + toCx(i.v3, i.cmp)) / 3),
+                  "VD.SEM. ATU (Cx)": Math.round(toCx(i.vAtu, i.cmp)),
                 };
               });
               const ws = XLSX.utils.json_to_sheet(rows);
@@ -565,11 +570,11 @@ const DashboardUnilever = () => {
                     <td className="px-2 py-1.5 text-right">{i.preco.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
                     <td className="px-2 py-1.5 text-right">{i.promoc > 0 ? i.promoc.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</td>
                     <td className={`px-2 py-1.5 text-right font-semibold ${margem < 0 ? "text-destructive" : "text-emerald-600"}`}>{margem.toFixed(1)}%</td>
-                    <td className="px-2 py-1.5 text-right">{fmtNum(i.v3)}</td>
-                    <td className="px-2 py-1.5 text-right">{fmtNum(i.v2)}</td>
-                    <td className="px-2 py-1.5 text-right">{fmtNum(i.v1)}</td>
-                    <td className="px-2 py-1.5 text-right font-semibold">{fmtNum((i.v1 + i.v2 + i.v3) / 3)}</td>
-                    <td className="px-2 py-1.5 text-right">{fmtNum(i.vAtu)}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(toCx(i.v3, i.cmp))}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(toCx(i.v2, i.cmp))}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(toCx(i.v1, i.cmp))}</td>
+                    <td className="px-2 py-1.5 text-right font-semibold">{fmtNum((toCx(i.v1, i.cmp) + toCx(i.v2, i.cmp) + toCx(i.v3, i.cmp)) / 3)}</td>
+                    <td className="px-2 py-1.5 text-right">{fmtNum(toCx(i.vAtu, i.cmp))}</td>
                   </tr>
                 );
               })}
