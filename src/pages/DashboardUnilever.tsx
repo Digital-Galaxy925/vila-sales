@@ -332,7 +332,7 @@ const DashboardUnilever = () => {
           </h3>
           <button
             onClick={() => {
-              const rows = filtered.map((i) => {
+              const rows = filteredSorted.map((i) => {
                 const precoVenda = i.promoc > 0 ? i.promoc : i.preco;
                 const margem = precoVenda > 0 ? ((precoVenda - i.custo) / precoVenda) * 100 : 0;
                 return {
