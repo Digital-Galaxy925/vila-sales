@@ -144,6 +144,23 @@ const DashboardUnilever = () => {
   const variacao = mediaTres > 0 ? ((totals.vAtu - mediaTres) / mediaTres) * 100 : 0;
   const skus = filtered.length;
 
+  const produtosEncontrados = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return [] as { cod: string; descricao: string }[];
+    const seen = new Set<string>();
+    const out: { cod: string; descricao: string }[] = [];
+    items.forEach((i) => {
+      if (filtroBu !== "todas" && i.bu !== filtroBu) return;
+      if (!(i.cod.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q))) return;
+      const key = i.cod || i.descricao;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ cod: i.cod, descricao: i.descricao });
+    });
+    return out;
+  }, [items, busca, filtroBu]);
+
+
   return (
     <div className="space-y-6">
       <PageHeader
