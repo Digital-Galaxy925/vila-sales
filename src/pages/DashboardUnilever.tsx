@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, Package, Boxes, Building2, Search, FileSpreadsheet } from "lucide-react";
+import { BarChart3, TrendingUp, Package, Boxes, Building2, Search, FileSpreadsheet, Trophy } from "lucide-react";
 import * as XLSX from "xlsx";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
@@ -322,6 +322,90 @@ const DashboardUnilever = () => {
           </motion.div>
         ))}
       </div>
+
+      {/* Top 10 Produtos */}
+      {(() => {
+        const agg = new Map<string, { cod: string; descricao: string; total: number }>();
+        filtered.forEach((i) => {
+          const key = i.cod || i.descricao;
+          if (!key) return;
+          const total = i.v3 + i.v2 + i.v1 + i.vAtu;
+          const cur = agg.get(key);
+          if (cur) cur.total += total;
+          else agg.set(key, { cod: i.cod, descricao: i.descricao, total });
+        });
+        const top10 = Array.from(agg.values())
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 10)
+          .map((p) => ({
+            ...p,
+            label: `${p.cod} — ${p.descricao.length > 42 ? p.descricao.slice(0, 42) + "…" : p.descricao}`,
+            total: Math.round(p.total),
+          }));
+        const maxTotal = top10.reduce((m, p) => Math.max(m, p.total), 0) || 1;
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card rounded-2xl p-6 shadow-card border border-border"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-amber-500" />
+                Top 10 Produtos — Vendas 4 Semanas (Cx)
+              </h3>
+              <span className="text-[11px] text-muted-foreground">
+                {filtroFilial === "todas" ? "Todas as Filiais" : FILIAL_LABELS[filtroFilial] ?? filtroFilial}
+                {filtroBu !== "todas" && ` · BU ${filtroBu}`}
+              </span>
+            </div>
+            {top10.length === 0 ? (
+              <div className="text-center text-xs text-muted-foreground py-10">Sem dados para exibir.</div>
+            ) : (
+              <div className="space-y-2">
+                {top10.map((p, idx) => {
+                  const pct = (p.total / maxTotal) * 100;
+                  const medal = idx === 0 ? "bg-amber-400" : idx === 1 ? "bg-slate-400" : idx === 2 ? "bg-amber-700" : "bg-primary/70";
+                  return (
+                    <div key={p.cod + idx} className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full ${medal} text-white text-[11px] font-bold flex items-center justify-center shrink-0`}>
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium text-card-foreground truncate" title={`${p.cod} — ${p.descricao}`}>
+                            {p.label}
+                          </span>
+                          <span className="text-xs font-semibold text-card-foreground ml-3 tabular-nums">{fmtNum(p.total)} Cx</span>
+                        </div>
+                        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 0.6, delay: idx * 0.05 }}
+                            className="h-full rounded-full"
+                            style={{
+                              background:
+                                idx === 0
+                                  ? "linear-gradient(90deg,#f59e0b,#fbbf24)"
+                                  : idx === 1
+                                    ? "linear-gradient(90deg,#94a3b8,#cbd5e1)"
+                                    : idx === 2
+                                      ? "linear-gradient(90deg,#b45309,#d97706)"
+                                      : "linear-gradient(90deg,hsl(var(--primary)),#60a5fa)",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        );
+      })()}
+
 
       {/* Tabela detalhada */}
       <div className="bg-card border border-border rounded-2xl shadow-card overflow-hidden">
