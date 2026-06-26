@@ -174,11 +174,16 @@ function findCol(row: Record<string, string>, candidates: string[]): string {
   const entries = Object.entries(row);
   const normalizedCandidates = candidates.map(normalizeHeader);
 
+  // Primeiro tenta correspondência exata. Isso evita conflitos como
+  // "Seqfornecedor" ser escolhido antes da coluna correta "Fornecedor".
   for (const [key, value] of entries) {
     const normalizedKey = normalizeHeader(key);
-    const matched = normalizedCandidates.some(
-      (candidate) => normalizedKey === candidate || normalizedKey.includes(candidate) || candidate.includes(normalizedKey)
-    );
+    if (normalizedCandidates.some((candidate) => normalizedKey === candidate) && value !== undefined) return value;
+  }
+
+  for (const [key, value] of entries) {
+    const normalizedKey = normalizeHeader(key);
+    const matched = normalizedCandidates.some((candidate) => normalizedKey.includes(candidate) || candidate.includes(normalizedKey));
     if (matched && value !== undefined) return value;
   }
 
