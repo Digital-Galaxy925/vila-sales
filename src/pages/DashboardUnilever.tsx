@@ -96,34 +96,39 @@ const DashboardUnilever = () => {
     return Array.from(s).sort();
   }, [items]);
 
-  const filtered = useMemo(() => {
-    return items.filter((i) => {
-      if (filtroBu !== "todas" && i.bu !== filtroBu) return false;
-      if (filtroFilial !== "todas" && i.filial !== filtroFilial) return false;
-      return true;
-    });
-  }, [items, filtroBu, filtroFilial]);
+  // Base do gráfico TOTAL: aplica apenas BU (ignora filial)
+  const itemsBuOnly = useMemo(
+    () => items.filter((i) => (filtroBu === "todas" ? true : i.bu === filtroBu)),
+    [items, filtroBu],
+  );
 
-  const totals = useMemo(() => {
+  // Base do gráfico por filial: aplica BU + filial
+  const filtered = useMemo(
+    () => itemsBuOnly.filter((i) => (filtroFilial === "todas" ? true : i.filial === filtroFilial)),
+    [itemsBuOnly, filtroFilial],
+  );
+
+  const sumWeeks = (list: typeof items) => {
     const t = { v3: 0, v2: 0, v1: 0, vAtu: 0 };
-    filtered.forEach((i) => {
-      t.v3 += i.v3;
-      t.v2 += i.v2;
-      t.v1 += i.v1;
-      t.vAtu += i.vAtu;
+    list.forEach((i) => {
+      t.v3 += i.v3; t.v2 += i.v2; t.v1 += i.v1; t.vAtu += i.vAtu;
     });
     return t;
-  }, [filtered]);
+  };
 
-  const chartData = useMemo(
-    () => [
-      { name: "VD.SEM. -3", vendas: Math.round(totals.v3) },
-      { name: "VD.SEM. -2", vendas: Math.round(totals.v2) },
-      { name: "VD.SEM. -1", vendas: Math.round(totals.v1) },
-      { name: "VD.SEM. ATU", vendas: Math.round(totals.vAtu) },
-    ],
-    [totals],
-  );
+  const totals = useMemo(() => sumWeeks(filtered), [filtered]);
+  const totalsGeral = useMemo(() => sumWeeks(itemsBuOnly), [itemsBuOnly]);
+
+  const toChart = (t: { v3: number; v2: number; v1: number; vAtu: number }) => [
+    { name: "VD.SEM. -3", vendas: Math.round(t.v3) },
+    { name: "VD.SEM. -2", vendas: Math.round(t.v2) },
+    { name: "VD.SEM. -1", vendas: Math.round(t.v1) },
+    { name: "VD.SEM. ATU", vendas: Math.round(t.vAtu) },
+  ];
+
+  const chartDataGeral = useMemo(() => toChart(totalsGeral), [totalsGeral]);
+  const chartDataFilial = useMemo(() => toChart(totals), [totals]);
+
 
   const mediaTres = (totals.v3 + totals.v2 + totals.v1) / 3;
   const variacao = mediaTres > 0 ? ((totals.vAtu - mediaTres) / mediaTres) * 100 : 0;
@@ -177,35 +182,50 @@ const DashboardUnilever = () => {
         </span>
       </div>
 
-      {/* Gráfico de Vendas Semanais */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-2xl p-6 shadow-card border border-border"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-primary" />
-            Vendas Semanais (Cx)
-          </h3>
-        </div>
-        <div className="h-[380px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 24, right: 24, left: 0, bottom: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => fmtNum(v)} />
-              <Tooltip
-                formatter={(v: number) => [`${fmtNum(v)} Cx`, "Vendas"]}
-                contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "12px" }}
-              />
-              <Bar dataKey="vendas" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]}>
-                <LabelList dataKey="vendas" position="top" formatter={(v: number) => fmtNum(v)} fontSize={11} fill="hsl(var(--muted-foreground))" />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </motion.div>
+      {/* Gráficos de Vendas Semanais */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {[
+          { title: "Vendas Semanais — Total (Cx)", data: chartDataGeral, color: "hsl(var(--primary))", delay: 0 },
+          {
+            title: `Vendas Semanais — ${filtroFilial === "todas" ? "Todas as Filiais" : FILIAL_LABELS[filtroFilial] ?? filtroFilial} (Cx)`,
+            data: chartDataFilial,
+            color: "#10b981",
+            delay: 0.1,
+          },
+        ].map((g, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: g.delay }}
+            className="bg-card rounded-2xl p-6 shadow-card border border-border"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-heading text-base font-semibold text-card-foreground flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" style={{ color: g.color }} />
+                {g.title}
+              </h3>
+            </div>
+            <div className="h-[380px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={g.data} margin={{ top: 24, right: 24, left: 0, bottom: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => fmtNum(v)} />
+                  <Tooltip
+                    formatter={(v: number) => [`${fmtNum(v)} Cx`, "Vendas"]}
+                    contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "12px" }}
+                  />
+                  <Bar dataKey="vendas" fill={g.color} radius={[6, 6, 0, 0]}>
+                    <LabelList dataKey="vendas" position="top" formatter={(v: number) => fmtNum(v)} fontSize={11} fill="hsl(var(--muted-foreground))" />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
     </div>
   );
 };
