@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, Package, Boxes, Building2 } from "lucide-react";
+import { BarChart3, TrendingUp, Package, Boxes, Building2, Search } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import KpiCard from "@/components/KpiCard";
 import {
@@ -49,6 +49,8 @@ const DashboardUnilever = () => {
   const [loading, setLoading] = useState(true);
   const [filtroBu, setFiltroBu] = useState<string>("todas");
   const [filtroFilial, setFiltroFilial] = useState<string>("todas");
+  const [busca, setBusca] = useState<string>("");
+
 
   useEffect(() => {
     (async () => {
@@ -66,7 +68,7 @@ const DashboardUnilever = () => {
 
   // Flat product list with filial context
   const items = useMemo(() => {
-    const out: { filial: string; bu: string; vAtu: number; v1: number; v2: number; v3: number }[] = [];
+    const out: { filial: string; bu: string; cod: string; descricao: string; vAtu: number; v1: number; v2: number; v3: number }[] = [];
     const d = data || {};
     Object.entries(d).forEach(([filial, arr]) => {
       if (!Array.isArray(arr)) return;
@@ -74,6 +76,8 @@ const DashboardUnilever = () => {
         out.push({
           filial,
           bu: String(p?.bu ?? "").toUpperCase().trim(),
+          cod: String(p?.seqProd ?? p?.codigo ?? "").trim(),
+          descricao: String(p?.descricao ?? "").trim(),
           vAtu: num(p?.vAtu),
           v1: num(p?.v1),
           v2: num(p?.v2),
@@ -83,6 +87,7 @@ const DashboardUnilever = () => {
     });
     return out;
   }, [data]);
+
 
   const busDisponiveis = useMemo(() => {
     const s = new Set<string>();
@@ -102,11 +107,16 @@ const DashboardUnilever = () => {
     [items, filtroBu],
   );
 
-  // Base do gráfico por filial: aplica BU + filial
-  const filtered = useMemo(
-    () => itemsBuOnly.filter((i) => (filtroFilial === "todas" ? true : i.filial === filtroFilial)),
-    [itemsBuOnly, filtroFilial],
-  );
+  // Base do gráfico por filial: aplica BU + filial + busca por código/descrição
+  const filtered = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    return itemsBuOnly.filter((i) => {
+      if (filtroFilial !== "todas" && i.filial !== filtroFilial) return false;
+      if (!q) return true;
+      return i.cod.toLowerCase().includes(q) || i.descricao.toLowerCase().includes(q);
+    });
+  }, [itemsBuOnly, filtroFilial, busca]);
+
 
   const sumWeeks = (list: typeof items) => {
     const t = { v3: 0, v2: 0, v1: 0, vAtu: 0 };
@@ -177,10 +187,21 @@ const DashboardUnilever = () => {
             ))}
           </select>
         </div>
-        <span className="text-xs text-muted-foreground ml-auto">
+        <div className="relative flex-1 min-w-[240px]">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar por código ou descrição do produto..."
+            className="w-full pl-9 pr-3 py-1.5 text-xs border border-border rounded-lg bg-background"
+          />
+        </div>
+        <span className="text-xs text-muted-foreground">
           {loading ? "Carregando..." : `${fmtNum(skus)} produto(s)`}
         </span>
       </div>
+
 
       {/* Gráficos de Vendas Semanais */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
