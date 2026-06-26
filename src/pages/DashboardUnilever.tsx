@@ -373,13 +373,22 @@ const DashboardUnilever = () => {
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-muted/80 backdrop-blur z-10">
               <tr className="text-left text-muted-foreground">
-                {["BU","Filial","Cód. Família","Código","Descrição","Unid/CX","Estoque","Preço de Custo","Preço de Venda","Promocional","Margem","VD.SEM. -3","VD.SEM. -2","VD.SEM. -1","Venda Média","VD.SEM. ATU"].map((h, i) => (
-                  <th key={h} className={`px-2 py-2 font-semibold whitespace-nowrap ${i >= 5 ? "text-right" : ""}`}>{h}</th>
-                ))}
+                {["BU","Filial","Cód. Família","Código","Descrição","Unid/CX","Estoque","Preço de Custo","Preço de Venda","Promocional","Margem","VD.SEM. -3","VD.SEM. -2","VD.SEM. -1","Venda Média","VD.SEM. ATU"].map((h, i) => {
+                  const isDesc = h === "Descrição";
+                  return (
+                    <th
+                      key={h}
+                      onClick={isDesc ? () => setSortDesc((s) => (s === "asc" ? "desc" : "asc")) : undefined}
+                      className={`px-2 py-2 font-semibold whitespace-nowrap ${i >= 5 ? "text-right" : ""} ${isDesc ? "cursor-pointer select-none hover:text-foreground" : ""}`}
+                    >
+                      {h}{isDesc && (sortDesc === "asc" ? " ▲" : sortDesc === "desc" ? " ▼" : " ⇅")}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
-              {filtered.slice(0, 1000).map((i, idx) => {
+              {filteredSorted.slice(0, 1000).map((i, idx) => {
                 const precoVenda = i.promoc > 0 ? i.promoc : i.preco;
                 const margem = precoVenda > 0 ? ((precoVenda - i.custo) / precoVenda) * 100 : 0;
                 return (
