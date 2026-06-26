@@ -130,6 +130,16 @@ const DashboardUnilever = () => {
     });
   }, [itemsBuOnly, filtroFilial, busca]);
 
+  const filteredSorted = useMemo(() => {
+    if (!sortDesc) return filtered;
+    const arr = [...filtered];
+    arr.sort((a, b) => {
+      const cmp = a.descricao.localeCompare(b.descricao, "pt-BR", { sensitivity: "base" });
+      return sortDesc === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [filtered, sortDesc]);
+
 
   const sumWeeks = (list: typeof items) => {
     const t = { v3: 0, v2: 0, v1: 0, vAtu: 0 };
