@@ -69,6 +69,18 @@ const DashboardUnilever = () => {
     })();
   }, []);
 
+  // Mapeamento explícito: filial de exibição ← livro de origem
+  // Focomix SP=501, Focomix MG=510, Campinas=11, Osasco=12, Betim=14, Poços=10 (ou 01)
+  const LIVRO_TO_FILIAL: Record<string, string> = {
+    "501": "501",
+    "510": "502",
+    "11": "11",
+    "12": "12",
+    "14": "14",
+    "10": "01",
+    "01": "01",
+  };
+
   // Flat product list with filial context
   const items = useMemo(() => {
     const out: {
@@ -79,7 +91,8 @@ const DashboardUnilever = () => {
     const d = data || {};
     Object.entries(d).forEach(([filialRaw, arr]) => {
       if (!Array.isArray(arr)) return;
-      const filial = filialRaw === "510" ? "502" : filialRaw;
+      const filial = LIVRO_TO_FILIAL[filialRaw];
+      if (!filial) return; // ignora livros fora do mapeamento (ex.: 502 cru)
       arr.forEach((p: any) => {
         out.push({
           filial,
