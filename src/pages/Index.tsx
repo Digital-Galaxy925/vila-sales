@@ -388,16 +388,37 @@ async function readExcelAsMatrix(file: File): Promise<string[][]> {
     const sheetName = wb.SheetNames[0];
     if (!sheetName) return [];
     const sheet = wb.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json<(string | number)[]>(sheet, { header: 1, defval: "", raw: true, blankrows: false })
+    const rows = XLSX.utils.sheet_to_json<(string | number)[]>(sheet, { header: 1, defval: "", raw: true, blankrows: false })
       .map((row) => row.map((cell) => String(cell ?? "").trim()));
+    return stripPreHeaderRows(rows);
   }
 
   try {
     const wb = await readWorkbookSafely(file);
-    return workbookToMatrix(file.name, wb);
+    return stripPreHeaderRows(workbookToMatrix(file.name, wb));
   } catch (_) {
-    return readExcelMatrixWithExcelJS(file);
+    return stripPreHeaderRows(await readExcelMatrixWithExcelJS(file));
   }
+}
+
+// Localiza a linha de cabeçalho real e descarta linhas de totais/resumo no topo.
+// Algumas planilhas (ex.: livros com totais nas linhas 1-2) têm conteúdo antes do header.
+// Procura nas primeiras 10 linhas a primeira que contenha "SEQ.PROD"/"COD"/"CODIGO"
+// E também "DESCRICAO". Devolve as linhas a partir do cabeçalho.
+function stripPreHeaderRows(rawRows: string[][]): string[][] {
+  if (!rawRows?.length) return rawRows ?? [];
+  const normalize = (s: string) => String(s ?? "").toUpperCase().replace(/[\s._-]/g, "");
+  const maxScan = Math.min(rawRows.length, 10);
+  for (let i = 0; i < maxScan; i++) {
+    const row = rawRows[i] ?? [];
+    const cells = row.map((c) => normalize(c));
+    const hasCod = cells.some((c) => c === "SEQPROD" || c === "COD" || c === "CODIGO");
+    const hasDesc = cells.some((c) => c.startsWith("DESCRICAO") || c === "DESC");
+    if (hasCod && hasDesc) {
+      return rawRows.slice(i);
+    }
+  }
+  return rawRows;
 }
 
 // ─── Filial Config ────────────────────────────────────────────────────────────
