@@ -304,7 +304,7 @@ const DashboardUnilever = () => {
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-muted/80 backdrop-blur z-10">
               <tr className="text-left text-muted-foreground">
-                {["BU","Filial","Cód. Família","Código","Descrição","Unid/CX","Estoque","Preço de Custo","Preço de Venda","Promocional","Margem","VD.SEM. -3","VD.SEM. -2","VD.SEM. -1","VD.SEM. ATU"].map((h, i) => (
+                {["BU","Filial","Cód. Família","Código","Descrição","Unid/CX","Estoque","Preço de Custo","Preço de Venda","Promocional","Margem","VD.SEM. -3","VD.SEM. -2","VD.SEM. -1","Venda Média","VD.SEM. ATU"].map((h, i) => (
                   <th key={h} className={`px-2 py-2 font-semibold whitespace-nowrap ${i >= 5 ? "text-right" : ""}`}>{h}</th>
                 ))}
               </tr>
