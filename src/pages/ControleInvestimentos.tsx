@@ -284,9 +284,9 @@ export default function ControleInvestimentos() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={15} className="text-center py-10 text-muted-foreground">Carregando...</td></tr>
+                <tr><td colSpan={16} className="text-center py-10 text-muted-foreground">Carregando...</td></tr>
               ) : filtradas.length === 0 ? (
-                <tr><td colSpan={15} className="text-center py-10 text-muted-foreground">
+                <tr><td colSpan={16} className="text-center py-10 text-muted-foreground">
                   Nenhuma proposta salva. Vá ao Simulador de Ofertas para criar a primeira.
                 </td></tr>
               ) : (
@@ -326,7 +326,9 @@ export default function ControleInvestimentos() {
                     <Td right>{fmt(p.total_sellout)}</Td>
                     <Td right><span style={{ color: "#dc2626", fontWeight: 600 }}>{fmt(p.investimento_total)}</span></Td>
                     <Td right>{fmtPct(p.percentual_investimento)}</Td>
+                    <Td className="max-w-[140px] truncate" title={p.gerente ?? ""}>{p.gerente ?? "–"}</Td>
                     <Td className="max-w-[160px] truncate text-muted-foreground" title={p.observacao ?? ""}>{p.observacao}</Td>
+
                     <Td>
                       <div className="flex items-center gap-1">
                         <button
