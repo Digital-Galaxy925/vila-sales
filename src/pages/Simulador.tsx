@@ -66,6 +66,7 @@ export default function Simulador() {
   const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
   const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
   const [observacao, setObservacao] = useState("");
+  const [gerente, setGerente] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [selectedCod, setSelectedCod] = useState<string>("");
   const [showSug, setShowSug] = useState(false);
