@@ -276,8 +276,10 @@ export default function ControleInvestimentos() {
                 <Th right>Sell Out</Th>
                 <Th right>Invest. Total</Th>
                 <Th right>% Invest.</Th>
+                <Th>Gerente</Th>
                 <Th>Obs.</Th>
                 <Th />
+
               </tr>
             </thead>
             <tbody>
