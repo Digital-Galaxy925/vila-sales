@@ -155,6 +155,7 @@ export type Database = {
           descricao_produto: string
           filial: string
           filial_nome: string
+          gerente: string | null
           id: string
           investimento_por_caixa: number | null
           investimento_por_unidade: number | null
@@ -178,6 +179,7 @@ export type Database = {
           descricao_produto?: string
           filial?: string
           filial_nome?: string
+          gerente?: string | null
           id?: string
           investimento_por_caixa?: number | null
           investimento_por_unidade?: number | null
@@ -201,6 +203,7 @@ export type Database = {
           descricao_produto?: string
           filial?: string
           filial_nome?: string
+          gerente?: string | null
           id?: string
           investimento_por_caixa?: number | null
           investimento_por_unidade?: number | null
