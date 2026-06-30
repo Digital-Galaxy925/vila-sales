@@ -416,6 +416,10 @@ export default function Simulador() {
 
               {/* Save proposal */}
               <div style={{ marginTop: 16, background: "#fff", borderRadius: 12, padding: "18px 22px", border: "1px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.04)", display: "flex", gap: 12, alignItems: "end", flexWrap: "wrap" }}>
+                <div style={{ minWidth: 220 }}>
+                  <label style={labelStyle}>Gerente</label>
+                  <input type="text" value={gerente} onChange={(e) => setGerente(e.target.value)} placeholder="Nome do gerente" style={inputStyle} />
+                </div>
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <label style={labelStyle}>Observação (opcional)</label>
                   <input type="text" value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: cliente XYZ, campanha de junho..." style={inputStyle} />
