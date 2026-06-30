@@ -66,6 +66,7 @@ export default function Simulador() {
   const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
   const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
   const [observacao, setObservacao] = useState("");
+  const [gerente, setGerente] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [selectedCod, setSelectedCod] = useState<string>("");
   const [showSug, setShowSug] = useState(false);
@@ -168,10 +169,12 @@ export default function Simulador() {
         investimento_total: investimentoTotal,
         percentual_investimento: percentualInvestimento,
         observacao,
+        gerente: gerente || null,
       });
       if (error) throw error;
       toast({ title: "Proposta salva", description: "Disponível em Controle de Investimentos." });
       setObservacao("");
+      setGerente("");
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e?.message ?? "Tente novamente.", variant: "destructive" });
     } finally {
@@ -413,6 +416,10 @@ export default function Simulador() {
 
               {/* Save proposal */}
               <div style={{ marginTop: 16, background: "#fff", borderRadius: 12, padding: "18px 22px", border: "1px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.04)", display: "flex", gap: 12, alignItems: "end", flexWrap: "wrap" }}>
+                <div style={{ minWidth: 220 }}>
+                  <label style={labelStyle}>Gerente</label>
+                  <input type="text" value={gerente} onChange={(e) => setGerente(e.target.value)} placeholder="Nome do gerente" style={inputStyle} />
+                </div>
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <label style={labelStyle}>Observação (opcional)</label>
                   <input type="text" value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: cliente XYZ, campanha de junho..." style={inputStyle} />
