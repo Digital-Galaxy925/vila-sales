@@ -321,6 +321,20 @@ export default function Simulador() {
                 />
                 <SimKpiCard label="Preço de Custo" value={fmt(custoUnitario)} color="#d97706" />
                 <SimKpiCard label="Preço Venda Desejado" value={fmt(precoVenda)} color="#0071e3" />
+                {(() => {
+                  const promo = produto.promoc ?? 0;
+                  const ref = promo > 0 ? promo : produto.atual;
+                  const desc = ref > 0 ? (precoVenda / ref) - 1 : 0;
+                  const cor = desc < 0 ? "#16a34a" : desc > 0 ? "#dc2626" : "#374151";
+                  return (
+                    <SimKpiCard
+                      label={`Desconto vs Preço ${promo > 0 ? "Promocional" : "Atual"}`}
+                      value={fmtPct(desc)}
+                      color={cor}
+                      sub={`(${fmt(precoVenda)} / ${fmt(ref)}) − 1`}
+                    />
+                  );
+                })()}
                 <SimKpiCard
                   label="Lucro por Unidade"
                   value={fmt(precoVenda - custoUnitario)}
