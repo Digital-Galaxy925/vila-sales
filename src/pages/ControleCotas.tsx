@@ -281,60 +281,54 @@ export default function ControleCotas() {
     return `${mk ?? ""}|${code}`;
   };
 
-  const applyMerge = (mode: "replace" | "sum" | "new") => {
+  const applyMerge = async (mode: "replace" | "sum" | "new") => {
     if (!pending) return;
-    const { newHeaders, newRows, fileName: fName } = pending;
+    const { newHeaders, newRows: incoming, fileName: fName } = pending;
 
     if (mode === "new" || rows.length === 0) {
+      const inserted = await dbInsertRows(incoming, newHeaders);
       setHeaders(newHeaders);
-      setRows(newRows);
+      setRows(inserted);
       setFileName(fName);
       setPending(null);
-      toast.success(`${newRows.length} itens carregados`);
+      toast.success(`${inserted.length} itens carregados`);
       return;
     }
 
-    // Merge preserving existing headers + adding any new ones
     const mergedHeaders = [...headers];
     newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
-
     const volCol = findVolumeHeader(mergedHeaders);
 
-    // Index existing rows by key
     const existing = rows.map((r) => ({ ...r }));
     const idx: Record<string, number> = {};
     existing.forEach((r, i) => { idx[rowKey(r, mergedHeaders)] = i; });
 
-    let updated = 0;
-    let appended = 0;
-    newRows.forEach((nr) => {
+    const toAppend: Row[] = [];
+    const toUpdate: Row[] = [];
+    incoming.forEach((nr) => {
       const key = rowKey(nr, mergedHeaders);
       const codePart = key.split("|")[1];
-      const hasCode = codePart && codePart.length > 0;
-      if (hasCode && idx[key] != null) {
+      if (codePart && idx[key] != null) {
         const target = existing[idx[key]];
         if (mode === "sum" && volCol) {
-          const a = parseNumber(target[volCol]);
-          const b = parseNumber(nr[volCol]);
-          target[volCol] = a + b;
+          target[volCol] = parseNumber(target[volCol]) + parseNumber(nr[volCol]);
         } else if (mode === "replace") {
-          // Overwrite matched columns with new values
           Object.keys(nr).forEach((k) => { target[k] = nr[k]; });
         }
-        updated++;
+        toUpdate.push(target);
       } else {
-        existing.push(nr);
-        appended++;
+        toAppend.push(nr);
       }
     });
 
+    const inserted = await dbInsertRows(toAppend, mergedHeaders);
+    await Promise.all(toUpdate.map((r) => dbUpdateRow(r, mergedHeaders)));
+
     setHeaders(mergedHeaders);
-    setRows(existing);
+    setRows([...existing, ...inserted]);
     setFileName(fName);
     setPending(null);
-    toast.success(
-      `${appended} novas linhas • ${updated} ${mode === "sum" ? "somadas" : "substituídas"}`
-    );
+    toast.success(`${inserted.length} novas linhas • ${toUpdate.length} ${mode === "sum" ? "somadas" : "substituídas"}`);
   };
 
   const handleFile = async (file: File) => {
@@ -349,17 +343,16 @@ export default function ControleCotas() {
       }
       const newHeaders = Object.keys(json[0]);
 
-      // No existing data: just load
       if (rows.length === 0) {
+        const inserted = await dbInsertRows(json, newHeaders);
         setHeaders(newHeaders);
-        setRows(json);
+        setRows(inserted);
         setFileName(file.name);
         await loadConsumo();
-        toast.success(`${json.length} itens carregados`);
+        toast.success(`${inserted.length} itens carregados`);
         return;
       }
 
-      // Detect overlaps with existing rows (same code + month)
       const mergedHeaders = [...headers];
       newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
       const existingKeys = new Set(
@@ -375,12 +368,11 @@ export default function ControleCotas() {
       if (overlaps > 0) {
         setPending({ newHeaders, newRows: json, fileName: file.name, overlaps });
       } else {
-        const mergedHeaders = [...headers];
-        newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
+        const inserted = await dbInsertRows(json, mergedHeaders);
         setHeaders(mergedHeaders);
-        setRows((prev) => [...prev, ...json]);
+        setRows((prev) => [...prev, ...inserted]);
         setFileName(file.name);
-        toast.success(`${json.length} novas linhas adicionadas`);
+        toast.success(`${inserted.length} novas linhas adicionadas`);
       }
     } catch (e: any) {
       toast.error("Erro ao ler planilha: " + e.message);
