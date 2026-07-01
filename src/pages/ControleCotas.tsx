@@ -159,6 +159,8 @@ export default function ControleCotas() {
     fileName: string;
     overlaps: number;
   } | null>(null);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState<Row>({});
 
   // Persist upload across screens
   useEffect(() => {
