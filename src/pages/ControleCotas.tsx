@@ -6,6 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Upload, FileSpreadsheet, Download } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Row = Record<string, any>;
 
@@ -94,6 +104,12 @@ export default function ControleCotas() {
   });
   const [search, setSearch] = useState("");
   const [consumo, setConsumo] = useState<Record<string, ConsumoMeta>>({});
+  const [pending, setPending] = useState<{
+    newHeaders: string[];
+    newRows: Row[];
+    fileName: string;
+    overlaps: number;
+  } | null>(null);
 
   // Persist upload across screens
   useEffect(() => {
@@ -137,6 +153,71 @@ export default function ControleCotas() {
     localStorage.removeItem(STORAGE_KEY);
   };
 
+  const rowKey = (r: Row, hs: string[]): string => {
+    const codeCol = findHeader(hs, [/^c[oó]digo/, /produto/, /sku/]);
+    const mCol = findHeader(hs, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
+    const aCol = findHeader(hs, [/^ano/]);
+    const code = codeCol ? normCode(r[codeCol]) : "";
+    const mk = parseMonthKey(mCol ? r[mCol] : null, aCol ? r[aCol] : null);
+    return `${mk ?? ""}|${code}`;
+  };
+
+  const applyMerge = (mode: "replace" | "sum" | "new") => {
+    if (!pending) return;
+    const { newHeaders, newRows, fileName: fName } = pending;
+
+    if (mode === "new" || rows.length === 0) {
+      setHeaders(newHeaders);
+      setRows(newRows);
+      setFileName(fName);
+      setPending(null);
+      toast.success(`${newRows.length} itens carregados`);
+      return;
+    }
+
+    // Merge preserving existing headers + adding any new ones
+    const mergedHeaders = [...headers];
+    newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
+
+    const volCol = findHeader(mergedHeaders, [/^volume/, /^quantidade/, /^qtd/, /^qtde/, /^cota/]);
+
+    // Index existing rows by key
+    const existing = rows.map((r) => ({ ...r }));
+    const idx: Record<string, number> = {};
+    existing.forEach((r, i) => { idx[rowKey(r, mergedHeaders)] = i; });
+
+    let updated = 0;
+    let appended = 0;
+    newRows.forEach((nr) => {
+      const key = rowKey(nr, mergedHeaders);
+      const codePart = key.split("|")[1];
+      const hasCode = codePart && codePart.length > 0;
+      if (hasCode && idx[key] != null) {
+        const target = existing[idx[key]];
+        if (mode === "sum" && volCol) {
+          const a = Number(target[volCol] ?? 0) || 0;
+          const b = Number(nr[volCol] ?? 0) || 0;
+          target[volCol] = a + b;
+        } else if (mode === "replace") {
+          // Overwrite matched columns with new values
+          Object.keys(nr).forEach((k) => { target[k] = nr[k]; });
+        }
+        updated++;
+      } else {
+        existing.push(nr);
+        appended++;
+      }
+    });
+
+    setHeaders(mergedHeaders);
+    setRows(existing);
+    setFileName(fName);
+    setPending(null);
+    toast.success(
+      `${appended} novas linhas • ${updated} ${mode === "sum" ? "somadas" : "substituídas"}`
+    );
+  };
+
   const handleFile = async (file: File) => {
     try {
       const buf = await file.arrayBuffer();
@@ -147,11 +228,32 @@ export default function ControleCotas() {
         toast.error("Planilha vazia");
         return;
       }
-      setHeaders(Object.keys(json[0]));
-      setRows(json);
-      setFileName(file.name);
+      const newHeaders = Object.keys(json[0]);
+
+      // No existing data: just load
+      if (rows.length === 0) {
+        setHeaders(newHeaders);
+        setRows(json);
+        setFileName(file.name);
+        await loadConsumo();
+        toast.success(`${json.length} itens carregados`);
+        return;
+      }
+
+      // Detect overlaps with existing rows (same code + month)
+      const mergedHeaders = [...headers];
+      newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
+      const existingKeys = new Set(
+        rows.map((r) => rowKey(r, mergedHeaders)).filter((k) => k.split("|")[1])
+      );
+      let overlaps = 0;
+      json.forEach((nr) => {
+        const k = rowKey(nr, mergedHeaders);
+        if (k.split("|")[1] && existingKeys.has(k)) overlaps++;
+      });
+
       await loadConsumo();
-      toast.success(`${json.length} itens carregados`);
+      setPending({ newHeaders, newRows: json, fileName: file.name, overlaps });
     } catch (e: any) {
       toast.error("Erro ao ler planilha: " + e.message);
     }
@@ -358,6 +460,42 @@ export default function ControleCotas() {
           </p>
         </Card>
       )}
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => { if (!o) setPending(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Conflito de dados detectado</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pending?.overlaps
+                ? `Foram encontrados ${pending.overlaps} produto(s) no mesmo período já existentes na tabela. Como deseja tratar esses itens? Linhas novas (produto/período diferente) serão sempre adicionadas.`
+                : "Nenhum conflito de produto/período. As novas linhas serão adicionadas à tabela."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-wrap gap-2">
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            {pending?.overlaps ? (
+              <>
+                <Button variant="outline" onClick={() => applyMerge("replace")}>
+                  Substituir existentes
+                </Button>
+                <AlertDialogAction
+                  onClick={() => applyMerge("sum")}
+                  className="bg-[#0071e3] hover:bg-[#0077ed] text-white"
+                >
+                  Somar aos existentes
+                </AlertDialogAction>
+              </>
+            ) : (
+              <AlertDialogAction
+                onClick={() => applyMerge("sum")}
+                className="bg-[#0071e3] hover:bg-[#0077ed] text-white"
+              >
+                Adicionar linhas
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
