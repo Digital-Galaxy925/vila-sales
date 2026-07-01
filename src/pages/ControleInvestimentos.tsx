@@ -181,6 +181,7 @@ export default function ControleInvestimentos() {
         "Invest. Total": p.investimento_total ?? 0,
         "% Investimento": p.percentual_investimento ?? 0,
         Cota: p.cota ?? "",
+        Cliente: p.cliente ?? "",
         Gerente: p.gerente ?? "",
         Observação: p.observacao ?? "",
       };
