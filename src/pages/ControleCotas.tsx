@@ -163,10 +163,6 @@ export default function ControleCotas() {
     const anoCol = findHeader(headers, [/^ano/]);
     const precoCol = findHeader(headers, [/^pre[cç]o/, /valor/]);
     const descCol = findHeader(headers, [/descri/, /produto/]);
-    const codigoCol = findHeader(headers, [/^c[oó]digo/, /produto/, /sku/]);
-    const mesCol = findHeader(headers, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
-    const anoCol = findHeader(headers, [/^ano/]);
-    const precoCol = findHeader(headers, [/^pre[cç]o/, /valor/]);
 
     // Insert "Volume Consumido" after preço
     const dh = [...headers];
@@ -176,18 +172,40 @@ export default function ControleCotas() {
     } else {
       dh.push("Volume Consumido");
     }
-    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol };
+    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol, descCol };
   }, [headers]);
 
   const rowsWithConsumo = useMemo(() => {
-    return rows.map((r) => {
+    // Existing sheet rows with Volume Consumido
+    const seenKeys = new Set<string>();
+    const base = rows.map((r) => {
       const code = codigoCol ? normCode(r[codigoCol]) : "";
       const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
       const key = monthKey && code ? `${monthKey}|${code}` : null;
-      const vol = key ? consumo[key] ?? 0 : 0;
+      if (key) seenKeys.add(key);
+      const vol = key ? consumo[key]?.volume ?? 0 : 0;
       return { ...r, "Volume Consumido": vol };
     });
-  }, [rows, consumo, codigoCol, mesCol, anoCol]);
+
+    // Auto-append rows for new cotas not present in the sheet
+    if (codigoCol) {
+      Object.entries(consumo).forEach(([key, meta]) => {
+        if (seenKeys.has(key)) return;
+        const [ym, code] = key.split("|");
+        const [year, month] = ym.split("-");
+        const monthName = Object.entries(MESES).find(([, v]) => v === Number(month))?.[0] ?? month;
+        const row: Row = {};
+        headers.forEach((h) => (row[h] = ""));
+        row[codigoCol] = code;
+        if (descCol) row[descCol] = meta.descricao;
+        if (mesCol) row[mesCol] = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)}/${year}`;
+        if (anoCol) row[anoCol] = year;
+        row["Volume Consumido"] = meta.volume;
+        base.push(row);
+      });
+    }
+    return base;
+  }, [rows, consumo, headers, codigoCol, mesCol, anoCol, descCol]);
 
   const exportXLSX = () => {
     const ws = XLSX.utils.json_to_sheet(rowsWithConsumo, { header: displayHeaders });
