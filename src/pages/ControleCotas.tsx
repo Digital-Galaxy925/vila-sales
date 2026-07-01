@@ -379,6 +379,24 @@ export default function ControleCotas() {
     return n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
   };
 
+  const startEdit = (idx: number) => {
+    setEditingIdx(idx);
+    setEditDraft({ ...rows[idx] });
+  };
+  const cancelEdit = () => { setEditingIdx(null); setEditDraft({}); };
+  const saveEdit = () => {
+    if (editingIdx == null) return;
+    setRows((prev) => prev.map((r, i) => (i === editingIdx ? { ...r, ...editDraft } : r)));
+    toast.success("Linha atualizada");
+    cancelEdit();
+  };
+  const deleteRow = (idx: number) => {
+    if (!confirm("Excluir esta linha?")) return;
+    setRows((prev) => prev.filter((_, i) => i !== idx));
+    if (editingIdx === idx) cancelEdit();
+    toast.success("Linha excluída");
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
