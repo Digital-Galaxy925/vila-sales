@@ -1,0 +1,1 @@
+ALTER TABLE public.propostas_simulador ADD COLUMN cota text;

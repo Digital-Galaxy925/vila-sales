@@ -150,6 +150,7 @@ export type Database = {
         Row: {
           bu: string | null
           codigo_produto: string
+          cota: string | null
           created_at: string
           custo_unitario: number | null
           descricao_produto: string
@@ -174,6 +175,7 @@ export type Database = {
         Insert: {
           bu?: string | null
           codigo_produto?: string
+          cota?: string | null
           created_at?: string
           custo_unitario?: number | null
           descricao_produto?: string
@@ -198,6 +200,7 @@ export type Database = {
         Update: {
           bu?: string | null
           codigo_produto?: string
+          cota?: string | null
           created_at?: string
           custo_unitario?: number | null
           descricao_produto?: string
