@@ -445,14 +445,17 @@ export default function ControleCotas() {
     setEditDraft({ ...rows[idx] });
   };
   const cancelEdit = () => { setEditingIdx(null); setEditDraft({}); };
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (editingIdx == null) return;
-    setRows((prev) => prev.map((r, i) => (i === editingIdx ? { ...r, ...editDraft } : r)));
+    const merged = { ...rows[editingIdx], ...editDraft };
+    await dbUpdateRow(merged, headers);
+    setRows((prev) => prev.map((r, i) => (i === editingIdx ? merged : r)));
     toast.success("Linha atualizada");
     cancelEdit();
   };
-  const deleteRow = (idx: number) => {
+  const deleteRow = async (idx: number) => {
     if (!confirm("Excluir esta linha?")) return;
+    await dbDeleteRow(rows[idx]);
     setRows((prev) => prev.filter((_, i) => i !== idx));
     if (editingIdx === idx) cancelEdit();
     toast.success("Linha excluída");
