@@ -182,6 +182,7 @@ export type Database = {
       propostas_simulador: {
         Row: {
           bu: string | null
+          cliente: string | null
           codigo_produto: string
           cota: string | null
           created_at: string
@@ -207,6 +208,7 @@ export type Database = {
         }
         Insert: {
           bu?: string | null
+          cliente?: string | null
           codigo_produto?: string
           cota?: string | null
           created_at?: string
@@ -232,6 +234,7 @@ export type Database = {
         }
         Update: {
           bu?: string | null
+          cliente?: string | null
           codigo_produto?: string
           cota?: string | null
           created_at?: string
