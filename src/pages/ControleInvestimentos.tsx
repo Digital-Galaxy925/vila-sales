@@ -38,6 +38,7 @@ interface Proposta {
   investimento_total: number | null;
   percentual_investimento: number | null;
   observacao: string | null;
+  cota: string | null;
   gerente: string | null;
   created_at: string;
 }
