@@ -156,26 +156,32 @@ export default function ControleInvestimentos() {
       toast({ title: "Nenhuma proposta para exportar", description: "Aplique filtros ou salve propostas primeiro." });
       return;
     }
-    const rows = filtradas.map((p) => ({
-      Filial: p.filial_nome || p.filial,
-      BU: buOf(p),
-      Código: p.codigo_produto,
-      Descrição: p.descricao_produto,
-      Data: fmtDate(p.created_at),
-      "Volume (CX)": p.volume_caixas ?? 0,
-      "Unid / CX": p.unid_por_caixa ?? 0,
-      "Total Unidades": p.total_unidades ?? 0,
-      "Custo Unitário": p.custo_unitario ?? 0,
-      "Preço Venda": p.preco_venda ?? 0,
-      "Margem Real": p.margem_real ?? 0,
-      "Sell Out Total": p.total_sellout ?? 0,
-      "Invest. por Unid": p.investimento_por_unidade ?? 0,
-      "Invest. por CX": p.investimento_por_caixa ?? 0,
-      "Invest. Total": p.investimento_total ?? 0,
-      "% Investimento": p.percentual_investimento ?? 0,
-      Gerente: p.gerente ?? "",
-      Observação: p.observacao ?? "",
-    }));
+    const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    const rows = filtradas.map((p) => {
+      const d = new Date(p.created_at);
+      return {
+        Mês: meses[d.getMonth()],
+        Ano: d.getFullYear(),
+        Filial: p.filial_nome || p.filial,
+        BU: buOf(p),
+        Código: p.codigo_produto,
+        Descrição: p.descricao_produto,
+        Data: fmtDate(p.created_at),
+        "Volume (CX)": p.volume_caixas ?? 0,
+        "Unid / CX": p.unid_por_caixa ?? 0,
+        "Total Unidades": p.total_unidades ?? 0,
+        "Custo Unitário": p.custo_unitario ?? 0,
+        "Preço Venda": p.preco_venda ?? 0,
+        "Margem Real": p.margem_real ?? 0,
+        "Sell Out Total": p.total_sellout ?? 0,
+        "Invest. por Unid": p.investimento_por_unidade ?? 0,
+        "Invest. por CX": p.investimento_por_caixa ?? 0,
+        "Invest. Total": p.investimento_total ?? 0,
+        "% Investimento": p.percentual_investimento ?? 0,
+        Gerente: p.gerente ?? "",
+        Observação: p.observacao ?? "",
+      };
+    });
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Propostas");
