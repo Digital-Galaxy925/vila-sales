@@ -290,6 +290,7 @@ export default function ControleInvestimentos() {
                 <Th right>Invest. Total</Th>
                 <Th right>% Invest.</Th>
                 <Th>Cota</Th>
+                <Th>Cliente</Th>
                 <Th>Gerente</Th>
                 <Th>Obs.</Th>
                 <Th />
