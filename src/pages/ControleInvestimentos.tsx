@@ -179,6 +179,7 @@ export default function ControleInvestimentos() {
         "Invest. por CX": p.investimento_por_caixa ?? 0,
         "Invest. Total": p.investimento_total ?? 0,
         "% Investimento": p.percentual_investimento ?? 0,
+        Cota: p.cota ?? "",
         Gerente: p.gerente ?? "",
         Observação: p.observacao ?? "",
       };
