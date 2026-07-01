@@ -16,6 +16,7 @@ import {
   ArrowLeftRight,
   Zap,
   Wallet,
+  Flag,
   Menu,
   X,
   UploadCloud,
