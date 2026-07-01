@@ -201,7 +201,7 @@ export default function ControleCotas() {
         if (mesCol) row[mesCol] = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)}/${year}`;
         if (anoCol) row[anoCol] = year;
         row["Volume Consumido"] = meta.volume;
-        base.push(row);
+        base.push(row as any);
       });
     }
     return base;
