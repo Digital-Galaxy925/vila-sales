@@ -437,7 +437,11 @@ export default function Simulador() {
                 </div>
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <label style={labelStyle}>Observação (opcional)</label>
-                  <input type="text" value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: cliente XYZ, campanha de junho..." style={inputStyle} />
+                  <input type="text" value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: campanha de junho..." style={inputStyle} />
+                </div>
+                <div style={{ flex: 1, minWidth: 220 }}>
+                  <label style={labelStyle}>Cliente</label>
+                  <input type="text" value={cliente} onChange={(e) => setCliente(e.target.value)} placeholder="Nome do cliente" style={inputStyle} />
                 </div>
                 <button
                   onClick={salvarProposta}
