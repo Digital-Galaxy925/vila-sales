@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      cotas_data: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          dados: Json
+          file_name: string | null
+          id: string
+          mes_ano: string | null
+          updated_at: string
+          volume: number | null
+        }
+        Insert: {
+          codigo?: string | null
+          created_at?: string
+          dados?: Json
+          file_name?: string | null
+          id?: string
+          mes_ano?: string | null
+          updated_at?: string
+          volume?: number | null
+        }
+        Update: {
+          codigo?: string | null
+          created_at?: string
+          dados?: Json
+          file_name?: string | null
+          id?: string
+          mes_ano?: string | null
+          updated_at?: string
+          volume?: number | null
+        }
+        Relationships: []
+      }
       lancamentos: {
         Row: {
           bu: string

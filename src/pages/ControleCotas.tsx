@@ -162,12 +162,52 @@ export default function ControleCotas() {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState<Row>({});
 
-  // Persist upload across screens
+  // Local cache mirror
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ headers, rows, fileName }));
     } catch {}
   }, [headers, rows, fileName]);
+
+  // Helpers to extract DB-normalized fields from a row
+  const extractDbFields = (row: Row, hs: string[]) => {
+    const codeCol = findCodeHeader(hs);
+    const mesCol = findMonthHeader(hs);
+    const anoCol = findYearHeader(hs);
+    const volCol = findVolumeHeader(hs);
+    const codigo = codeCol ? String(row[codeCol] ?? "").trim() : null;
+    const mes_ano = parseMonthKey(mesCol ? row[mesCol] : null, anoCol ? row[anoCol] : null);
+    const volume = volCol ? parseNumber(row[volCol]) : null;
+    // dados = row minus computed & internal keys
+    const dados: Row = {};
+    Object.keys(row).forEach((k) => {
+      if (!["__id", "Volume Consumido", "Saldo"].includes(k)) dados[k] = row[k];
+    });
+    return { codigo, mes_ano, volume, dados };
+  };
+
+  // Load rows from Supabase (source of truth)
+  const loadFromDb = async () => {
+    const { data, error } = await supabase
+      .from("cotas_data" as any)
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (error) { console.error(error); return; }
+    if (!data) return;
+    const loaded: Row[] = data.map((r: any) => ({ ...(r.dados ?? {}), __id: r.id }));
+    // union of keys as headers
+    const keySet = new Set<string>();
+    loaded.forEach((r) => Object.keys(r).forEach((k) => { if (k !== "__id") keySet.add(k); }));
+    if (loaded.length) {
+      setRows(loaded);
+      setHeaders((prev) => {
+        const merged = [...prev];
+        keySet.forEach((k) => { if (!merged.includes(k)) merged.push(k); });
+        // if no prev, use inferred order
+        return merged.length ? merged : Array.from(keySet);
+      });
+    }
+  };
 
   // Load propostas with cota='sim' and build (month|codigo) -> {volume, descricao}
   const loadConsumo = async () => {
@@ -175,10 +215,7 @@ export default function ControleCotas() {
       .from("propostas_simulador")
       .select("codigo_produto, descricao_produto, volume_caixas, created_at, cota")
       .ilike("cota", "sim");
-    if (error) {
-      console.error(error);
-      return;
-    }
+    if (error) { console.error(error); return; }
     const map: Record<string, ConsumoMeta> = {};
     (data ?? []).forEach((r: any) => {
       const d = new Date(r.created_at);
@@ -190,18 +227,50 @@ export default function ControleCotas() {
   };
 
   useEffect(() => {
+    loadFromDb();
     loadConsumo();
-    // Poll for new cotas so linhas se atualizam automaticamente
     const iv = setInterval(loadConsumo, 15000);
     return () => clearInterval(iv);
   }, []);
 
-  const clearData = () => {
-    if (!confirm("Limpar tabela e upload?")) return;
+  // DB writers
+  const dbInsertRows = async (newRows: Row[], hs: string[]): Promise<Row[]> => {
+    if (!newRows.length) return [];
+    const payload = newRows.map((r) => {
+      const f = extractDbFields(r, hs);
+      return { codigo: f.codigo, mes_ano: f.mes_ano, volume: f.volume, dados: f.dados, file_name: fileName || null };
+    });
+    const { data, error } = await supabase.from("cotas_data" as any).insert(payload).select("id");
+    if (error) { toast.error("Erro ao salvar: " + error.message); return newRows; }
+    const arr = (data ?? []) as any[];
+    return newRows.map((r, i) => ({ ...r, __id: arr[i]?.id }));
+  };
+  const dbUpdateRow = async (row: Row, hs: string[]) => {
+    if (!row.__id) return;
+    const f = extractDbFields(row, hs);
+    const { error } = await supabase.from("cotas_data" as any)
+      .update({ codigo: f.codigo, mes_ano: f.mes_ano, volume: f.volume, dados: f.dados })
+      .eq("id", row.__id);
+    if (error) toast.error("Erro ao atualizar: " + error.message);
+  };
+  const dbDeleteRow = async (row: Row) => {
+    if (!row.__id) return;
+    const { error } = await supabase.from("cotas_data" as any).delete().eq("id", row.__id);
+    if (error) toast.error("Erro ao excluir: " + error.message);
+  };
+  const dbDeleteAll = async () => {
+    const { error } = await supabase.from("cotas_data" as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (error) toast.error("Erro ao limpar: " + error.message);
+  };
+
+  const clearData = async () => {
+    if (!confirm("Limpar tabela e apagar todos os registros salvos?")) return;
+    await dbDeleteAll();
     setHeaders([]);
     setRows([]);
     setFileName("");
     localStorage.removeItem(STORAGE_KEY);
+    toast.success("Dados removidos");
   };
 
   const rowKey = (r: Row, hs: string[]): string => {
@@ -212,60 +281,54 @@ export default function ControleCotas() {
     return `${mk ?? ""}|${code}`;
   };
 
-  const applyMerge = (mode: "replace" | "sum" | "new") => {
+  const applyMerge = async (mode: "replace" | "sum" | "new") => {
     if (!pending) return;
-    const { newHeaders, newRows, fileName: fName } = pending;
+    const { newHeaders, newRows: incoming, fileName: fName } = pending;
 
     if (mode === "new" || rows.length === 0) {
+      const inserted = await dbInsertRows(incoming, newHeaders);
       setHeaders(newHeaders);
-      setRows(newRows);
+      setRows(inserted);
       setFileName(fName);
       setPending(null);
-      toast.success(`${newRows.length} itens carregados`);
+      toast.success(`${inserted.length} itens carregados`);
       return;
     }
 
-    // Merge preserving existing headers + adding any new ones
     const mergedHeaders = [...headers];
     newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
-
     const volCol = findVolumeHeader(mergedHeaders);
 
-    // Index existing rows by key
     const existing = rows.map((r) => ({ ...r }));
     const idx: Record<string, number> = {};
     existing.forEach((r, i) => { idx[rowKey(r, mergedHeaders)] = i; });
 
-    let updated = 0;
-    let appended = 0;
-    newRows.forEach((nr) => {
+    const toAppend: Row[] = [];
+    const toUpdate: Row[] = [];
+    incoming.forEach((nr) => {
       const key = rowKey(nr, mergedHeaders);
       const codePart = key.split("|")[1];
-      const hasCode = codePart && codePart.length > 0;
-      if (hasCode && idx[key] != null) {
+      if (codePart && idx[key] != null) {
         const target = existing[idx[key]];
         if (mode === "sum" && volCol) {
-          const a = parseNumber(target[volCol]);
-          const b = parseNumber(nr[volCol]);
-          target[volCol] = a + b;
+          target[volCol] = parseNumber(target[volCol]) + parseNumber(nr[volCol]);
         } else if (mode === "replace") {
-          // Overwrite matched columns with new values
           Object.keys(nr).forEach((k) => { target[k] = nr[k]; });
         }
-        updated++;
+        toUpdate.push(target);
       } else {
-        existing.push(nr);
-        appended++;
+        toAppend.push(nr);
       }
     });
 
+    const inserted = await dbInsertRows(toAppend, mergedHeaders);
+    await Promise.all(toUpdate.map((r) => dbUpdateRow(r, mergedHeaders)));
+
     setHeaders(mergedHeaders);
-    setRows(existing);
+    setRows([...existing, ...inserted]);
     setFileName(fName);
     setPending(null);
-    toast.success(
-      `${appended} novas linhas • ${updated} ${mode === "sum" ? "somadas" : "substituídas"}`
-    );
+    toast.success(`${inserted.length} novas linhas • ${toUpdate.length} ${mode === "sum" ? "somadas" : "substituídas"}`);
   };
 
   const handleFile = async (file: File) => {
@@ -280,17 +343,16 @@ export default function ControleCotas() {
       }
       const newHeaders = Object.keys(json[0]);
 
-      // No existing data: just load
       if (rows.length === 0) {
+        const inserted = await dbInsertRows(json, newHeaders);
         setHeaders(newHeaders);
-        setRows(json);
+        setRows(inserted);
         setFileName(file.name);
         await loadConsumo();
-        toast.success(`${json.length} itens carregados`);
+        toast.success(`${inserted.length} itens carregados`);
         return;
       }
 
-      // Detect overlaps with existing rows (same code + month)
       const mergedHeaders = [...headers];
       newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
       const existingKeys = new Set(
@@ -306,12 +368,11 @@ export default function ControleCotas() {
       if (overlaps > 0) {
         setPending({ newHeaders, newRows: json, fileName: file.name, overlaps });
       } else {
-        const mergedHeaders = [...headers];
-        newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
+        const inserted = await dbInsertRows(json, mergedHeaders);
         setHeaders(mergedHeaders);
-        setRows((prev) => [...prev, ...json]);
+        setRows((prev) => [...prev, ...inserted]);
         setFileName(file.name);
-        toast.success(`${json.length} novas linhas adicionadas`);
+        toast.success(`${inserted.length} novas linhas adicionadas`);
       }
     } catch (e: any) {
       toast.error("Erro ao ler planilha: " + e.message);
@@ -384,14 +445,17 @@ export default function ControleCotas() {
     setEditDraft({ ...rows[idx] });
   };
   const cancelEdit = () => { setEditingIdx(null); setEditDraft({}); };
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (editingIdx == null) return;
-    setRows((prev) => prev.map((r, i) => (i === editingIdx ? { ...r, ...editDraft } : r)));
+    const merged = { ...rows[editingIdx], ...editDraft };
+    await dbUpdateRow(merged, headers);
+    setRows((prev) => prev.map((r, i) => (i === editingIdx ? merged : r)));
     toast.success("Linha atualizada");
     cancelEdit();
   };
-  const deleteRow = (idx: number) => {
+  const deleteRow = async (idx: number) => {
     if (!confirm("Excluir esta linha?")) return;
+    await dbDeleteRow(rows[idx]);
     setRows((prev) => prev.filter((_, i) => i !== idx));
     if (editingIdx === idx) cancelEdit();
     toast.success("Linha excluída");
