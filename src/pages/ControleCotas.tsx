@@ -474,29 +474,68 @@ export default function ControleCotas() {
                       {h}
                     </th>
                   ))}
+                  <th className="px-3 py-2 text-left font-semibold border-b whitespace-nowrap text-[#1d1d1f]">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((r, i) => (
-                  <tr key={i} className="hover:bg-muted/40 border-b">
-                {displayHeaders.map((h) => (
-                      <td
-                        key={h}
-                        className={`px-3 py-1.5 whitespace-nowrap ${
-                          h === "Volume Consumido"
-                            ? "font-semibold text-[#0071e3]"
-                            : h === "Saldo"
-                            ? `font-semibold ${Number(r[h] ?? 0) < 0 ? "text-red-600" : "text-green-600"}`
-                            : ""
-                        }`}
-                      >
-                        {h === "Volume Consumido" || h === "Saldo"
-                          ? fmtNum(r[h])
-                          : String(r[h] ?? "")}
+                {filtered.map((r) => {
+                  const origIdx = r.__idx as number;
+                  const isEditing = editingIdx === origIdx;
+                  return (
+                    <tr key={origIdx} className="hover:bg-muted/40 border-b">
+                      {displayHeaders.map((h) => {
+                        const isComputed = h === "Volume Consumido" || h === "Saldo";
+                        return (
+                          <td
+                            key={h}
+                            className={`px-3 py-1.5 whitespace-nowrap ${
+                              h === "Volume Consumido"
+                                ? "font-semibold text-[#0071e3]"
+                                : h === "Saldo"
+                                ? `font-semibold ${Number(r[h] ?? 0) < 0 ? "text-red-600" : "text-green-600"}`
+                                : ""
+                            }`}
+                          >
+                            {isEditing && !isComputed ? (
+                              <Input
+                                value={String(editDraft[h] ?? "")}
+                                onChange={(e) => setEditDraft((d) => ({ ...d, [h]: e.target.value }))}
+                                className="h-7 min-w-[80px]"
+                              />
+                            ) : isComputed ? (
+                              fmtNum(r[h])
+                            ) : (
+                              String(r[h] ?? "")
+                            )}
+                          </td>
+                        );
+                      })}
+                      <td className="px-3 py-1.5 whitespace-nowrap">
+                        <div className="flex gap-1">
+                          {isEditing ? (
+                            <>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={saveEdit} title="Salvar">
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={cancelEdit} title="Cancelar">
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-[#0071e3]" onClick={() => startEdit(origIdx)} title="Editar">
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-red-600" onClick={() => deleteRow(origIdx)} title="Excluir">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </td>
-                    ))}
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
