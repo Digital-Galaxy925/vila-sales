@@ -297,11 +297,12 @@ export default function ControleCotas() {
       const code = codigoCol ? normCode(r[codigoCol]) : "";
       const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
       if (code) seenCodes.add(code);
-      // Se a linha da planilha tem mês, prioriza match mês+código; senão soma tudo do código
+      // Match ESTRITO por mês+código. Se a linha tem mês, só conta cotas do mesmo mês.
+      // Sem mês na planilha, soma todos os meses do código.
       let vol = 0;
       if (code) {
-        if (monthKey && byKey[`${monthKey}|${code}`] != null) {
-          vol = byKey[`${monthKey}|${code}`];
+        if (monthKey) {
+          vol = byKey[`${monthKey}|${code}`] ?? 0;
         } else {
           vol = byCode[code] ?? 0;
         }
