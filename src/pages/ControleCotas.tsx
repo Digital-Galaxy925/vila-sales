@@ -297,33 +297,40 @@ export default function ControleCotas() {
       const code = codigoCol ? normCode(r[codigoCol]) : "";
       const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
       if (code) seenCodes.add(code);
-      // Match ESTRITO por mês+código. Se a linha tem mês, só conta cotas do mesmo mês.
-      // Sem mês na planilha, soma todos os meses do código.
+      // Match ESTRITO por mês+código. Sem mês na linha da planilha, consumo = 0.
       let vol = 0;
-      if (code) {
-        if (monthKey) {
-          vol = byKey[`${monthKey}|${code}`] ?? 0;
-        } else {
-          vol = byCode[code] ?? 0;
-        }
+      if (code && monthKey) {
+        vol = byKey[`${monthKey}|${code}`] ?? 0;
       }
       const volDisp = volumeCol ? Number(r[volumeCol] ?? 0) : 0;
       const saldo = volDisp - vol;
       return { ...r, "Volume Consumido": vol, "Saldo": saldo };
     });
 
-    // Auto-append apenas códigos que NÃO existem na planilha
+    // Auto-append por (código, mês) que NÃO existe na planilha
     if (codigoCol) {
-      const appended = new Set<string>();
-      Object.keys(byCode).forEach((code) => {
-        if (seenCodes.has(code) || appended.has(code)) return;
-        appended.add(code);
+      const seenKeys = new Set(
+        rows.map((r) => {
+          const c = normCode(r[codigoCol]);
+          const mk = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
+          return `${mk ?? ""}|${c}`;
+        })
+      );
+      Object.entries(consumo).forEach(([key, meta]) => {
+        if (seenKeys.has(key)) return;
+        const [mk, code] = key.split("|");
+        const [yy, mm] = (mk ?? "").split("-");
         const row: Row = {};
         headers.forEach((h) => (row[h] = ""));
         row[codigoCol] = code;
-        if (descCol) row[descCol] = descByCode[code] ?? "";
-        row["Volume Consumido"] = byCode[code];
-        row["Saldo"] = -(byCode[code] ?? 0);
+        if (descCol) row[descCol] = meta.descricao ?? "";
+        if (mesCol && mm) {
+          const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+          row[mesCol] = nomes[Number(mm) - 1] ?? mm;
+        }
+        if (anoCol && yy) row[anoCol] = yy;
+        row["Volume Consumido"] = meta.volume;
+        row["Saldo"] = -(meta.volume ?? 0);
         base.push(row as any);
       });
     }
