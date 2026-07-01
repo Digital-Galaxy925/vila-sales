@@ -162,12 +162,52 @@ export default function ControleCotas() {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editDraft, setEditDraft] = useState<Row>({});
 
-  // Persist upload across screens
+  // Local cache mirror
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ headers, rows, fileName }));
     } catch {}
   }, [headers, rows, fileName]);
+
+  // Helpers to extract DB-normalized fields from a row
+  const extractDbFields = (row: Row, hs: string[]) => {
+    const codeCol = findCodeHeader(hs);
+    const mesCol = findMonthHeader(hs);
+    const anoCol = findYearHeader(hs);
+    const volCol = findVolumeHeader(hs);
+    const codigo = codeCol ? String(row[codeCol] ?? "").trim() : null;
+    const mes_ano = parseMonthKey(mesCol ? row[mesCol] : null, anoCol ? row[anoCol] : null);
+    const volume = volCol ? parseNumber(row[volCol]) : null;
+    // dados = row minus computed & internal keys
+    const dados: Row = {};
+    Object.keys(row).forEach((k) => {
+      if (!["__id", "Volume Consumido", "Saldo"].includes(k)) dados[k] = row[k];
+    });
+    return { codigo, mes_ano, volume, dados };
+  };
+
+  // Load rows from Supabase (source of truth)
+  const loadFromDb = async () => {
+    const { data, error } = await supabase
+      .from("cotas_data" as any)
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (error) { console.error(error); return; }
+    if (!data) return;
+    const loaded: Row[] = data.map((r: any) => ({ ...(r.dados ?? {}), __id: r.id }));
+    // union of keys as headers
+    const keySet = new Set<string>();
+    loaded.forEach((r) => Object.keys(r).forEach((k) => { if (k !== "__id") keySet.add(k); }));
+    if (loaded.length) {
+      setRows(loaded);
+      setHeaders((prev) => {
+        const merged = [...prev];
+        keySet.forEach((k) => { if (!merged.includes(k)) merged.push(k); });
+        // if no prev, use inferred order
+        return merged.length ? merged : Array.from(keySet);
+      });
+    }
+  };
 
   // Load propostas with cota='sim' and build (month|codigo) -> {volume, descricao}
   const loadConsumo = async () => {
@@ -175,10 +215,7 @@ export default function ControleCotas() {
       .from("propostas_simulador")
       .select("codigo_produto, descricao_produto, volume_caixas, created_at, cota")
       .ilike("cota", "sim");
-    if (error) {
-      console.error(error);
-      return;
-    }
+    if (error) { console.error(error); return; }
     const map: Record<string, ConsumoMeta> = {};
     (data ?? []).forEach((r: any) => {
       const d = new Date(r.created_at);
@@ -190,18 +227,49 @@ export default function ControleCotas() {
   };
 
   useEffect(() => {
+    loadFromDb();
     loadConsumo();
-    // Poll for new cotas so linhas se atualizam automaticamente
     const iv = setInterval(loadConsumo, 15000);
     return () => clearInterval(iv);
   }, []);
 
-  const clearData = () => {
-    if (!confirm("Limpar tabela e upload?")) return;
+  // DB writers
+  const dbInsertRows = async (newRows: Row[], hs: string[]): Promise<Row[]> => {
+    if (!newRows.length) return [];
+    const payload = newRows.map((r) => {
+      const f = extractDbFields(r, hs);
+      return { codigo: f.codigo, mes_ano: f.mes_ano, volume: f.volume, dados: f.dados, file_name: fileName || null };
+    });
+    const { data, error } = await supabase.from("cotas_data" as any).insert(payload).select("id");
+    if (error) { toast.error("Erro ao salvar: " + error.message); return newRows; }
+    return newRows.map((r, i) => ({ ...r, __id: data?.[i]?.id }));
+  };
+  const dbUpdateRow = async (row: Row, hs: string[]) => {
+    if (!row.__id) return;
+    const f = extractDbFields(row, hs);
+    const { error } = await supabase.from("cotas_data" as any)
+      .update({ codigo: f.codigo, mes_ano: f.mes_ano, volume: f.volume, dados: f.dados })
+      .eq("id", row.__id);
+    if (error) toast.error("Erro ao atualizar: " + error.message);
+  };
+  const dbDeleteRow = async (row: Row) => {
+    if (!row.__id) return;
+    const { error } = await supabase.from("cotas_data" as any).delete().eq("id", row.__id);
+    if (error) toast.error("Erro ao excluir: " + error.message);
+  };
+  const dbDeleteAll = async () => {
+    const { error } = await supabase.from("cotas_data" as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (error) toast.error("Erro ao limpar: " + error.message);
+  };
+
+  const clearData = async () => {
+    if (!confirm("Limpar tabela e apagar todos os registros salvos?")) return;
+    await dbDeleteAll();
     setHeaders([]);
     setRows([]);
     setFileName("");
     localStorage.removeItem(STORAGE_KEY);
+    toast.success("Dados removidos");
   };
 
   const rowKey = (r: Row, hs: string[]): string => {
