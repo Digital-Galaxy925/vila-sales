@@ -176,31 +176,45 @@ export default function ControleCotas() {
   }, [headers]);
 
   const rowsWithConsumo = useMemo(() => {
-    // Existing sheet rows with Volume Consumido
-    const seenKeys = new Set<string>();
+    // Aggregate consumo por código (soma todos os meses) e por mês+código
+    const byCode: Record<string, number> = {};
+    const byKey: Record<string, number> = {};
+    const descByCode: Record<string, string> = {};
+    Object.entries(consumo).forEach(([key, meta]) => {
+      const [, code] = key.split("|");
+      byCode[code] = (byCode[code] ?? 0) + meta.volume;
+      byKey[key] = (byKey[key] ?? 0) + meta.volume;
+      if (!descByCode[code]) descByCode[code] = meta.descricao;
+    });
+
+    const seenCodes = new Set<string>();
     const base = rows.map((r) => {
       const code = codigoCol ? normCode(r[codigoCol]) : "";
       const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
-      const key = monthKey && code ? `${monthKey}|${code}` : null;
-      if (key) seenKeys.add(key);
-      const vol = key ? consumo[key]?.volume ?? 0 : 0;
+      if (code) seenCodes.add(code);
+      // Se a linha da planilha tem mês, prioriza match mês+código; senão soma tudo do código
+      let vol = 0;
+      if (code) {
+        if (monthKey && byKey[`${monthKey}|${code}`] != null) {
+          vol = byKey[`${monthKey}|${code}`];
+        } else {
+          vol = byCode[code] ?? 0;
+        }
+      }
       return { ...r, "Volume Consumido": vol };
     });
 
-    // Auto-append rows for new cotas not present in the sheet
+    // Auto-append apenas códigos que NÃO existem na planilha
     if (codigoCol) {
-      Object.entries(consumo).forEach(([key, meta]) => {
-        if (seenKeys.has(key)) return;
-        const [ym, code] = key.split("|");
-        const [year, month] = ym.split("-");
-        const monthName = Object.entries(MESES).find(([, v]) => v === Number(month))?.[0] ?? month;
+      const appended = new Set<string>();
+      Object.keys(byCode).forEach((code) => {
+        if (seenCodes.has(code) || appended.has(code)) return;
+        appended.add(code);
         const row: Row = {};
         headers.forEach((h) => (row[h] = ""));
         row[codigoCol] = code;
-        if (descCol) row[descCol] = meta.descricao;
-        if (mesCol) row[mesCol] = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)}/${year}`;
-        if (anoCol) row[anoCol] = year;
-        row["Volume Consumido"] = meta.volume;
+        if (descCol) row[descCol] = descByCode[code] ?? "";
+        row["Volume Consumido"] = byCode[code];
         base.push(row as any);
       });
     }
