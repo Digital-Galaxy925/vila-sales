@@ -67,6 +67,7 @@ export default function Simulador() {
   const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
   const [observacao, setObservacao] = useState("");
   const [gerente, setGerente] = useState("");
+  const [cota, setCota] = useState<"Sim" | "Não">("Não");
   const [salvando, setSalvando] = useState(false);
   const [selectedCod, setSelectedCod] = useState<string>("");
   const [showSug, setShowSug] = useState(false);
@@ -170,11 +171,13 @@ export default function Simulador() {
         percentual_investimento: percentualInvestimento,
         observacao,
         gerente: gerente || null,
+        cota,
       });
       if (error) throw error;
       toast({ title: "Proposta salva", description: "Disponível em Controle de Investimentos." });
       setObservacao("");
       setGerente("");
+      setCota("Não");
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e?.message ?? "Tente novamente.", variant: "destructive" });
     } finally {
@@ -419,6 +422,17 @@ export default function Simulador() {
                 <div style={{ minWidth: 220 }}>
                   <label style={labelStyle}>Gerente</label>
                   <input type="text" value={gerente} onChange={(e) => setGerente(e.target.value)} placeholder="Nome do gerente" style={inputStyle} />
+                </div>
+                <div style={{ minWidth: 160 }}>
+                  <label style={labelStyle}>Cota</label>
+                  <div style={{ display: "flex", gap: 8, height: 38, alignItems: "center" }}>
+                    {(["Sim", "Não"] as const).map((op) => (
+                      <label key={op} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, fontWeight: 500, color: "#374151" }}>
+                        <input type="radio" name="cota" value={op} checked={cota === op} onChange={() => setCota(op)} style={{ accentColor: "#0071e3" }} />
+                        {op}
+                      </label>
+                    ))}
+                  </div>
                 </div>
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <label style={labelStyle}>Observação (opcional)</label>
