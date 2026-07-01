@@ -102,6 +102,9 @@ const findHeader = (headers: string[], patterns: RegExp[]): string | null => {
   return null;
 };
 
+const matchingHeaders = (headers: string[], patterns: RegExp[]) =>
+  headers.filter((h) => patterns.some((p) => p.test(normText(h))));
+
 const findCodeHeader = (headers: string[]) =>
   findHeader(headers, [/^(cod|codigo)(\b|\s|\.|-|_)/, /cod.*prod/, /^sku\b/, /^produto$/]);
 
@@ -115,6 +118,14 @@ const findVolumeHeader = (headers: string[]) =>
     const n = normText(h);
     return !/consumido|saldo/.test(n) && (/^volume\b/.test(n) || /^quantidade\b/.test(n) || /^qtd\b/.test(n) || /^qtde\b/.test(n) || /^cota\b/.test(n));
   }) ?? null;
+
+const firstRowValue = (r: Row, cols: string[]) => {
+  for (const c of cols) {
+    const v = r[c];
+    if (String(v ?? "").trim() !== "") return v;
+  }
+  return cols[0] ? r[cols[0]] : undefined;
+};
 
 const STORAGE_KEY = "controle-cotas-data-v1";
 
@@ -192,11 +203,10 @@ export default function ControleCotas() {
   };
 
   const rowKey = (r: Row, hs: string[]): string => {
-    const codeCol = findCodeHeader(hs);
-    const mCol = findMonthHeader(hs);
-    const aCol = findYearHeader(hs);
-    const code = codeCol ? normCode(r[codeCol]) : "";
-    const mk = parseMonthKey(mCol ? r[mCol] : null, aCol ? r[aCol] : null);
+    const code = normCode(firstRowValue(r, matchingHeaders(hs, [/^(cod|codigo)(\b|\s|\.|-|_)/, /cod.*prod/, /^sku\b/, /^produto$/])));
+    const mes = firstRowValue(r, matchingHeaders(hs, [/^mes\b/, /competencia/, /periodo/, /^data$/]));
+    const ano = firstRowValue(r, matchingHeaders(hs, [/^ano\b/]));
+    const mk = parseMonthKey(mes, ano);
     return `${mk ?? ""}|${code}`;
   };
 
