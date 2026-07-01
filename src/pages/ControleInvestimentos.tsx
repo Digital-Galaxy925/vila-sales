@@ -350,6 +350,7 @@ export default function ControleInvestimentos() {
                     <Td right><span style={{ color: "#dc2626", fontWeight: 600 }}>{fmt(p.investimento_total)}</span></Td>
                     <Td right>{fmtPct(p.percentual_investimento)}</Td>
                     <Td className="max-w-[140px] truncate" title={p.cota ?? ""}>{p.cota ?? "–"}</Td>
+                    <Td className="max-w-[160px] truncate" title={p.cliente ?? ""}>{p.cliente ?? "–"}</Td>
                     <Td className="max-w-[140px] truncate" title={p.gerente ?? ""}>{p.gerente ?? "–"}</Td>
                     <Td className="max-w-[160px] truncate text-muted-foreground" title={p.observacao ?? ""}>{p.observacao}</Td>
 
