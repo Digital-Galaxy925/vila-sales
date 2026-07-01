@@ -34,12 +34,34 @@ const MESES: Record<string, number> = {
   dez: 12, dezembro: 12,
 };
 
-const normCode = (v: any) => String(v ?? "").trim().replace(/^0+/, "").toUpperCase();
+const normText = (v: any) =>
+  String(v ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const normCode = (v: any) => String(v ?? "").trim().replace(/\.0+$/, "").replace(/^0+/, "").toUpperCase();
+
+const parseNumber = (v: any): number => {
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+  const raw = String(v ?? "").trim();
+  if (!raw) return 0;
+  const cleaned = raw.replace(/[^\d,.-]/g, "");
+  if (!cleaned) return 0;
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+  let normalized = cleaned;
+  if (lastComma > lastDot) normalized = cleaned.replace(/\./g, "").replace(",", ".");
+  else if (lastDot > lastComma && /\.\d{3}$/.test(cleaned) && !cleaned.includes(",")) normalized = cleaned.replace(/\./g, "");
+  const n = Number(normalized);
+  return Number.isFinite(n) ? n : 0;
+};
 
 /** Normalize month/year into "YYYY-MM" or null */
 const parseMonthKey = (mesVal: any, anoVal: any): string | null => {
   if (mesVal == null && anoVal == null) return null;
-  const s = String(mesVal ?? "").trim().toLowerCase();
+  const s = normText(mesVal);
   let month: number | null = null;
   let year: number | null = anoVal ? Number(String(anoVal).trim()) : null;
 
@@ -66,17 +88,33 @@ const parseMonthKey = (mesVal: any, anoVal: any): string | null => {
     }
   }
 
+  // Se a planilha tiver apenas a coluna Mês, usa o ano atual para manter a chave mês+código.
+  if (month && !year) year = new Date().getFullYear();
   if (!month || !year) return null;
   return `${year}-${String(month).padStart(2, "0")}`;
 };
 
 const findHeader = (headers: string[], patterns: RegExp[]): string | null => {
   for (const p of patterns) {
-    const h = headers.find((x) => p.test(x.toLowerCase().trim()));
+    const h = headers.find((x) => p.test(normText(x)));
     if (h) return h;
   }
   return null;
 };
+
+const findCodeHeader = (headers: string[]) =>
+  findHeader(headers, [/^(cod|codigo)(\b|\s|\.|-|_)/, /cod.*prod/, /^sku\b/, /^produto$/]);
+
+const findMonthHeader = (headers: string[]) =>
+  findHeader(headers, [/^mes\b/, /competencia/, /periodo/, /^data$/]);
+
+const findYearHeader = (headers: string[]) => findHeader(headers, [/^ano\b/]);
+
+const findVolumeHeader = (headers: string[]) =>
+  headers.find((h) => {
+    const n = normText(h);
+    return !/consumido|saldo/.test(n) && (/^volume\b/.test(n) || /^quantidade\b/.test(n) || /^qtd\b/.test(n) || /^qtde\b/.test(n) || /^cota\b/.test(n));
+  }) ?? null;
 
 const STORAGE_KEY = "controle-cotas-data-v1";
 
@@ -154,9 +192,9 @@ export default function ControleCotas() {
   };
 
   const rowKey = (r: Row, hs: string[]): string => {
-    const codeCol = findHeader(hs, [/^c[oó]digo/, /produto/, /sku/]);
-    const mCol = findHeader(hs, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
-    const aCol = findHeader(hs, [/^ano/]);
+    const codeCol = findCodeHeader(hs);
+    const mCol = findMonthHeader(hs);
+    const aCol = findYearHeader(hs);
     const code = codeCol ? normCode(r[codeCol]) : "";
     const mk = parseMonthKey(mCol ? r[mCol] : null, aCol ? r[aCol] : null);
     return `${mk ?? ""}|${code}`;
@@ -179,7 +217,7 @@ export default function ControleCotas() {
     const mergedHeaders = [...headers];
     newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
 
-    const volCol = findHeader(mergedHeaders, [/^volume/, /^quantidade/, /^qtd/, /^qtde/, /^cota/]);
+    const volCol = findVolumeHeader(mergedHeaders);
 
     // Index existing rows by key
     const existing = rows.map((r) => ({ ...r }));
@@ -195,8 +233,8 @@ export default function ControleCotas() {
       if (hasCode && idx[key] != null) {
         const target = existing[idx[key]];
         if (mode === "sum" && volCol) {
-          const a = Number(target[volCol] ?? 0) || 0;
-          const b = Number(nr[volCol] ?? 0) || 0;
+          const a = parseNumber(target[volCol]);
+          const b = parseNumber(nr[volCol]);
           target[volCol] = a + b;
         } else if (mode === "replace") {
           // Overwrite matched columns with new values
@@ -253,19 +291,28 @@ export default function ControleCotas() {
       });
 
       await loadConsumo();
-      setPending({ newHeaders, newRows: json, fileName: file.name, overlaps });
+      if (overlaps > 0) {
+        setPending({ newHeaders, newRows: json, fileName: file.name, overlaps });
+      } else {
+        const mergedHeaders = [...headers];
+        newHeaders.forEach((h) => { if (!mergedHeaders.includes(h)) mergedHeaders.push(h); });
+        setHeaders(mergedHeaders);
+        setRows((prev) => [...prev, ...json]);
+        setFileName(file.name);
+        toast.success(`${json.length} novas linhas adicionadas`);
+      }
     } catch (e: any) {
       toast.error("Erro ao ler planilha: " + e.message);
     }
   };
 
   const { displayHeaders, codigoCol, mesCol, anoCol, precoCol, descCol, volumeCol } = useMemo(() => {
-    const codigoCol = findHeader(headers, [/^c[oó]digo/, /produto/, /sku/]);
-    const mesCol = findHeader(headers, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
-    const anoCol = findHeader(headers, [/^ano/]);
-    const precoCol = findHeader(headers, [/^pre[cç]o/, /valor/]);
-    const descCol = findHeader(headers, [/descri/, /produto/]);
-    const volumeCol = findHeader(headers, [/^volume/, /^quantidade/, /^qtd/, /^qtde/, /^cota/]);
+    const codigoCol = findCodeHeader(headers);
+    const mesCol = findMonthHeader(headers);
+    const anoCol = findYearHeader(headers);
+    const precoCol = findHeader(headers, [/^preco/, /valor/]);
+    const descCol = findHeader(headers, [/descri/, /^produto$/]);
+    const volumeCol = findVolumeHeader(headers);
 
     // Insert "Volume Consumido" after preço, then "Saldo" after "Volume Consumido"
     const dh = [...headers];
@@ -281,61 +328,24 @@ export default function ControleCotas() {
   }, [headers]);
 
   const rowsWithConsumo = useMemo(() => {
-    // Aggregate consumo por código (soma todos os meses) e por mês+código
-    const byCode: Record<string, number> = {};
+    // Aggregate consumo estritamente por mês+código
     const byKey: Record<string, number> = {};
-    const descByCode: Record<string, string> = {};
     Object.entries(consumo).forEach(([key, meta]) => {
-      const [, code] = key.split("|");
-      byCode[code] = (byCode[code] ?? 0) + meta.volume;
       byKey[key] = (byKey[key] ?? 0) + meta.volume;
-      if (!descByCode[code]) descByCode[code] = meta.descricao;
     });
 
-    const seenCodes = new Set<string>();
-    const base = rows.map((r) => {
+    return rows.map((r) => {
       const code = codigoCol ? normCode(r[codigoCol]) : "";
       const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
-      if (code) seenCodes.add(code);
-      // Match ESTRITO por mês+código. Sem mês na linha da planilha, consumo = 0.
       let vol = 0;
       if (code && monthKey) {
         vol = byKey[`${monthKey}|${code}`] ?? 0;
       }
-      const volDisp = volumeCol ? Number(r[volumeCol] ?? 0) : 0;
+      const volDisp = volumeCol ? parseNumber(r[volumeCol]) : 0;
       const saldo = volDisp - vol;
       return { ...r, "Volume Consumido": vol, "Saldo": saldo };
     });
-
-    // Auto-append por (código, mês) que NÃO existe na planilha
-    if (codigoCol) {
-      const seenKeys = new Set(
-        rows.map((r) => {
-          const c = normCode(r[codigoCol]);
-          const mk = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
-          return `${mk ?? ""}|${c}`;
-        })
-      );
-      Object.entries(consumo).forEach(([key, meta]) => {
-        if (seenKeys.has(key)) return;
-        const [mk, code] = key.split("|");
-        const [yy, mm] = (mk ?? "").split("-");
-        const row: Row = {};
-        headers.forEach((h) => (row[h] = ""));
-        row[codigoCol] = code;
-        if (descCol) row[descCol] = meta.descricao ?? "";
-        if (mesCol && mm) {
-          const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-          row[mesCol] = nomes[Number(mm) - 1] ?? mm;
-        }
-        if (anoCol && yy) row[anoCol] = yy;
-        row["Volume Consumido"] = meta.volume;
-        row["Saldo"] = -(meta.volume ?? 0);
-        base.push(row as any);
-      });
-    }
-    return base;
-  }, [rows, consumo, headers, codigoCol, mesCol, anoCol, descCol, volumeCol]);
+  }, [rows, consumo, codigoCol, mesCol, anoCol, volumeCol]);
 
   const exportXLSX = () => {
     const ws = XLSX.utils.json_to_sheet(rowsWithConsumo, { header: displayHeaders });
