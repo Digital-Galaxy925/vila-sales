@@ -204,7 +204,9 @@ export default function ControleCotas() {
           vol = byCode[code] ?? 0;
         }
       }
-      return { ...r, "Volume Consumido": vol };
+      const volDisp = volumeCol ? Number(r[volumeCol] ?? 0) : 0;
+      const saldo = volDisp - vol;
+      return { ...r, "Volume Consumido": vol, "Saldo": saldo };
     });
 
     // Auto-append apenas códigos que NÃO existem na planilha
@@ -218,11 +220,12 @@ export default function ControleCotas() {
         row[codigoCol] = code;
         if (descCol) row[descCol] = descByCode[code] ?? "";
         row["Volume Consumido"] = byCode[code];
+        row["Saldo"] = -(byCode[code] ?? 0);
         base.push(row as any);
       });
     }
     return base;
-  }, [rows, consumo, headers, codigoCol, mesCol, anoCol, descCol]);
+  }, [rows, consumo, headers, codigoCol, mesCol, anoCol, descCol, volumeCol]);
 
   const exportXLSX = () => {
     const ws = XLSX.utils.json_to_sheet(rowsWithConsumo, { header: displayHeaders });
