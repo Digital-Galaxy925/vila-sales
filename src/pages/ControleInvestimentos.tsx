@@ -299,9 +299,9 @@ export default function ControleInvestimentos() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={19} className="text-center py-10 text-muted-foreground">Carregando...</td></tr>
+                <tr><td colSpan={20} className="text-center py-10 text-muted-foreground">Carregando...</td></tr>
               ) : filtradas.length === 0 ? (
-                <tr><td colSpan={19} className="text-center py-10 text-muted-foreground">
+                <tr><td colSpan={20} className="text-center py-10 text-muted-foreground">
                   Nenhuma proposta salva. Vá ao Simulador de Ofertas para criar a primeira.
                 </td></tr>
               ) : (
