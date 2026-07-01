@@ -242,7 +242,8 @@ export default function ControleCotas() {
     });
     const { data, error } = await supabase.from("cotas_data" as any).insert(payload).select("id");
     if (error) { toast.error("Erro ao salvar: " + error.message); return newRows; }
-    return newRows.map((r, i) => ({ ...r, __id: data?.[i]?.id }));
+    const arr = (data ?? []) as any[];
+    return newRows.map((r, i) => ({ ...r, __id: arr[i]?.id }));
   };
   const dbUpdateRow = async (row: Row, hs: string[]) => {
     if (!row.__id) return;
