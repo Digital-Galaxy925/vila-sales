@@ -16,6 +16,7 @@ import {
   ArrowLeftRight,
   Zap,
   Wallet,
+  Flag,
   Menu,
   X,
   UploadCloud,
@@ -37,6 +38,7 @@ const navItems = [
   { to: "/propostas-aprovadas", label: "Propostas Aprovadas", icon: FileText },
   { to: "/livros", label: "Livros", icon: FileText },
   { to: "/controle-investimentos", label: "Controle de Investimentos", icon: Wallet },
+  { to: "/controle-cotas", label: "Controle de Cotas", icon: Flag },
   { to: "/pedidos-pendentes", label: "Pedidos Pendentes", icon: FileText },
   { to: "/comparativo-livros", label: "Comparativo de Livros", icon: GitCompareArrows },
   

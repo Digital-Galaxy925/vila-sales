@@ -29,6 +29,7 @@ import PropostasAprovadas from "./pages/PropostasAprovadas";
 import Livros from "./pages/Livros";
 import PedidosPendentes from "./pages/PedidosPendentes";
 import ControleInvestimentos from "./pages/ControleInvestimentos";
+import ControleCotas from "./pages/ControleCotas";
 import AnaliseGeral from "./pages/AnaliseGeral";
 import DashboardUnilever from "./pages/DashboardUnilever";
 import NotFound from "./pages/NotFound";
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/livros" element={<Livros />} />
             <Route path="/pedidos-pendentes" element={<PedidosPendentes />} />
             <Route path="/controle-investimentos" element={<ControleInvestimentos />} />
+            <Route path="/controle-cotas" element={<ControleCotas />} />
             <Route path="/tabela-st" element={<TabelaST />} />
             <Route path="/comparativo-livros" element={<ComparativoLivros />} />
             <Route path="/tabloide" element={<Tabloide />} />
