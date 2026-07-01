@@ -107,7 +107,7 @@ export default function ControleCotas() {
     const { data, error } = await supabase
       .from("propostas_simulador")
       .select("codigo_produto, descricao_produto, volume_caixas, created_at, cota")
-      .eq("cota", "sim");
+      .ilike("cota", "sim");
     if (error) {
       console.error(error);
       return;
