@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, FileSpreadsheet, Download } from "lucide-react";
+import { Upload, FileSpreadsheet, Download, Pencil, Trash2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -159,6 +159,8 @@ export default function ControleCotas() {
     fileName: string;
     overlaps: number;
   } | null>(null);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState<Row>({});
 
   // Persist upload across screens
   useEffect(() => {
@@ -343,7 +345,7 @@ export default function ControleCotas() {
       byKey[key] = (byKey[key] ?? 0) + meta.volume;
     });
 
-    return rows.map((r) => {
+    return rows.map((r, __idx) => {
       const code = codigoCol ? normCode(r[codigoCol]) : "";
       const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
       let vol = 0;
@@ -352,7 +354,7 @@ export default function ControleCotas() {
       }
       const volDisp = volumeCol ? parseNumber(r[volumeCol]) : 0;
       const saldo = volDisp - vol;
-      return { ...r, "Volume Consumido": vol, "Saldo": saldo };
+      return { ...r, __idx, "Volume Consumido": vol, "Saldo": saldo };
     });
   }, [rows, consumo, codigoCol, mesCol, anoCol, volumeCol]);
 
@@ -375,6 +377,24 @@ export default function ControleCotas() {
     const n = Number(v);
     if (!isFinite(n)) return String(v ?? "");
     return n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+  };
+
+  const startEdit = (idx: number) => {
+    setEditingIdx(idx);
+    setEditDraft({ ...rows[idx] });
+  };
+  const cancelEdit = () => { setEditingIdx(null); setEditDraft({}); };
+  const saveEdit = () => {
+    if (editingIdx == null) return;
+    setRows((prev) => prev.map((r, i) => (i === editingIdx ? { ...r, ...editDraft } : r)));
+    toast.success("Linha atualizada");
+    cancelEdit();
+  };
+  const deleteRow = (idx: number) => {
+    if (!confirm("Excluir esta linha?")) return;
+    setRows((prev) => prev.filter((_, i) => i !== idx));
+    if (editingIdx === idx) cancelEdit();
+    toast.success("Linha excluída");
   };
 
   return (
@@ -454,29 +474,68 @@ export default function ControleCotas() {
                       {h}
                     </th>
                   ))}
+                  <th className="px-3 py-2 text-left font-semibold border-b whitespace-nowrap text-[#1d1d1f]">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((r, i) => (
-                  <tr key={i} className="hover:bg-muted/40 border-b">
-                {displayHeaders.map((h) => (
-                      <td
-                        key={h}
-                        className={`px-3 py-1.5 whitespace-nowrap ${
-                          h === "Volume Consumido"
-                            ? "font-semibold text-[#0071e3]"
-                            : h === "Saldo"
-                            ? `font-semibold ${Number(r[h] ?? 0) < 0 ? "text-red-600" : "text-green-600"}`
-                            : ""
-                        }`}
-                      >
-                        {h === "Volume Consumido" || h === "Saldo"
-                          ? fmtNum(r[h])
-                          : String(r[h] ?? "")}
+                {filtered.map((r) => {
+                  const origIdx = r.__idx as number;
+                  const isEditing = editingIdx === origIdx;
+                  return (
+                    <tr key={origIdx} className="hover:bg-muted/40 border-b">
+                      {displayHeaders.map((h) => {
+                        const isComputed = h === "Volume Consumido" || h === "Saldo";
+                        return (
+                          <td
+                            key={h}
+                            className={`px-3 py-1.5 whitespace-nowrap ${
+                              h === "Volume Consumido"
+                                ? "font-semibold text-[#0071e3]"
+                                : h === "Saldo"
+                                ? `font-semibold ${Number(r[h] ?? 0) < 0 ? "text-red-600" : "text-green-600"}`
+                                : ""
+                            }`}
+                          >
+                            {isEditing && !isComputed ? (
+                              <Input
+                                value={String(editDraft[h] ?? "")}
+                                onChange={(e) => setEditDraft((d) => ({ ...d, [h]: e.target.value }))}
+                                className="h-7 min-w-[80px]"
+                              />
+                            ) : isComputed ? (
+                              fmtNum(r[h])
+                            ) : (
+                              String(r[h] ?? "")
+                            )}
+                          </td>
+                        );
+                      })}
+                      <td className="px-3 py-1.5 whitespace-nowrap">
+                        <div className="flex gap-1">
+                          {isEditing ? (
+                            <>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-green-600" onClick={saveEdit} title="Salvar">
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={cancelEdit} title="Cancelar">
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-[#0071e3]" onClick={() => startEdit(origIdx)} title="Editar">
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 text-red-600" onClick={() => deleteRow(origIdx)} title="Excluir">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </td>
-                    ))}
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
