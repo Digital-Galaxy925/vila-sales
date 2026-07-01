@@ -269,6 +269,8 @@ export default function ControleInvestimentos() {
           <table className="w-full text-xs">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
+                <Th>Mês</Th>
+                <Th>Ano</Th>
                 <Th>Filial</Th>
                 <Th>BU</Th>
                 <Th>Código</Th>
