@@ -68,36 +68,74 @@ const findHeader = (headers: string[], patterns: RegExp[]): string | null => {
   return null;
 };
 
+const STORAGE_KEY = "controle-cotas-data-v1";
+
+type ConsumoMeta = { volume: number; descricao: string };
+
 export default function ControleCotas() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [headers, setHeaders] = useState<string[]>([]);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [fileName, setFileName] = useState<string>("");
+  const [headers, setHeaders] = useState<string[]>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      return s ? JSON.parse(s).headers ?? [] : [];
+    } catch { return []; }
+  });
+  const [rows, setRows] = useState<Row[]>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      return s ? JSON.parse(s).rows ?? [] : [];
+    } catch { return []; }
+  });
+  const [fileName, setFileName] = useState<string>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      return s ? JSON.parse(s).fileName ?? "" : "";
+    } catch { return ""; }
+  });
   const [search, setSearch] = useState("");
-  const [consumo, setConsumo] = useState<Record<string, number>>({});
+  const [consumo, setConsumo] = useState<Record<string, ConsumoMeta>>({});
 
-  // Load propostas with cota='sim' and build (month|codigo) -> sum(volume_caixas)
+  // Persist upload across screens
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ headers, rows, fileName }));
+    } catch {}
+  }, [headers, rows, fileName]);
+
+  // Load propostas with cota='sim' and build (month|codigo) -> {volume, descricao}
   const loadConsumo = async () => {
     const { data, error } = await supabase
       .from("propostas_simulador")
-      .select("codigo_produto, volume_caixas, created_at, cota")
+      .select("codigo_produto, descricao_produto, volume_caixas, created_at, cota")
       .eq("cota", "sim");
     if (error) {
       console.error(error);
       return;
     }
-    const map: Record<string, number> = {};
+    const map: Record<string, ConsumoMeta> = {};
     (data ?? []).forEach((r: any) => {
       const d = new Date(r.created_at);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}|${normCode(r.codigo_produto)}`;
-      map[key] = (map[key] ?? 0) + Number(r.volume_caixas ?? 0);
+      if (!map[key]) map[key] = { volume: 0, descricao: r.descricao_produto ?? "" };
+      map[key].volume += Number(r.volume_caixas ?? 0);
     });
     setConsumo(map);
   };
 
   useEffect(() => {
     loadConsumo();
+    // Poll for new cotas so linhas se atualizam automaticamente
+    const iv = setInterval(loadConsumo, 15000);
+    return () => clearInterval(iv);
   }, []);
+
+  const clearData = () => {
+    if (!confirm("Limpar tabela e upload?")) return;
+    setHeaders([]);
+    setRows([]);
+    setFileName("");
+    localStorage.removeItem(STORAGE_KEY);
+  };
 
   const handleFile = async (file: File) => {
     try {
@@ -119,11 +157,12 @@ export default function ControleCotas() {
     }
   };
 
-  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol } = useMemo(() => {
+  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol, descCol } = useMemo(() => {
     const codigoCol = findHeader(headers, [/^c[oó]digo/, /produto/, /sku/]);
     const mesCol = findHeader(headers, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
     const anoCol = findHeader(headers, [/^ano/]);
     const precoCol = findHeader(headers, [/^pre[cç]o/, /valor/]);
+    const descCol = findHeader(headers, [/descri/, /produto/]);
 
     // Insert "Volume Consumido" after preço
     const dh = [...headers];
@@ -133,18 +172,40 @@ export default function ControleCotas() {
     } else {
       dh.push("Volume Consumido");
     }
-    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol };
+    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol, descCol };
   }, [headers]);
 
   const rowsWithConsumo = useMemo(() => {
-    return rows.map((r) => {
+    // Existing sheet rows with Volume Consumido
+    const seenKeys = new Set<string>();
+    const base = rows.map((r) => {
       const code = codigoCol ? normCode(r[codigoCol]) : "";
       const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
       const key = monthKey && code ? `${monthKey}|${code}` : null;
-      const vol = key ? consumo[key] ?? 0 : 0;
+      if (key) seenKeys.add(key);
+      const vol = key ? consumo[key]?.volume ?? 0 : 0;
       return { ...r, "Volume Consumido": vol };
     });
-  }, [rows, consumo, codigoCol, mesCol, anoCol]);
+
+    // Auto-append rows for new cotas not present in the sheet
+    if (codigoCol) {
+      Object.entries(consumo).forEach(([key, meta]) => {
+        if (seenKeys.has(key)) return;
+        const [ym, code] = key.split("|");
+        const [year, month] = ym.split("-");
+        const monthName = Object.entries(MESES).find(([, v]) => v === Number(month))?.[0] ?? month;
+        const row: Row = {};
+        headers.forEach((h) => (row[h] = ""));
+        row[codigoCol] = code;
+        if (descCol) row[descCol] = meta.descricao;
+        if (mesCol) row[mesCol] = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)}/${year}`;
+        if (anoCol) row[anoCol] = year;
+        row["Volume Consumido"] = meta.volume;
+        base.push(row as any);
+      });
+    }
+    return base;
+  }, [rows, consumo, headers, codigoCol, mesCol, anoCol, descCol]);
 
   const exportXLSX = () => {
     const ws = XLSX.utils.json_to_sheet(rowsWithConsumo, { header: displayHeaders });
@@ -199,13 +260,18 @@ export default function ControleCotas() {
             Upload Planilha
           </Button>
           {rows.length > 0 && (
-            <Button
-              onClick={exportXLSX}
-              className="bg-[#107C41] hover:bg-[#0e6b38] text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Exportar Excel
-            </Button>
+            <>
+              <Button
+                onClick={exportXLSX}
+                className="bg-[#107C41] hover:bg-[#0e6b38] text-white"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Exportar Excel
+              </Button>
+              <Button variant="outline" onClick={clearData}>
+                Limpar
+              </Button>
+            </>
           )}
         </div>
       </div>
