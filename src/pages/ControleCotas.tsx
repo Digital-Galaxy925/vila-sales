@@ -460,6 +460,42 @@ export default function ControleCotas() {
           </p>
         </Card>
       )}
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => { if (!o) setPending(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Conflito de dados detectado</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pending?.overlaps
+                ? `Foram encontrados ${pending.overlaps} produto(s) no mesmo período já existentes na tabela. Como deseja tratar esses itens? Linhas novas (produto/período diferente) serão sempre adicionadas.`
+                : "Nenhum conflito de produto/período. As novas linhas serão adicionadas à tabela."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-wrap gap-2">
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            {pending?.overlaps ? (
+              <>
+                <Button variant="outline" onClick={() => applyMerge("replace")}>
+                  Substituir existentes
+                </Button>
+                <AlertDialogAction
+                  onClick={() => applyMerge("sum")}
+                  className="bg-[#0071e3] hover:bg-[#0077ed] text-white"
+                >
+                  Somar aos existentes
+                </AlertDialogAction>
+              </>
+            ) : (
+              <AlertDialogAction
+                onClick={() => applyMerge("sum")}
+                className="bg-[#0071e3] hover:bg-[#0077ed] text-white"
+              >
+                Adicionar linhas
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
