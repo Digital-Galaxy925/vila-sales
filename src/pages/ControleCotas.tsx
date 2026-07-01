@@ -157,22 +157,25 @@ export default function ControleCotas() {
     }
   };
 
-  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol, descCol } = useMemo(() => {
+  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol, descCol, volumeCol } = useMemo(() => {
     const codigoCol = findHeader(headers, [/^c[oó]digo/, /produto/, /sku/]);
     const mesCol = findHeader(headers, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
     const anoCol = findHeader(headers, [/^ano/]);
     const precoCol = findHeader(headers, [/^pre[cç]o/, /valor/]);
     const descCol = findHeader(headers, [/descri/, /produto/]);
+    const volumeCol = findHeader(headers, [/^volume/, /^quantidade/, /^qtd/, /^qtde/, /^cota/]);
 
-    // Insert "Volume Consumido" after preço
+    // Insert "Volume Consumido" after preço, then "Saldo" after "Volume Consumido"
     const dh = [...headers];
-    if (precoCol) {
-      const idx = dh.indexOf(precoCol);
-      dh.splice(idx + 1, 0, "Volume Consumido");
-    } else {
-      dh.push("Volume Consumido");
-    }
-    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol, descCol };
+    const insertAfter = (after: string | null, col: string) => {
+      if (!after) { dh.push(col); return; }
+      const idx = dh.indexOf(after);
+      if (idx >= 0) dh.splice(idx + 1, 0, col);
+      else dh.push(col);
+    };
+    insertAfter(precoCol, "Volume Consumido");
+    insertAfter("Volume Consumido", "Saldo");
+    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol, descCol, volumeCol };
   }, [headers]);
 
   const rowsWithConsumo = useMemo(() => {
