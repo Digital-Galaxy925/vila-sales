@@ -300,6 +300,14 @@ export default function ControleInvestimentos() {
               ) : (
                 filtradas.map((p) => (
                   <tr key={p.id} className="border-t border-border hover:bg-muted/30">
+                    {(() => {
+                      const d = new Date(p.created_at);
+                      const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+                      return (<>
+                        <Td>{meses[d.getMonth()]}</Td>
+                        <Td>{d.getFullYear()}</Td>
+                      </>);
+                    })()}
                     <Td>{p.filial} – {p.filial_nome}</Td>
                     <Td>
                       {(() => {
