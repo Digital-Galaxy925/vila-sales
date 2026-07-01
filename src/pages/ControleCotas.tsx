@@ -104,6 +104,12 @@ export default function ControleCotas() {
   });
   const [search, setSearch] = useState("");
   const [consumo, setConsumo] = useState<Record<string, ConsumoMeta>>({});
+  const [pending, setPending] = useState<{
+    newHeaders: string[];
+    newRows: Row[];
+    fileName: string;
+    overlaps: number;
+  } | null>(null);
 
   // Persist upload across screens
   useEffect(() => {
