@@ -38,6 +38,7 @@ interface Proposta {
   investimento_total: number | null;
   percentual_investimento: number | null;
   observacao: string | null;
+  cota: string | null;
   gerente: string | null;
   created_at: string;
 }
@@ -178,6 +179,7 @@ export default function ControleInvestimentos() {
         "Invest. por CX": p.investimento_por_caixa ?? 0,
         "Invest. Total": p.investimento_total ?? 0,
         "% Investimento": p.percentual_investimento ?? 0,
+        Cota: p.cota ?? "",
         Gerente: p.gerente ?? "",
         Observação: p.observacao ?? "",
       };
@@ -285,6 +287,7 @@ export default function ControleInvestimentos() {
                 <Th right>Sell Out</Th>
                 <Th right>Invest. Total</Th>
                 <Th right>% Invest.</Th>
+                <Th>Cota</Th>
                 <Th>Gerente</Th>
                 <Th>Obs.</Th>
                 <Th />
@@ -293,9 +296,9 @@ export default function ControleInvestimentos() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={18} className="text-center py-10 text-muted-foreground">Carregando...</td></tr>
+                <tr><td colSpan={19} className="text-center py-10 text-muted-foreground">Carregando...</td></tr>
               ) : filtradas.length === 0 ? (
-                <tr><td colSpan={18} className="text-center py-10 text-muted-foreground">
+                <tr><td colSpan={19} className="text-center py-10 text-muted-foreground">
                   Nenhuma proposta salva. Vá ao Simulador de Ofertas para criar a primeira.
                 </td></tr>
               ) : (
@@ -343,6 +346,7 @@ export default function ControleInvestimentos() {
                     <Td right>{fmt(p.total_sellout)}</Td>
                     <Td right><span style={{ color: "#dc2626", fontWeight: 600 }}>{fmt(p.investimento_total)}</span></Td>
                     <Td right>{fmtPct(p.percentual_investimento)}</Td>
+                    <Td className="max-w-[140px] truncate" title={p.cota ?? ""}>{p.cota ?? "–"}</Td>
                     <Td className="max-w-[140px] truncate" title={p.gerente ?? ""}>{p.gerente ?? "–"}</Td>
                     <Td className="max-w-[160px] truncate text-muted-foreground" title={p.observacao ?? ""}>{p.observacao}</Td>
 
