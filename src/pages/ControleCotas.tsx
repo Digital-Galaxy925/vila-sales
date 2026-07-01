@@ -345,7 +345,7 @@ export default function ControleCotas() {
       byKey[key] = (byKey[key] ?? 0) + meta.volume;
     });
 
-    return rows.map((r) => {
+    return rows.map((r, __idx) => {
       const code = codigoCol ? normCode(r[codigoCol]) : "";
       const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
       let vol = 0;
@@ -354,7 +354,7 @@ export default function ControleCotas() {
       }
       const volDisp = volumeCol ? parseNumber(r[volumeCol]) : 0;
       const saldo = volDisp - vol;
-      return { ...r, "Volume Consumido": vol, "Saldo": saldo };
+      return { ...r, __idx, "Volume Consumido": vol, "Saldo": saldo };
     });
   }, [rows, consumo, codigoCol, mesCol, anoCol, volumeCol]);
 
