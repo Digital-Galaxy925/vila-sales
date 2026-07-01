@@ -66,6 +66,7 @@ export default function Simulador() {
   const [precoVendaDesejado, setPrecoVendaDesejado] = useState("");
   const [margemMinimaDesejada, setMargemMinimaDesejada] = useState("17");
   const [observacao, setObservacao] = useState("");
+  const [cliente, setCliente] = useState("");
   const [gerente, setGerente] = useState("");
   const [cota, setCota] = useState<"Sim" | "Não">("Não");
   const [salvando, setSalvando] = useState(false);
@@ -171,12 +172,14 @@ export default function Simulador() {
         percentual_investimento: percentualInvestimento,
         observacao,
         gerente: gerente || null,
+        cliente: cliente || null,
         cota,
       });
       if (error) throw error;
       toast({ title: "Proposta salva", description: "Disponível em Controle de Investimentos." });
       setObservacao("");
       setGerente("");
+      setCliente("");
       setCota("Não");
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e?.message ?? "Tente novamente.", variant: "destructive" });
@@ -436,7 +439,11 @@ export default function Simulador() {
                 </div>
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <label style={labelStyle}>Observação (opcional)</label>
-                  <input type="text" value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: cliente XYZ, campanha de junho..." style={inputStyle} />
+                  <input type="text" value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: campanha de junho..." style={inputStyle} />
+                </div>
+                <div style={{ flex: 1, minWidth: 220 }}>
+                  <label style={labelStyle}>Cliente</label>
+                  <input type="text" value={cliente} onChange={(e) => setCliente(e.target.value)} placeholder="Nome do cliente" style={inputStyle} />
                 </div>
                 <button
                   onClick={salvarProposta}
