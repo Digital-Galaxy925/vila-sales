@@ -330,14 +330,20 @@ export default function ControleCotas() {
               <tbody>
                 {filtered.map((r, i) => (
                   <tr key={i} className="hover:bg-muted/40 border-b">
-                    {displayHeaders.map((h) => (
+                {displayHeaders.map((h) => (
                       <td
                         key={h}
                         className={`px-3 py-1.5 whitespace-nowrap ${
-                          h === "Volume Consumido" ? "font-semibold text-[#0071e3]" : ""
+                          h === "Volume Consumido"
+                            ? "font-semibold text-[#0071e3]"
+                            : h === "Saldo"
+                            ? `font-semibold ${Number(r[h] ?? 0) < 0 ? "text-red-600" : "text-green-600"}`
+                            : ""
                         }`}
                       >
-                        {h === "Volume Consumido" ? fmtNum(r[h]) : String(r[h] ?? "")}
+                        {h === "Volume Consumido" || h === "Saldo"
+                          ? fmtNum(r[h])
+                          : String(r[h] ?? "")}
                       </td>
                     ))}
                   </tr>
