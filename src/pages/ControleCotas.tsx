@@ -306,16 +306,15 @@ export default function ControleCotas() {
     }
   };
 
-  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol, descCol, volumeCol } = useMemo(() => {
+  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol, volumeCol } = useMemo(() => {
     const codigoCol = findCodeHeader(headers);
     const mesCol = findMonthHeader(headers);
     const anoCol = findYearHeader(headers);
     const precoCol = findHeader(headers, [/^preco/, /valor/]);
-    const descCol = findHeader(headers, [/descri/, /^produto$/]);
     const volumeCol = findVolumeHeader(headers);
 
     // Insert "Volume Consumido" after preço, then "Saldo" after "Volume Consumido"
-    const dh = [...headers];
+    const dh = headers.filter((h) => !["Volume Consumido", "Saldo"].includes(h));
     const insertAfter = (after: string | null, col: string) => {
       if (!after) { dh.push(col); return; }
       const idx = dh.indexOf(after);
@@ -324,7 +323,7 @@ export default function ControleCotas() {
     };
     insertAfter(precoCol, "Volume Consumido");
     insertAfter("Volume Consumido", "Saldo");
-    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol, descCol, volumeCol };
+    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol, volumeCol };
   }, [headers]);
 
   const rowsWithConsumo = useMemo(() => {
