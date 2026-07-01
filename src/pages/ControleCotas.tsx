@@ -260,13 +260,18 @@ export default function ControleCotas() {
             Upload Planilha
           </Button>
           {rows.length > 0 && (
-            <Button
-              onClick={exportXLSX}
-              className="bg-[#107C41] hover:bg-[#0e6b38] text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Exportar Excel
-            </Button>
+            <>
+              <Button
+                onClick={exportXLSX}
+                className="bg-[#107C41] hover:bg-[#0e6b38] text-white"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Exportar Excel
+              </Button>
+              <Button variant="outline" onClick={clearData}>
+                Limpar
+              </Button>
+            </>
           )}
         </div>
       </div>
