@@ -297,15 +297,10 @@ export default function ControleCotas() {
       const code = codigoCol ? normCode(r[codigoCol]) : "";
       const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
       if (code) seenCodes.add(code);
-      // Match ESTRITO por mês+código. Se a linha tem mês, só conta cotas do mesmo mês.
-      // Sem mês na planilha, soma todos os meses do código.
+      // Match ESTRITO por mês+código. Sem mês na linha da planilha, consumo = 0.
       let vol = 0;
-      if (code) {
-        if (monthKey) {
-          vol = byKey[`${monthKey}|${code}`] ?? 0;
-        } else {
-          vol = byCode[code] ?? 0;
-        }
+      if (code && monthKey) {
+        vol = byKey[`${monthKey}|${code}`] ?? 0;
       }
       const volDisp = volumeCol ? Number(r[volumeCol] ?? 0) : 0;
       const saldo = volDisp - vol;
