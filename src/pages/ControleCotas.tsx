@@ -1,12 +1,72 @@
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, FileSpreadsheet, Download } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type Row = Record<string, any>;
+
+const MESES: Record<string, number> = {
+  jan: 1, janeiro: 1,
+  fev: 2, fevereiro: 2,
+  mar: 3, marco: 3, "março": 3,
+  abr: 4, abril: 4,
+  mai: 5, maio: 5,
+  jun: 6, junho: 6,
+  jul: 7, julho: 7,
+  ago: 8, agosto: 8,
+  set: 9, setembro: 9,
+  out: 10, outubro: 10,
+  nov: 11, novembro: 11,
+  dez: 12, dezembro: 12,
+};
+
+const normCode = (v: any) => String(v ?? "").trim().replace(/^0+/, "").toUpperCase();
+
+/** Normalize month/year into "YYYY-MM" or null */
+const parseMonthKey = (mesVal: any, anoVal: any): string | null => {
+  if (mesVal == null && anoVal == null) return null;
+  const s = String(mesVal ?? "").trim().toLowerCase();
+  let month: number | null = null;
+  let year: number | null = anoVal ? Number(String(anoVal).trim()) : null;
+
+  // Try "Janeiro/2026" or "Jan/2026" or "01/2026" or "2026-01"
+  if (s) {
+    // ISO YYYY-MM or YYYY-MM-DD
+    const iso = s.match(/^(\d{4})-(\d{1,2})/);
+    if (iso) {
+      year = year ?? Number(iso[1]);
+      month = Number(iso[2]);
+    } else {
+      // name/year or number/year
+      const parts = s.split(/[\/\-\s]+/);
+      for (const p of parts) {
+        if (/^\d{4}$/.test(p)) year = year ?? Number(p);
+        else if (/^\d{1,2}$/.test(p)) {
+          const n = Number(p);
+          if (n >= 1 && n <= 12) month = month ?? n;
+        } else {
+          const key = p.replace(/\.$/, "");
+          if (MESES[key] != null) month = month ?? MESES[key];
+        }
+      }
+    }
+  }
+
+  if (!month || !year) return null;
+  return `${year}-${String(month).padStart(2, "0")}`;
+};
+
+const findHeader = (headers: string[], patterns: RegExp[]): string | null => {
+  for (const p of patterns) {
+    const h = headers.find((x) => p.test(x.toLowerCase().trim()));
+    if (h) return h;
+  }
+  return null;
+};
 
 export default function ControleCotas() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -14,6 +74,30 @@ export default function ControleCotas() {
   const [rows, setRows] = useState<Row[]>([]);
   const [fileName, setFileName] = useState<string>("");
   const [search, setSearch] = useState("");
+  const [consumo, setConsumo] = useState<Record<string, number>>({});
+
+  // Load propostas with cota='sim' and build (month|codigo) -> sum(volume_caixas)
+  const loadConsumo = async () => {
+    const { data, error } = await supabase
+      .from("propostas_simulador")
+      .select("codigo_produto, volume_caixas, created_at, cota")
+      .eq("cota", "sim");
+    if (error) {
+      console.error(error);
+      return;
+    }
+    const map: Record<string, number> = {};
+    (data ?? []).forEach((r: any) => {
+      const d = new Date(r.created_at);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}|${normCode(r.codigo_produto)}`;
+      map[key] = (map[key] ?? 0) + Number(r.volume_caixas ?? 0);
+    });
+    setConsumo(map);
+  };
+
+  useEffect(() => {
+    loadConsumo();
+  }, []);
 
   const handleFile = async (file: File) => {
     try {
@@ -28,26 +112,60 @@ export default function ControleCotas() {
       setHeaders(Object.keys(json[0]));
       setRows(json);
       setFileName(file.name);
+      await loadConsumo();
       toast.success(`${json.length} itens carregados`);
     } catch (e: any) {
       toast.error("Erro ao ler planilha: " + e.message);
     }
   };
 
+  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol } = useMemo(() => {
+    const codigoCol = findHeader(headers, [/^c[oó]digo/, /produto/, /sku/]);
+    const mesCol = findHeader(headers, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
+    const anoCol = findHeader(headers, [/^ano/]);
+    const precoCol = findHeader(headers, [/^pre[cç]o/, /valor/]);
+
+    // Insert "Volume Consumido" after preço
+    const dh = [...headers];
+    if (precoCol) {
+      const idx = dh.indexOf(precoCol);
+      dh.splice(idx + 1, 0, "Volume Consumido");
+    } else {
+      dh.push("Volume Consumido");
+    }
+    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol };
+  }, [headers]);
+
+  const rowsWithConsumo = useMemo(() => {
+    return rows.map((r) => {
+      const code = codigoCol ? normCode(r[codigoCol]) : "";
+      const monthKey = parseMonthKey(mesCol ? r[mesCol] : null, anoCol ? r[anoCol] : null);
+      const key = monthKey && code ? `${monthKey}|${code}` : null;
+      const vol = key ? consumo[key] ?? 0 : 0;
+      return { ...r, "Volume Consumido": vol };
+    });
+  }, [rows, consumo, codigoCol, mesCol, anoCol]);
+
   const exportXLSX = () => {
-    const ws = XLSX.utils.json_to_sheet(rows);
+    const ws = XLSX.utils.json_to_sheet(rowsWithConsumo, { header: displayHeaders });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Cotas");
     XLSX.writeFile(wb, `controle-cotas-${Date.now()}.xlsx`);
   };
 
   const filtered = search
-    ? rows.filter((r) =>
+    ? rowsWithConsumo.filter((r) =>
         Object.values(r).some((v) =>
           String(v ?? "").toLowerCase().includes(search.toLowerCase())
         )
       )
-    : rows;
+    : rowsWithConsumo;
+
+  const fmtNum = (v: any) => {
+    const n = Number(v);
+    if (!isFinite(n)) return String(v ?? "");
+    return n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -111,10 +229,12 @@ export default function ControleCotas() {
             <table className="w-full text-sm">
               <thead className="bg-[#f5f5f7] sticky top-0 z-10">
                 <tr>
-                  {headers.map((h) => (
+                  {displayHeaders.map((h) => (
                     <th
                       key={h}
-                      className="px-3 py-2 text-left font-semibold text-[#1d1d1f] border-b whitespace-nowrap"
+                      className={`px-3 py-2 text-left font-semibold border-b whitespace-nowrap ${
+                        h === "Volume Consumido" ? "text-[#0071e3]" : "text-[#1d1d1f]"
+                      }`}
                     >
                       {h}
                     </th>
@@ -124,9 +244,14 @@ export default function ControleCotas() {
               <tbody>
                 {filtered.map((r, i) => (
                   <tr key={i} className="hover:bg-muted/40 border-b">
-                    {headers.map((h) => (
-                      <td key={h} className="px-3 py-1.5 whitespace-nowrap">
-                        {String(r[h] ?? "")}
+                    {displayHeaders.map((h) => (
+                      <td
+                        key={h}
+                        className={`px-3 py-1.5 whitespace-nowrap ${
+                          h === "Volume Consumido" ? "font-semibold text-[#0071e3]" : ""
+                        }`}
+                      >
+                        {h === "Volume Consumido" ? fmtNum(r[h]) : String(r[h] ?? "")}
                       </td>
                     ))}
                   </tr>
@@ -136,6 +261,8 @@ export default function ControleCotas() {
           </div>
           <p className="text-xs text-muted-foreground">
             Mostrando {filtered.length} de {rows.length} itens
+            {!codigoCol && " • ⚠ Coluna de código não detectada"}
+            {!mesCol && " • ⚠ Coluna de mês não detectada"}
           </p>
         </Card>
       )}
