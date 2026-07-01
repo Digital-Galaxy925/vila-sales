@@ -68,36 +68,74 @@ const findHeader = (headers: string[], patterns: RegExp[]): string | null => {
   return null;
 };
 
+const STORAGE_KEY = "controle-cotas-data-v1";
+
+type ConsumoMeta = { volume: number; descricao: string };
+
 export default function ControleCotas() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [headers, setHeaders] = useState<string[]>([]);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [fileName, setFileName] = useState<string>("");
+  const [headers, setHeaders] = useState<string[]>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      return s ? JSON.parse(s).headers ?? [] : [];
+    } catch { return []; }
+  });
+  const [rows, setRows] = useState<Row[]>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      return s ? JSON.parse(s).rows ?? [] : [];
+    } catch { return []; }
+  });
+  const [fileName, setFileName] = useState<string>(() => {
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      return s ? JSON.parse(s).fileName ?? "" : "";
+    } catch { return ""; }
+  });
   const [search, setSearch] = useState("");
-  const [consumo, setConsumo] = useState<Record<string, number>>({});
+  const [consumo, setConsumo] = useState<Record<string, ConsumoMeta>>({});
 
-  // Load propostas with cota='sim' and build (month|codigo) -> sum(volume_caixas)
+  // Persist upload across screens
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ headers, rows, fileName }));
+    } catch {}
+  }, [headers, rows, fileName]);
+
+  // Load propostas with cota='sim' and build (month|codigo) -> {volume, descricao}
   const loadConsumo = async () => {
     const { data, error } = await supabase
       .from("propostas_simulador")
-      .select("codigo_produto, volume_caixas, created_at, cota")
+      .select("codigo_produto, descricao_produto, volume_caixas, created_at, cota")
       .eq("cota", "sim");
     if (error) {
       console.error(error);
       return;
     }
-    const map: Record<string, number> = {};
+    const map: Record<string, ConsumoMeta> = {};
     (data ?? []).forEach((r: any) => {
       const d = new Date(r.created_at);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}|${normCode(r.codigo_produto)}`;
-      map[key] = (map[key] ?? 0) + Number(r.volume_caixas ?? 0);
+      if (!map[key]) map[key] = { volume: 0, descricao: r.descricao_produto ?? "" };
+      map[key].volume += Number(r.volume_caixas ?? 0);
     });
     setConsumo(map);
   };
 
   useEffect(() => {
     loadConsumo();
+    // Poll for new cotas so linhas se atualizam automaticamente
+    const iv = setInterval(loadConsumo, 15000);
+    return () => clearInterval(iv);
   }, []);
+
+  const clearData = () => {
+    if (!confirm("Limpar tabela e upload?")) return;
+    setHeaders([]);
+    setRows([]);
+    setFileName("");
+    localStorage.removeItem(STORAGE_KEY);
+  };
 
   const handleFile = async (file: File) => {
     try {
@@ -119,7 +157,12 @@ export default function ControleCotas() {
     }
   };
 
-  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol } = useMemo(() => {
+  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol, descCol } = useMemo(() => {
+    const codigoCol = findHeader(headers, [/^c[oó]digo/, /produto/, /sku/]);
+    const mesCol = findHeader(headers, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
+    const anoCol = findHeader(headers, [/^ano/]);
+    const precoCol = findHeader(headers, [/^pre[cç]o/, /valor/]);
+    const descCol = findHeader(headers, [/descri/, /produto/]);
     const codigoCol = findHeader(headers, [/^c[oó]digo/, /produto/, /sku/]);
     const mesCol = findHeader(headers, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
     const anoCol = findHeader(headers, [/^ano/]);
