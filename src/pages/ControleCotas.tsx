@@ -157,22 +157,25 @@ export default function ControleCotas() {
     }
   };
 
-  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol, descCol } = useMemo(() => {
+  const { displayHeaders, codigoCol, mesCol, anoCol, precoCol, descCol, volumeCol } = useMemo(() => {
     const codigoCol = findHeader(headers, [/^c[oó]digo/, /produto/, /sku/]);
     const mesCol = findHeader(headers, [/^m[eê]s/, /periodo/, /per[ií]odo/]);
     const anoCol = findHeader(headers, [/^ano/]);
     const precoCol = findHeader(headers, [/^pre[cç]o/, /valor/]);
     const descCol = findHeader(headers, [/descri/, /produto/]);
+    const volumeCol = findHeader(headers, [/^volume/, /^quantidade/, /^qtd/, /^qtde/, /^cota/]);
 
-    // Insert "Volume Consumido" after preço
+    // Insert "Volume Consumido" after preço, then "Saldo" after "Volume Consumido"
     const dh = [...headers];
-    if (precoCol) {
-      const idx = dh.indexOf(precoCol);
-      dh.splice(idx + 1, 0, "Volume Consumido");
-    } else {
-      dh.push("Volume Consumido");
-    }
-    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol, descCol };
+    const insertAfter = (after: string | null, col: string) => {
+      if (!after) { dh.push(col); return; }
+      const idx = dh.indexOf(after);
+      if (idx >= 0) dh.splice(idx + 1, 0, col);
+      else dh.push(col);
+    };
+    insertAfter(precoCol, "Volume Consumido");
+    insertAfter("Volume Consumido", "Saldo");
+    return { displayHeaders: dh, codigoCol, mesCol, anoCol, precoCol, descCol, volumeCol };
   }, [headers]);
 
   const rowsWithConsumo = useMemo(() => {
@@ -201,7 +204,9 @@ export default function ControleCotas() {
           vol = byCode[code] ?? 0;
         }
       }
-      return { ...r, "Volume Consumido": vol };
+      const volDisp = volumeCol ? Number(r[volumeCol] ?? 0) : 0;
+      const saldo = volDisp - vol;
+      return { ...r, "Volume Consumido": vol, "Saldo": saldo };
     });
 
     // Auto-append apenas códigos que NÃO existem na planilha
@@ -215,11 +220,12 @@ export default function ControleCotas() {
         row[codigoCol] = code;
         if (descCol) row[descCol] = descByCode[code] ?? "";
         row["Volume Consumido"] = byCode[code];
+        row["Saldo"] = -(byCode[code] ?? 0);
         base.push(row as any);
       });
     }
     return base;
-  }, [rows, consumo, headers, codigoCol, mesCol, anoCol, descCol]);
+  }, [rows, consumo, headers, codigoCol, mesCol, anoCol, descCol, volumeCol]);
 
   const exportXLSX = () => {
     const ws = XLSX.utils.json_to_sheet(rowsWithConsumo, { header: displayHeaders });
@@ -324,14 +330,20 @@ export default function ControleCotas() {
               <tbody>
                 {filtered.map((r, i) => (
                   <tr key={i} className="hover:bg-muted/40 border-b">
-                    {displayHeaders.map((h) => (
+                {displayHeaders.map((h) => (
                       <td
                         key={h}
                         className={`px-3 py-1.5 whitespace-nowrap ${
-                          h === "Volume Consumido" ? "font-semibold text-[#0071e3]" : ""
+                          h === "Volume Consumido"
+                            ? "font-semibold text-[#0071e3]"
+                            : h === "Saldo"
+                            ? `font-semibold ${Number(r[h] ?? 0) < 0 ? "text-red-600" : "text-green-600"}`
+                            : ""
                         }`}
                       >
-                        {h === "Volume Consumido" ? fmtNum(r[h]) : String(r[h] ?? "")}
+                        {h === "Volume Consumido" || h === "Saldo"
+                          ? fmtNum(r[h])
+                          : String(r[h] ?? "")}
                       </td>
                     ))}
                   </tr>
