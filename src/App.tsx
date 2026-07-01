@@ -29,6 +29,7 @@ import PropostasAprovadas from "./pages/PropostasAprovadas";
 import Livros from "./pages/Livros";
 import PedidosPendentes from "./pages/PedidosPendentes";
 import ControleInvestimentos from "./pages/ControleInvestimentos";
+import ControleCotas from "./pages/ControleCotas";
 import AnaliseGeral from "./pages/AnaliseGeral";
 import DashboardUnilever from "./pages/DashboardUnilever";
 import NotFound from "./pages/NotFound";
