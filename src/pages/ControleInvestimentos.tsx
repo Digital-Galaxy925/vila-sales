@@ -247,7 +247,8 @@ export default function ControleInvestimentos() {
           <option value="todos">Todos os meses</option>
           {mesesDisponiveis.map((m) => {
             const [ano, mes] = m.split("-");
-            const label = `${mes}/${ano}`;
+            const nomes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+            const label = `${nomes[Number(mes) - 1]}/${ano}`;
             return <option key={m} value={m}>{label}</option>;
           })}
         </select>
