@@ -172,12 +172,14 @@ export default function Simulador() {
         percentual_investimento: percentualInvestimento,
         observacao,
         gerente: gerente || null,
+        cliente: cliente || null,
         cota,
       });
       if (error) throw error;
       toast({ title: "Proposta salva", description: "Disponível em Controle de Investimentos." });
       setObservacao("");
       setGerente("");
+      setCliente("");
       setCota("Não");
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e?.message ?? "Tente novamente.", variant: "destructive" });
