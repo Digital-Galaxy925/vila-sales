@@ -192,6 +192,8 @@ export default function Simulador() {
     } finally {
       setSalvando(false);
     }
+  }
+
   // ─── Calculadora auxiliar ───
   const calcInput = (n: string) => {
     if (calcNew) {
