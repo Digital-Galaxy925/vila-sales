@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { exportToExcel, exportToPDF } from "@/utils/exportGerencial";
 import NoDataNotice from "@/components/NoDataNotice";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface Product {
   seqProd: string;
@@ -18,6 +19,7 @@ interface Product {
   promoc: number;
   filial: string;
   embCmp?: string | number;
+  bu?: string;
 }
 
 type DataMap = Record<string, Product[]>;
@@ -38,14 +40,20 @@ const fmt = (v: number) =>
 
 const fmtNum = (v: number) => v.toLocaleString("pt-BR");
 
+const normCod = (v: string): string => {
+  let s = (v ?? "").toString().trim();
+  s = s.replace(/\.0+$/, "");
+  s = s.replace(/^0+(\d)/, "$1");
+  return s;
+};
 
 const findProductInData = (code: string, data: DataMap) => {
-  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; promoc: number; descricao: string; embCmp: number }[] = [];
+  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; promoc: number; descricao: string; embCmp: number; bu?: string }[] = [];
   FILIAL_ORDER.forEach((filialId) => {
     const products = data[filialId];
     if (!products) return;
     const match = products.find(
-      (p) => p.seqProd === code || p.seqProd?.padStart(6, "0") === code.padStart(6, "0")
+      (p) => normCod(p.seqProd) === normCod(code) || p.seqProd === code || p.seqProd?.padStart(6, "0") === code.padStart(6, "0")
     );
     if (match) {
       found.push({
@@ -58,35 +66,86 @@ const findProductInData = (code: string, data: DataMap) => {
         promoc: (match as any).promoc ?? 0,
         descricao: match.descricao ?? "",
         embCmp: parseFloat(String((match as any).embCmp ?? "")) || 0,
+        bu: match.bu,
       });
     }
   });
   return found;
 };
 
+
 const AnaliseGerencial = () => {
   const [searchCode, setSearchCode] = useState("");
   const [activeCode, setActiveCode] = useState("");
+  const [selectedCod, setSelectedCod] = useState("");
+  const [showSug, setShowSug] = useState(false);
 
+  const { get } = useAppData();
+  const cached = get<DataMap>("vilasales_data");
   const data: DataMap = useMemo(() => {
+    if (cached && typeof cached === "object" && Object.keys(cached).length > 0) return cached;
     try {
       const raw = localStorage.getItem("vilasales_data");
       return raw ? JSON.parse(raw) : {};
     } catch {
       return {};
     }
-  }, []);
+  }, [cached]);
 
   const hasData = Object.keys(data).length > 0;
 
+  const suggestions = useMemo(() => {
+    const q = searchCode.trim().toLowerCase();
+    if (!q || q.length < 2 || selectedCod) return [];
+    const qCod = normCod(searchCode);
+    const seen = new Set<string>();
+    const out: Product[] = [];
+    for (const fid of FILIAL_ORDER) {
+      const arr = data[fid];
+      if (!Array.isArray(arr)) continue;
+      for (const p of arr) {
+        const cod = normCod(p.seqProd);
+        if (seen.has(cod)) continue;
+        const desc = (p.descricao ?? "").toLowerCase();
+        if ((qCod && cod.includes(qCod)) || desc.includes(q)) {
+          seen.add(cod);
+          out.push(p);
+          if (out.length >= 15) return out;
+        }
+      }
+    }
+    return out;
+  }, [searchCode, data, selectedCod]);
+
   const handleSearch = () => {
     const code = searchCode.trim();
-    if (code) setActiveCode(code);
+    if (!code) return;
+    if (selectedCod) {
+      setActiveCode(selectedCod);
+      return;
+    }
+    const qLower = code.toLowerCase();
+    for (const fid of FILIAL_ORDER) {
+      const arr = data[fid];
+      if (!Array.isArray(arr)) continue;
+      const match = arr.find(
+        (p) => normCod(p.seqProd) === normCod(code) || (p.descricao ?? "").toLowerCase().includes(qLower)
+      );
+      if (match) {
+        const cod = normCod(match.seqProd);
+        setSelectedCod(cod);
+        setSearchCode(cod);
+        setActiveCode(cod);
+        return;
+      }
+    }
+    setActiveCode(code);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch();
   };
+
 
 
   // Find product across all filiais
@@ -146,19 +205,48 @@ const AnaliseGerencial = () => {
             <Search className="w-4 h-4 text-primary" />
             Consulta por Produto
           </h3>
-          <div className="flex gap-3 items-center">
-            <Input
-              placeholder="Digite o código do produto..."
-              value={searchCode}
-              onChange={(e) => setSearchCode(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="max-w-xs"
-            />
+          <div className="flex gap-3 items-start">
+            <div className="relative max-w-xs w-full">
+              <Input
+                placeholder="Código ou descrição do produto..."
+                value={searchCode}
+                onChange={(e) => { setSearchCode(e.target.value); setSelectedCod(""); setShowSug(true); }}
+                onFocus={() => setShowSug(true)}
+                onBlur={() => setTimeout(() => setShowSug(false), 150)}
+                onKeyDown={handleKeyDown}
+                className="w-full"
+                autoComplete="off"
+              />
+              {showSug && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-[280px] overflow-y-auto">
+                  {suggestions.map((p) => {
+                    const cod = normCod(p.seqProd);
+                    return (
+                      <div
+                        key={`${cod}-${p.filial}`}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setSelectedCod(cod);
+                          setSearchCode(cod);
+                          setShowSug(false);
+                          setActiveCode(cod);
+                        }}
+                        className="px-3 py-2 text-sm border-b border-border last:border-0 cursor-pointer hover:bg-accent"
+                      >
+                        <div className="font-semibold text-primary">{cod}</div>
+                        <div className="text-card-foreground">{p.descricao}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <Button onClick={handleSearch} disabled={!searchCode.trim()}>
               <Search className="w-4 h-4 mr-2" />
               Buscar
             </Button>
           </div>
+
         </motion.div>
       )}
 
