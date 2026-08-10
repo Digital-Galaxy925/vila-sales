@@ -522,6 +522,76 @@ export default function Simulador() {
           )}
         </>
       )}
+
+      {/* ─── Calculadora modal ─── */}
+      {calcOpen && (
+        <div
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 50,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+          }}
+          onClick={() => setCalcOpen(false)}
+        >
+          <div
+            style={{ background: "#fff", borderRadius: 16, padding: 20, width: "100%", maxWidth: 320, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: "#1f2937", margin: 0 }}>Calculadora</h3>
+              <button onClick={() => setCalcOpen(false)} style={{ background: "transparent", border: "none", fontSize: 18, cursor: "pointer", color: "#6b7280" }}>×</button>
+            </div>
+            <div
+              style={{
+                background: "#f8fafc", borderRadius: 10, padding: "12px 16px", marginBottom: 12,
+                textAlign: "right", fontSize: 24, fontWeight: 600, color: "#1f2937",
+                border: "1px solid #e2e8f0", minHeight: 48, wordBreak: "break-all",
+              }}
+            >
+              {calcDisplay}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+              {[
+                { label: "C", span: 1, action: calcClear, type: "sec" },
+                { label: "÷", span: 1, action: () => calcAction("÷"), type: "op" },
+                { label: "×", span: 1, action: () => calcAction("×"), type: "op" },
+                { label: "−", span: 1, action: () => calcAction("−"), type: "op" },
+                { label: "7", span: 1, action: () => calcInput("7"), type: "num" },
+                { label: "8", span: 1, action: () => calcInput("8"), type: "num" },
+                { label: "9", span: 1, action: () => calcInput("9"), type: "num" },
+                { label: "+", span: 1, action: () => calcAction("+"), type: "op" },
+                { label: "4", span: 1, action: () => calcInput("4"), type: "num" },
+                { label: "5", span: 1, action: () => calcInput("5"), type: "num" },
+                { label: "6", span: 1, action: () => calcInput("6"), type: "num" },
+                { label: "=", span: 1, action: calcEqual, type: "eq" },
+                { label: "1", span: 1, action: () => calcInput("1"), type: "num" },
+                { label: "2", span: 1, action: () => calcInput("2"), type: "num" },
+                { label: "3", span: 1, action: () => calcInput("3"), type: "num" },
+                { label: "0", span: 2, action: () => calcInput("0"), type: "num" },
+                { label: ",", span: 1, action: () => calcInput(","), type: "num" },
+              ].map((btn, idx) => (
+                <button
+                  key={idx}
+                  onClick={btn.action}
+                  style={{
+                    gridColumn: `span ${btn.span}`,
+                    padding: "14px 4px", borderRadius: 10, border: "none", fontSize: 16, fontWeight: 600,
+                    cursor: "pointer", color: btn.type === "num" ? "#1f2937" : "#fff",
+                    background: btn.type === "num" ? "#f1f5f9" : btn.type === "op" ? "#0071e3" : btn.type === "eq" ? "#16a34a" : "#94a3b8",
+                  }}
+                >
+                  {btn.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={applyCalcResult}
+              style={{ width: "100%", marginTop: 12, background: "#0071e3", color: "#fff", border: "none", borderRadius: 8, padding: "10px", fontWeight: 600, cursor: "pointer" }}
+            >
+              Usar resultado
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
