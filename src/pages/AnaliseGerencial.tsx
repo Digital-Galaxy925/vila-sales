@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { exportToExcel, exportToPDF } from "@/utils/exportGerencial";
 import NoDataNotice from "@/components/NoDataNotice";
+import { useAppData } from "@/contexts/AppDataContext";
 
 interface Product {
   seqProd: string;
@@ -18,6 +19,7 @@ interface Product {
   promoc: number;
   filial: string;
   embCmp?: string | number;
+  bu?: string;
 }
 
 type DataMap = Record<string, Product[]>;
@@ -38,14 +40,20 @@ const fmt = (v: number) =>
 
 const fmtNum = (v: number) => v.toLocaleString("pt-BR");
 
+const normCod = (v: string): string => {
+  let s = (v ?? "").toString().trim();
+  s = s.replace(/\.0+$/, "");
+  s = s.replace(/^0+(\d)/, "$1");
+  return s;
+};
 
 const findProductInData = (code: string, data: DataMap) => {
-  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; promoc: number; descricao: string; embCmp: number }[] = [];
+  const found: { filial: string; filialName: string; custoLiq: number; atual: number; estoque: number; sellout: number; promoc: number; descricao: string; embCmp: number; bu?: string }[] = [];
   FILIAL_ORDER.forEach((filialId) => {
     const products = data[filialId];
     if (!products) return;
     const match = products.find(
-      (p) => p.seqProd === code || p.seqProd?.padStart(6, "0") === code.padStart(6, "0")
+      (p) => normCod(p.seqProd) === normCod(code) || p.seqProd === code || p.seqProd?.padStart(6, "0") === code.padStart(6, "0")
     );
     if (match) {
       found.push({
@@ -58,11 +66,13 @@ const findProductInData = (code: string, data: DataMap) => {
         promoc: (match as any).promoc ?? 0,
         descricao: match.descricao ?? "",
         embCmp: parseFloat(String((match as any).embCmp ?? "")) || 0,
+        bu: match.bu,
       });
     }
   });
   return found;
 };
+
 
 const AnaliseGerencial = () => {
   const [searchCode, setSearchCode] = useState("");
