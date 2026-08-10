@@ -205,19 +205,48 @@ const AnaliseGerencial = () => {
             <Search className="w-4 h-4 text-primary" />
             Consulta por Produto
           </h3>
-          <div className="flex gap-3 items-center">
-            <Input
-              placeholder="Digite o código do produto..."
-              value={searchCode}
-              onChange={(e) => setSearchCode(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="max-w-xs"
-            />
+          <div className="flex gap-3 items-start">
+            <div className="relative max-w-xs w-full">
+              <Input
+                placeholder="Código ou descrição do produto..."
+                value={searchCode}
+                onChange={(e) => { setSearchCode(e.target.value); setSelectedCod(""); setShowSug(true); }}
+                onFocus={() => setShowSug(true)}
+                onBlur={() => setTimeout(() => setShowSug(false), 150)}
+                onKeyDown={handleKeyDown}
+                className="w-full"
+                autoComplete="off"
+              />
+              {showSug && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-[280px] overflow-y-auto">
+                  {suggestions.map((p) => {
+                    const cod = normCod(p.seqProd);
+                    return (
+                      <div
+                        key={`${cod}-${p.filial}`}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setSelectedCod(cod);
+                          setSearchCode(cod);
+                          setShowSug(false);
+                          setActiveCode(cod);
+                        }}
+                        className="px-3 py-2 text-sm border-b border-border last:border-0 cursor-pointer hover:bg-accent"
+                      >
+                        <div className="font-semibold text-primary">{cod}</div>
+                        <div className="text-card-foreground">{p.descricao}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <Button onClick={handleSearch} disabled={!searchCode.trim()}>
               <Search className="w-4 h-4 mr-2" />
               Buscar
             </Button>
           </div>
+
         </motion.div>
       )}
 
