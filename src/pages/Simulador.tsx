@@ -73,6 +73,11 @@ export default function Simulador() {
   const [salvando, setSalvando] = useState(false);
   const [selectedCod, setSelectedCod] = useState<string>("");
   const [showSug, setShowSug] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
+  const [calcDisplay, setCalcDisplay] = useState("0");
+  const [calcPrev, setCalcPrev] = useState<string | null>(null);
+  const [calcOp, setCalcOp] = useState<string | null>(null);
+  const [calcNew, setCalcNew] = useState(true);
 
   const normCod = (v: string): string => {
     let s = (v ?? "").toString().trim();
