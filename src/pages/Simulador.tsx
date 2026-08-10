@@ -321,7 +321,17 @@ export default function Simulador() {
                 <input type="text" value={volumeCaixas} onChange={(e) => setVolumeCaixas(e.target.value)} placeholder="Ex: 1000" style={inputStyle} />
               </div>
               <div>
-                <label style={labelStyle}>Preço Venda Desejado (R$)</label>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+                  <label style={labelStyle}>Preço Venda Desejado (R$)</label>
+                  <button
+                    type="button"
+                    onClick={() => setCalcOpen(true)}
+                    title="Abrir calculadora"
+                    style={{ background: "transparent", border: "none", cursor: "pointer", color: "#0071e3", padding: 2, display: "flex", alignItems: "center" }}
+                  >
+                    <Calculator size={16} />
+                  </button>
+                </div>
                 <input type="text" value={precoVendaDesejado} onChange={(e) => setPrecoVendaDesejado(e.target.value)} placeholder="Ex: 13,99" style={inputStyle} disabled={!produto} />
               </div>
             </div>
