@@ -192,7 +192,48 @@ export default function Simulador() {
     } finally {
       setSalvando(false);
     }
-  }
+  // ─── Calculadora auxiliar ───
+  const calcInput = (n: string) => {
+    if (calcNew) {
+      setCalcDisplay(n === "," ? "0," : n);
+      setCalcNew(false);
+    } else {
+      if (n === "," && calcDisplay.includes(",")) return;
+      setCalcDisplay((prev) => (prev === "0" && n !== "," ? n : prev + n));
+    }
+  };
+  const calcClear = () => {
+    setCalcDisplay("0");
+    setCalcPrev(null);
+    setCalcOp(null);
+    setCalcNew(true);
+  };
+  const calcAction = (op: string) => {
+    setCalcPrev(calcDisplay);
+    setCalcOp(op);
+    setCalcNew(true);
+  };
+  const calcEqual = () => {
+    if (!calcOp || !calcPrev) return;
+    const a = parseFloat(calcPrev.replace(",", ".")) || 0;
+    const b = parseFloat(calcDisplay.replace(",", ".")) || 0;
+    let res = 0;
+    switch (calcOp) {
+      case "+": res = a + b; break;
+      case "−": res = a - b; break;
+      case "×": res = a * b; break;
+      case "÷": res = b !== 0 ? a / b : 0; break;
+    }
+    const formatted = res.toLocaleString("pt-BR", { maximumFractionDigits: 4 });
+    setCalcDisplay(formatted);
+    setCalcPrev(null);
+    setCalcOp(null);
+    setCalcNew(true);
+  };
+  const applyCalcResult = () => {
+    setPrecoVendaDesejado(calcDisplay);
+    setCalcOpen(false);
+  };
 
   return (
     <div style={{ minHeight: "100vh", fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", color: "#1a1a2e" }}>
