@@ -77,26 +77,75 @@ const findProductInData = (code: string, data: DataMap) => {
 const AnaliseGerencial = () => {
   const [searchCode, setSearchCode] = useState("");
   const [activeCode, setActiveCode] = useState("");
+  const [selectedCod, setSelectedCod] = useState("");
+  const [showSug, setShowSug] = useState(false);
 
+  const { get } = useAppData();
+  const cached = get<DataMap>("vilasales_data");
   const data: DataMap = useMemo(() => {
+    if (cached && typeof cached === "object" && Object.keys(cached).length > 0) return cached;
     try {
       const raw = localStorage.getItem("vilasales_data");
       return raw ? JSON.parse(raw) : {};
     } catch {
       return {};
     }
-  }, []);
+  }, [cached]);
 
   const hasData = Object.keys(data).length > 0;
 
+  const suggestions = useMemo(() => {
+    const q = searchCode.trim().toLowerCase();
+    if (!q || q.length < 2 || selectedCod) return [];
+    const qCod = normCod(searchCode);
+    const seen = new Set<string>();
+    const out: Product[] = [];
+    for (const fid of FILIAL_ORDER) {
+      const arr = data[fid];
+      if (!Array.isArray(arr)) continue;
+      for (const p of arr) {
+        const cod = normCod(p.seqProd);
+        if (seen.has(cod)) continue;
+        const desc = (p.descricao ?? "").toLowerCase();
+        if ((qCod && cod.includes(qCod)) || desc.includes(q)) {
+          seen.add(cod);
+          out.push(p);
+          if (out.length >= 15) return out;
+        }
+      }
+    }
+    return out;
+  }, [searchCode, data, selectedCod]);
+
   const handleSearch = () => {
     const code = searchCode.trim();
-    if (code) setActiveCode(code);
+    if (!code) return;
+    if (selectedCod) {
+      setActiveCode(selectedCod);
+      return;
+    }
+    const qLower = code.toLowerCase();
+    for (const fid of FILIAL_ORDER) {
+      const arr = data[fid];
+      if (!Array.isArray(arr)) continue;
+      const match = arr.find(
+        (p) => normCod(p.seqProd) === normCod(code) || (p.descricao ?? "").toLowerCase().includes(qLower)
+      );
+      if (match) {
+        const cod = normCod(match.seqProd);
+        setSelectedCod(cod);
+        setSearchCode(cod);
+        setActiveCode(cod);
+        return;
+      }
+    }
+    setActiveCode(code);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch();
   };
+
 
 
   // Find product across all filiais
